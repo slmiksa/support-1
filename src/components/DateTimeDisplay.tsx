@@ -28,7 +28,7 @@ const DateTimeDisplay = () => {
   });
 
   return (
-    <div className="text-company-dark text-center">
+    <div className="text-[#222222] text-center">
       <span className="ml-2 font-medium">الوقت:</span>
       <span className="font-medium">{formattedTime}</span>
       <span className="mx-4 font-medium">التاريخ:</span>

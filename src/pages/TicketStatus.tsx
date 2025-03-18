@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import TicketTracker from '@/components/TicketTracker';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
@@ -92,8 +91,7 @@ const TicketStatus = () => {
       <Header />
       <main className="container px-4 py-8">
         <div className="flex flex-col items-center mb-8 bg-white rounded-lg p-4 shadow-md">
-          <h2 className="text-2xl font-semibold mb-4 text-center text-company">متابعة طلب الدعم الفني</h2>
-          <div className="w-40 h-1 bg-accent-gold mb-4"></div>
+          <h2 className="text-2xl font-semibold mb-4 text-center text-[#222222]">متابعة طلب الدعم الفني</h2>
           <DateTimeDisplay />
         </div>
 
