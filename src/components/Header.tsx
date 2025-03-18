@@ -94,8 +94,11 @@ const Header = () => {
         </div>
       </div>
       
-      {/* Navigation bar with dark background */}
-      <nav className="w-full py-3 px-6 shadow-md mb-6 bg-[#222222]">
+      {/* Navigation bar with dynamic background color from settings */}
+      <nav 
+        className="w-full py-3 px-6 shadow-md mb-6" 
+        style={{ backgroundColor: settings.secondary_color }}
+      >
         <div className="container mx-auto flex justify-center space-x-6 rtl:space-x-reverse">
           <Link 
             to="/" 
