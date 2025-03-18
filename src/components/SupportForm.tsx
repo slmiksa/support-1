@@ -74,19 +74,23 @@ const SupportForm = () => {
       
       // Create ticket object
       const newTicket: SupportTicket = {
-        id: newTicketId,
-        employeeId: formData.employeeId,
+        ticket_id: newTicketId,
+        employee_id: formData.employeeId,
         branch: formData.branch,
-        anydeskNumber: formData.anydeskNumber,
-        extensionNumber: formData.extensionNumber,
+        anydesk_number: formData.anydeskNumber,
+        extension_number: formData.extensionNumber,
         description: formData.description,
-        imageUrl: imagePreview || undefined,
+        image_url: imagePreview || undefined,
         status: 'pending',
-        createdAt: Date.now()
+        created_at: new Date().toISOString()
       };
       
       // Save ticket to storage
-      saveTicket(newTicket);
+      const result = await saveTicket(newTicket);
+      
+      if (!result.success) {
+        throw new Error('Failed to save ticket');
+      }
       
       // Display success message
       setTicketId(newTicketId);

@@ -72,7 +72,11 @@ const TicketTracker = () => {
         return;
       }
       
-      setTicket(ticketData);
+      // Cast the status to ensure type compatibility
+      setTicket({
+        ...ticketData,
+        status: ticketData.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed'
+      });
       
       // Fetch responses for this ticket
       const { data: responsesData, error: responsesError } = await supabase

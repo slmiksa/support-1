@@ -19,8 +19,8 @@ export interface SupportTicket {
   image_file?: File | null;
   image_url?: string;
   status: 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed';
-  created_at?: number;
-  updated_at?: number;
+  created_at?: string;
+  updated_at?: string;
   response?: string;
 }
 
@@ -38,7 +38,7 @@ export const saveTicket = async (ticket: SupportTicket): Promise<{ success: bool
           extension_number: ticket.extension_number,
           description: ticket.description,
           image_url: ticket.image_url,
-          status: 'pending',
+          status: ticket.status,
         }
       ])
       .select();
@@ -77,7 +77,11 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
       return localTickets.find(ticket => ticket.ticket_id === ticketId);
     }
 
-    return data;
+    // Cast the status to ensure type compatibility
+    return {
+      ...data,
+      status: data.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed'
+    };
   } catch (error) {
     console.error('Error finding ticket:', error);
     return undefined;
@@ -90,9 +94,19 @@ export const updateTicket = async (
   updates: Partial<SupportTicket>
 ): Promise<boolean> => {
   try {
+    // Convert any date fields from number to string if necessary
+    const supabaseUpdates: any = {};
+    
+    // Copy all fields except created_at/updated_at which need special handling
+    Object.entries(updates).forEach(([key, value]) => {
+      if (key !== 'created_at' && key !== 'updated_at') {
+        supabaseUpdates[key] = value;
+      }
+    });
+    
     const { error } = await supabase
       .from('tickets')
-      .update(updates)
+      .update(supabaseUpdates)
       .eq('ticket_id', ticketId);
 
     if (error) {
