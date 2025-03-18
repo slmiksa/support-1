@@ -1,16 +1,52 @@
 
 import { useState, useEffect } from 'react';
-import { getAllSiteFields, updateSiteField, SiteField } from '@/utils/ticketUtils';
+import { 
+  getAllSiteFields, 
+  updateSiteField, 
+  createSiteField, 
+  deleteSiteField, 
+  SiteField 
+} from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogFooter,
+  DialogTrigger 
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Plus, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const SiteFieldsManager = () => {
   const [fields, setFields] = useState<SiteField[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fieldToDelete, setFieldToDelete] = useState<SiteField | null>(null);
+  const [newField, setNewField] = useState({
+    display_name: '',
+    field_name: '',
+    is_required: false,
+    is_active: true
+  });
   const { hasPermission } = useAdminAuth();
   const canManageAdmins = hasPermission('manage_admins');
 
@@ -53,10 +89,133 @@ const SiteFieldsManager = () => {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewField(prev => ({ ...prev, [name]: value }));
+  };
+
+  const convertToFieldName = (displayName: string) => {
+    return displayName
+      .toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^\w\s]/gi, '');
+  };
+
+  const handleAddField = async () => {
+    if (!canManageAdmins) return;
+    if (!newField.display_name) {
+      toast.error('يرجى إدخال اسم الحقل');
+      return;
+    }
+
+    try {
+      // Auto-generate field_name if empty
+      const fieldName = newField.field_name || convertToFieldName(newField.display_name);
+      
+      const fieldData = {
+        ...newField,
+        field_name: fieldName
+      };
+      
+      const result = await createSiteField(fieldData);
+      
+      if (result) {
+        toast.success(`تم إضافة الحقل ${newField.display_name} بنجاح`);
+        setFields([...fields, result]);
+        setNewField({
+          display_name: '',
+          field_name: '',
+          is_required: false,
+          is_active: true
+        });
+        setIsAddDialogOpen(false);
+      } else {
+        toast.error('فشل في إضافة الحقل');
+      }
+    } catch (error) {
+      console.error('Error adding field:', error);
+      toast.error('حدث خطأ أثناء إضافة الحقل');
+    }
+  };
+
+  const handleDeleteField = async () => {
+    if (!canManageAdmins || !fieldToDelete) return;
+    
+    try {
+      const success = await deleteSiteField(fieldToDelete.id);
+      
+      if (success) {
+        setFields(fields.filter(f => f.id !== fieldToDelete.id));
+        toast.success(`تم حذف الحقل ${fieldToDelete.display_name} بنجاح`);
+      } else {
+        toast.error('فشل في حذف الحقل');
+      }
+    } catch (error) {
+      console.error('Error deleting field:', error);
+      toast.error('حدث خطأ أثناء حذف الحقل');
+    } finally {
+      setDeleteDialogOpen(false);
+      setFieldToDelete(null);
+    }
+  };
+
+  const openDeleteDialog = (field: SiteField) => {
+    if (!canManageAdmins) return;
+    setFieldToDelete(field);
+    setDeleteDialogOpen(true);
+  };
+
   return (
     <Card>
-      <CardHeader className="pb-3">
+      <CardHeader className="pb-3 flex flex-row items-center justify-between">
         <CardTitle className="text-right text-xl font-bold text-company">إدارة حقول الموقع</CardTitle>
+        {canManageAdmins && (
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-1">
+                <Plus size={16} />
+                <span>إضافة حقل</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle className="text-right">إضافة حقل جديد</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="display_name" className="text-right">اسم الحقل</Label>
+                  <Input
+                    id="display_name"
+                    name="display_name"
+                    className="text-right"
+                    value={newField.display_name}
+                    onChange={handleInputChange}
+                    placeholder="مثال: الرقم الوظيفي"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="field_name" className="text-right">
+                    اسم الحقل البرمجي (اختياري)
+                  </Label>
+                  <Input
+                    id="field_name"
+                    name="field_name"
+                    className="text-right"
+                    value={newField.field_name}
+                    onChange={handleInputChange}
+                    placeholder="سيتم إنشاؤه تلقائيًا إذا تركته فارغًا"
+                  />
+                  <p className="text-sm text-muted-foreground text-right">
+                    إذا تركت هذا الحقل فارغًا، سيتم إنشاؤه تلقائيًا من اسم الحقل
+                  </p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleAddField} className="w-full">إضافة الحقل</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </CardHeader>
       <CardContent>
         {loading ? (
@@ -72,6 +231,7 @@ const SiteFieldsManager = () => {
                   <TableHead className="text-right">اسم الحقل</TableHead>
                   <TableHead className="text-right">مطلوب</TableHead>
                   <TableHead className="text-right">نشط</TableHead>
+                  {canManageAdmins && <TableHead className="text-center w-20">حذف</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -93,11 +253,23 @@ const SiteFieldsManager = () => {
                           disabled={!canManageAdmins}
                         />
                       </TableCell>
+                      {canManageAdmins && (
+                        <TableCell className="text-center">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
+                            onClick={() => openDeleteDialog(field)}
+                          >
+                            <Trash2 size={16} />
+                          </Button>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center h-24">
+                    <TableCell colSpan={canManageAdmins ? 4 : 3} className="text-center h-24">
                       <p>لا توجد حقول مسجلة</p>
                     </TableCell>
                   </TableRow>
@@ -107,6 +279,27 @@ const SiteFieldsManager = () => {
           </div>
         )}
       </CardContent>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-right">تأكيد حذف الحقل</AlertDialogTitle>
+            <AlertDialogDescription className="text-right">
+              هل أنت متأكد من رغبتك في حذف الحقل "{fieldToDelete?.display_name}"؟ 
+              هذا الإجراء لا يمكن التراجع عنه.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-row-reverse justify-start gap-2">
+            <AlertDialogCancel className="mb-0">إلغاء</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteField}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              حذف
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

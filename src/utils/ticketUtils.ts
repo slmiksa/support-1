@@ -363,12 +363,15 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
   }
 };
 
-export const updateSiteField = async (fieldId: string, updates: Partial<SiteField>): Promise<boolean> => {
+export const updateSiteField = async (
+  id: string,
+  updates: Partial<SiteField>
+): Promise<boolean> => {
   try {
     const { error } = await supabase
       .from('site_fields')
       .update(updates)
-      .eq('id', fieldId);
+      .eq('id', id);
 
     if (error) {
       throw error;
@@ -377,6 +380,46 @@ export const updateSiteField = async (fieldId: string, updates: Partial<SiteFiel
     return true;
   } catch (error) {
     console.error('Error updating site field:', error);
+    return false;
+  }
+};
+
+export const createSiteField = async (
+  fieldData: Omit<SiteField, 'id' | 'created_at'>
+): Promise<SiteField | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('site_fields')
+      .insert([fieldData])
+      .select();
+
+    if (error) {
+      console.error('Error creating site field:', error);
+      return null;
+    }
+
+    return data[0] as SiteField;
+  } catch (error) {
+    console.error('Error creating site field:', error);
+    return null;
+  }
+};
+
+export const deleteSiteField = async (id: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('site_fields')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Error deleting site field:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting site field:', error);
     return false;
   }
 };
