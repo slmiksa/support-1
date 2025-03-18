@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketStats, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { PieChart, Pie, Cell, BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import logo from '@/assets/logo.svg';
 
 // Define ticket status color map
 const statusColorMap = {
@@ -148,31 +150,50 @@ const ReportGenerator = () => {
     }
 
     try {
-      // Create PDF document with Arabic support
+      // Create a new PDF document instance with proper options for Arabic support
       const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
-        format: 'a4'
+        format: 'a4',
+        putOnlyUsedFonts: true,
+        compress: true
       });
       
-      // Add title
-      doc.setFont("Helvetica");
-      doc.setFontSize(18);
-      doc.setTextColor(21, 67, 127);
+      // Import the Arabic font (Amiri)
+      doc.addFont('https://cdn.jsdelivr.net/npm/amiri-font@1.0.0/amiri/Amiri-Regular.ttf', 'Amiri', 'normal');
+      doc.addFont('https://cdn.jsdelivr.net/npm/amiri-font@1.0.0/amiri/Amiri-Bold.ttf', 'Amiri', 'bold');
       
-      // Enable right-to-left for Arabic
+      // Set right-to-left mode for Arabic text
       doc.setR2L(true);
       
-      const title = `تقرير التذاكر ${format(startDate, 'yyyy/MM/dd', { locale: ar })} - ${format(endDate, 'yyyy/MM/dd', { locale: ar })}`;
-      doc.text(title, 150, 15, { align: 'center' });
+      // Add company logo
+      const imgData = logo;
+      doc.addImage(imgData, 'SVG', 20, 10, 40, 15);
       
-      // Add statistics section
-      doc.setFontSize(14);
-      doc.text('إحصائيات التذاكر', 150, 25, { align: 'center' });
+      // Set fonts for Arabic
+      doc.setFont('Amiri', 'bold');
+      doc.setFontSize(22);
+      doc.setTextColor(21, 67, 127); // Company blue color
+      
+      // Add title
+      const title = `تقرير التذاكر: ${format(startDate, 'yyyy/MM/dd', { locale: ar })} - ${format(endDate, 'yyyy/MM/dd', { locale: ar })}`;
+      doc.text(title, doc.internal.pageSize.width / 2, 20, { align: 'center' });
+      
+      // Add the current date
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      const currentDate = `تاريخ التقرير: ${format(new Date(), 'yyyy/MM/dd HH:mm', { locale: ar })}`;
+      doc.text(currentDate, doc.internal.pageSize.width - 20, 30, { align: 'right' });
+      
+      // Add statistics section header
+      doc.setFont('Amiri', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(21, 67, 127);
+      doc.text('إحصائيات التذاكر', doc.internal.pageSize.width / 2, 35, { align: 'center' });
       
       // Create statistics table
       const statsData = [
-        ['الإجمالي', ticketStats.total.toString()],
+        ['إجمالي التذاكر', ticketStats.total.toString()],
         ['قيد الانتظار', (ticketStats.byStatus.pending || 0).toString()],
         ['مفتوحة', (ticketStats.byStatus.open || 0).toString()],
         ['جاري المعالجة', (ticketStats.byStatus.inprogress || 0).toString()],
@@ -180,22 +201,113 @@ const ReportGenerator = () => {
         ['مغلقة', (ticketStats.byStatus.closed || 0).toString()]
       ];
       
+      // Add the statistics table
       autoTable(doc, {
-        startY: 30,
+        startY: 40,
         head: [['الحالة', 'العدد']],
         body: statsData,
         theme: 'grid',
-        headStyles: { halign: 'center', fillColor: [21, 67, 127] },
-        bodyStyles: { halign: 'center' },
-        styles: { font: 'Helvetica', fontSize: 12 },
-        margin: { top: 30 }
+        headStyles: { 
+          halign: 'center',
+          fillColor: [21, 67, 127],
+          font: 'Amiri',
+          fontStyle: 'bold'
+        },
+        bodyStyles: { 
+          halign: 'center',
+          font: 'Amiri'
+        },
+        margin: { left: 100, right: 100 },
+        tableWidth: 'auto'
       });
+
+      // Get current Y position after the stats table
+      const finalStatsY = (doc as any).lastAutoTable.finalY + 10;
       
-      // Add tickets table
-      doc.setFontSize(14);
-      const finalY = (doc as any).lastAutoTable.finalY || 40;
-      doc.text('تفاصيل التذاكر', 150, finalY + 10, { align: 'center' });
+      // Add charts section
+      if (Object.keys(ticketStats.byStatus).length > 0) {
+        // Create a new div element for the status chart
+        const chartDiv = document.createElement('div');
+        chartDiv.style.width = '400px';
+        chartDiv.style.height = '300px';
+        chartDiv.style.position = 'absolute';
+        chartDiv.style.top = '-9999px';
+        document.body.appendChild(chartDiv);
+        
+        // Prepare the chart data
+        const chartData = Object.entries(ticketStats.byStatus).map(([status, count]) => ({
+          name: statusLabels[status] || status,
+          value: count
+        }));
+        
+        // Create a PieChart in the div
+        const renderChart = () => {
+          return (
+            <PieChart width={400} height={300}>
+              <Pie
+                data={chartData}
+                cx={200}
+                cy={150}
+                labelLine={false}
+                outerRadius={100}
+                fill="#8884d8"
+                dataKey="value"
+                nameKey="name"
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Legend />
+            </PieChart>
+          );
+        };
+        
+        // Add chart title
+        doc.text('توزيع حالات التذاكر', doc.internal.pageSize.width / 2, finalStatsY, { align: 'center' });
+        
+        // Add branch distribution section if data exists
+        if (Object.keys(ticketStats.byBranch).length > 0) {
+          // Create top branches table
+          const branchData = Object.entries(ticketStats.byBranch)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 5)
+            .map(([branch, count]) => [branch, count.toString()]);
+          
+          // Add branch distribution table
+          autoTable(doc, {
+            startY: finalStatsY + 5,
+            head: [['الفرع', 'عدد التذاكر']],
+            body: branchData,
+            theme: 'grid',
+            headStyles: { 
+              halign: 'center',
+              fillColor: [21, 67, 127],
+              font: 'Amiri',
+              fontStyle: 'bold'
+            },
+            bodyStyles: { 
+              halign: 'center',
+              font: 'Amiri'
+            },
+            margin: { left: 20, right: doc.internal.pageSize.width / 2 + 10 },
+            tableWidth: 'auto'
+          });
+        }
+        
+        // Clean up
+        document.body.removeChild(chartDiv);
+      }
       
+      // Add ticket details section header
+      const ticketsTitleY = (doc as any).lastAutoTable.finalY + 10 || finalStatsY + 50;
+      doc.setFont('Amiri', 'bold');
+      doc.setFontSize(16);
+      doc.setTextColor(21, 67, 127);
+      doc.text('تفاصيل التذاكر', doc.internal.pageSize.width / 2, ticketsTitleY, { align: 'center' });
+      
+      // Prepare ticket data for the table
       const ticketRows = tickets.map(ticket => [
         ticket.ticket_id,
         ticket.employee_id,
@@ -205,14 +317,22 @@ const ReportGenerator = () => {
         new Date(ticket.created_at || '').toLocaleDateString('ar-SA')
       ]);
       
+      // Add the ticket details table
       autoTable(doc, {
-        startY: finalY + 15,
+        startY: ticketsTitleY + 5,
         head: [['رقم التذكرة', 'الرقم الوظيفي', 'الفرع', 'الحالة', 'موظف الدعم', 'تاريخ الإنشاء']],
         body: ticketRows,
         theme: 'grid',
-        headStyles: { halign: 'center', fillColor: [21, 67, 127] },
-        bodyStyles: { halign: 'center' },
-        styles: { font: 'Helvetica', fontSize: 10 },
+        headStyles: { 
+          halign: 'center',
+          fillColor: [21, 67, 127],
+          font: 'Amiri',
+          fontStyle: 'bold'
+        },
+        bodyStyles: { 
+          halign: 'center',
+          font: 'Amiri'
+        },
         columnStyles: {
           0: { cellWidth: 25 },
           1: { cellWidth: 25 },
@@ -223,7 +343,23 @@ const ReportGenerator = () => {
         }
       });
       
-      // Save PDF
+      // Add footer with page numbers
+      const totalPages = doc.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setFont('Amiri', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        const pageText = `صفحة ${i} من ${totalPages}`;
+        doc.text(pageText, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+        
+        // Add the company name in the footer
+        doc.setFont('Amiri', 'bold');
+        doc.setTextColor(21, 67, 127);
+        doc.text("الوصل لحلول الدعم الفني", 20, doc.internal.pageSize.height - 10);
+      }
+      
+      // Save the PDF
       const dateRange = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`;
       doc.save(`تقرير_التذاكر_${dateRange}.pdf`);
     } catch (error) {
