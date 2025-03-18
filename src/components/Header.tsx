@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -103,10 +104,10 @@ const Header = () => {
             to="/" 
             className="flex items-center"
           >
-            <div className="px-4 py-2 rounded-lg flex items-center gap-2 border-2 border-white/30 hover:border-white/60 transition-all"
-                 style={{ color: settings.text_color }}>
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2 border-2 border-white/30 hover:border-white/60 transition-all bg-white"
+                 style={{ color: settings.secondary_color }}>
               <div className="h-5 w-5 rounded-full flex items-center justify-center">
-                <Home className="h-3 w-3" style={{ color: settings.text_color }} />
+                <Home className="h-3 w-3" style={{ color: settings.secondary_color }} />
               </div>
               <span className="font-medium text-lg">الرئيسية</span>
             </div>
@@ -116,10 +117,10 @@ const Header = () => {
             to="/ticket-status" 
             className="flex items-center"
           >
-            <div className="px-4 py-2 rounded-lg flex items-center gap-2 border-2 border-white/30 hover:border-white/60 transition-all"
-                 style={{ color: settings.text_color }}>
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2 border-2 border-white/30 hover:border-white/60 transition-all bg-white"
+                 style={{ color: settings.secondary_color }}>
               <div className="h-5 w-5 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" style={{ color: settings.text_color }} viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" style={{ color: settings.secondary_color }} viewBox="0 0 20 20" fill="currentColor">
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                 </svg>
               </div>
