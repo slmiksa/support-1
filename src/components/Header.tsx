@@ -7,17 +7,17 @@ const Header = () => {
     <header className="w-full py-6 md:py-8 px-6 md:px-10 mb-6 bg-gradient-primary text-white shadow-md">
       <div className="container mx-auto">
         <div className="flex flex-col items-end justify-between">
-          <div className="flex items-center gap-6 mb-4">
-            <div className="text-right">
-              <h1 className="text-xl md:text-2xl font-bold text-white">شركة الوصل الوطنية لتحصيل ديون جهات التمويل</h1>
-              <div className="h-0.5 w-3/4 bg-accent-gold mr-auto mt-2"></div>
-            </div>
+          <div className="flex flex-col items-end gap-4 mb-4">
             <div className="bg-white p-2 rounded-lg shadow-md">
               <img 
                 src={logoSvg} 
                 alt="شركة الوصل الوطنية" 
                 className="h-14 w-auto" 
               />
+            </div>
+            <div className="text-right">
+              <h1 className="text-xl md:text-2xl font-bold text-white">شركة الوصل الوطنية لتحصيل ديون جهات التمويل</h1>
+              <div className="h-0.5 w-3/4 bg-accent-gold mr-auto mt-2"></div>
             </div>
           </div>
           <nav className="flex space-x-6 text-right">
