@@ -1,5 +1,5 @@
-
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 // Generate a unique ticket ID with wsl- prefix
 export const generateTicketId = (): string => {
@@ -55,7 +55,7 @@ export interface SiteField {
 export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean; ticket_id?: string; error?: any }> => {
   try {
     // Create a clean object with only the properties we want to save
-    const cleanTicket: Record<string, any> = {
+    const cleanTicket = {
       ticket_id: ticket.ticket_id,
       employee_id: ticket.employee_id,
       branch: ticket.branch,
@@ -85,7 +85,7 @@ export const saveTicket = async (ticket: SupportTicket): Promise<{ success: bool
     // Add custom fields to the cleanTicket
     cleanTicket.custom_fields = customFields;
 
-    // Fix: Pass cleanTicket directly as a single object, not in an array
+    // Fixed: Pass cleanTicket directly as a single object, not in an array
     const { data, error } = await supabase
       .from('tickets')
       .insert(cleanTicket)
@@ -125,10 +125,11 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
       return localTickets.find(ticket => ticket.ticket_id === ticketId);
     }
 
-    // Cast the status to ensure type compatibility
+    // Cast the status to ensure type compatibility and handle custom_fields
     return {
       ...data,
-      status: data.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed'
+      status: data.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed',
+      custom_fields: data.custom_fields as Record<string, any> || {}
     };
   } catch (error) {
     console.error('Error finding ticket:', error);
@@ -235,7 +236,8 @@ export const getTicketsByDateRange = async (startDate: string, endDate: string):
 
     return data.map(ticket => ({
       ...ticket,
-      status: ticket.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed'
+      status: ticket.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed',
+      custom_fields: ticket.custom_fields as Record<string, any> || {}
     }));
   } catch (error) {
     console.error('Error fetching tickets by date range:', error);
