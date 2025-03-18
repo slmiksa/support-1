@@ -41,6 +41,9 @@
     --company: 217 72% 26%; /* Darker blue for header */
     --company-dark: 218 76% 18%; /* Even darker blue for navigation */
     --accent-gold: 43 74% 49%; /* Gold accent */
+    
+    /* Global text color to match nav links */
+    --global-text: 0 0% 13%; /* #222222 */
   }
 
   .dark {
@@ -80,13 +83,13 @@
   }
   
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-[#222222] antialiased;
     direction: rtl;
     background-image: var(--bg-pattern);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight text-company;
+    @apply font-semibold tracking-tight text-[#222222];
   }
 
   h1 {
@@ -103,7 +106,7 @@
 
   /* Add custom styles for form elements */
   input, select, textarea {
-    @apply transition-all duration-200;
+    @apply transition-all duration-200 text-[#222222];
   }
 
   input:focus, select:focus, textarea:focus {
@@ -128,11 +131,11 @@
   }
 
   .bg-company {
-    @apply bg-[#15437F];  /* Matching the deep blue from the reference image */
+    @apply bg-[#15437F];
   }
 
   .bg-company-dark {
-    @apply bg-[#0c325f];  /* Darker blue for the navigation bar */
+    @apply bg-[#0c325f];
   }
 
   .text-company {
@@ -213,3 +216,4 @@
 :root {
   --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2315437f' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
+

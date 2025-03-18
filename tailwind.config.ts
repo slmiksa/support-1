@@ -61,7 +61,8 @@ export default {
 				accent: {
 					gold: '#d4af37', // اللون الذهبي
 					silver: '#e5e5e5'
-				}
+				},
+				globalText: '#222222' // لون النص العام
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
