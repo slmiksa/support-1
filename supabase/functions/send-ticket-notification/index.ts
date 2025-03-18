@@ -1,8 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
+import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -39,29 +37,46 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${description.substring(0, 100)}...` 
       : description;
 
-    const emailResponse = await resend.emails.send({
-      from: "WSL Support System <onboarding@resend.dev>", // Update this with your verified domain
-      to: [admin_email],
-      subject: `تذكرة جديدة: ${ticket_id}`,
-      html: `
-        <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
-          <h1>تم إنشاء تذكرة دعم فني جديدة</h1>
-          <p>تم إنشاء تذكرة دعم فني جديدة في النظام. إليك التفاصيل:</p>
-          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <p><strong>رقم التذكرة:</strong> ${ticket_id}</p>
-            <p><strong>الرقم الوظيفي:</strong> ${employee_id}</p>
-            <p><strong>الفرع:</strong> ${branch}</p>
-            <p><strong>وصف المشكلة:</strong> ${truncatedDescription}</p>
-          </div>
-          <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
-          <p>شكراً لك،<br>نظام دعم WSL</p>
-        </div>
-      `,
+    // SMTP client configuration
+    const client = new SmtpClient();
+    
+    await client.connectTLS({
+      hostname: Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com",
+      port: parseInt(Deno.env.get("EMAIL_PORT") || "587"),
+      username: Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com",
+      password: Deno.env.get("EMAIL_PASSWORD") || "",
     });
 
-    console.log("Email notification sent successfully:", emailResponse);
+    // Create the email message
+    const emailHtml = `
+      <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
+        <h1>تم إنشاء تذكرة دعم فني جديدة</h1>
+        <p>تم إنشاء تذكرة دعم فني جديدة في النظام. إليك التفاصيل:</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+          <p><strong>رقم التذكرة:</strong> ${ticket_id}</p>
+          <p><strong>الرقم الوظيفي:</strong> ${employee_id}</p>
+          <p><strong>الفرع:</strong> ${branch}</p>
+          <p><strong>وصف المشكلة:</strong> ${truncatedDescription}</p>
+        </div>
+        <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
+        <p>شكراً لك،<br>نظام دعم WSL</p>
+      </div>
+    `;
 
-    return new Response(JSON.stringify(emailResponse), {
+    // Send the email
+    await client.send({
+      from: Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com",
+      to: admin_email,
+      subject: `تذكرة جديدة: ${ticket_id}`,
+      content: "تم إنشاء تذكرة دعم فني جديدة",
+      html: emailHtml,
+    });
+
+    await client.close();
+
+    console.log("Email notification sent successfully to", admin_email);
+
+    return new Response(JSON.stringify({ success: true, message: "Email sent successfully" }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",

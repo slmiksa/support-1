@@ -44,7 +44,7 @@ export const getAdminEmails = async (): Promise<string[]> => {
   try {
     const { data, error } = await supabase
       .from('admins')
-      .select('username')
+      .select('username, notification_email')
       .eq('role', 'super_admin')
       .or('role.eq.admin');
 
@@ -52,9 +52,33 @@ export const getAdminEmails = async (): Promise<string[]> => {
       throw error;
     }
 
-    return data.map(admin => admin.username);
+    // Use notification_email if available, otherwise use username (which is the email)
+    return data.map(admin => admin.notification_email || admin.username).filter(Boolean);
   } catch (error) {
     console.error('Error fetching admin emails:', error);
     return [];
+  }
+};
+
+// Save admin notification email
+export const saveAdminNotificationEmail = async (
+  adminId: string,
+  notificationEmail: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('admins')
+      .update({ notification_email: notificationEmail })
+      .eq('id', adminId);
+
+    if (error) {
+      console.error('Error saving notification email:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error saving notification email:', error);
+    return false;
   }
 };

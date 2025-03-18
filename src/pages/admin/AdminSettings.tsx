@@ -7,7 +7,8 @@ import BranchesManager from '@/components/admin/BranchesManager';
 import SiteFieldsManager from '@/components/admin/SiteFieldsManager';
 import AdminManager from '@/components/admin/AdminManager';
 import ReportGenerator from '@/components/admin/ReportGenerator';
-import { Settings, Users, Building, FileText, ListFilter } from 'lucide-react';
+import NotificationSettings from '@/components/admin/NotificationSettings';
+import { Settings, Users, Building, FileText, ListFilter, Bell } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
@@ -39,7 +40,7 @@ const AdminSettings = () => {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="grid grid-cols-2 md:grid-cols-5 w-full mb-8">
+              <TabsList className="grid grid-cols-2 md:grid-cols-6 w-full mb-8">
                 <TabsTrigger value="branches" className="flex items-center gap-2">
                   <Building size={16} />
                   <span>الفروع</span>
@@ -59,6 +60,10 @@ const AdminSettings = () => {
                 <TabsTrigger value="reports" className="flex items-center gap-2">
                   <FileText size={16} />
                   <span>التقارير</span>
+                </TabsTrigger>
+                <TabsTrigger value="notifications" className="flex items-center gap-2">
+                  <Bell size={16} />
+                  <span>الإشعارات</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings" 
@@ -84,6 +89,10 @@ const AdminSettings = () => {
               
               <TabsContent value="reports">
                 <ReportGenerator />
+              </TabsContent>
+              
+              <TabsContent value="notifications">
+                <NotificationSettings />
               </TabsContent>
               
               <TabsContent value="settings">
