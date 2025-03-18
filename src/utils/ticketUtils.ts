@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 // Generate a unique ticket ID with wsl- prefix
@@ -21,6 +22,8 @@ export interface SupportTicket {
   created_at?: string;
   updated_at?: string;
   response?: string;
+  custom_fields?: Record<string, any>;
+  [key: string]: any; // Allow dynamic fields
 }
 
 export interface Admin {
@@ -45,6 +48,7 @@ export interface SiteField {
   is_required: boolean;
   is_active: boolean;
   created_at: string;
+  sort_order?: number;
 }
 
 // Save ticket to Supabase
@@ -58,24 +62,32 @@ export const saveTicket = async (ticket: SupportTicket): Promise<{ success: bool
       description: ticket.description,
       image_url: ticket.image_url,
       status: ticket.status,
+      custom_fields: {}
     };
+    
+    // Add anydesk_number and extension_number if they exist
+    if (ticket.anydesk_number) cleanTicket.anydesk_number = ticket.anydesk_number;
+    if (ticket.extension_number) cleanTicket.extension_number = ticket.extension_number;
+    
+    // Extract custom fields from the ticket
+    const customFields: Record<string, any> = {};
     
     // Add any additional custom fields from site_fields table
     Object.keys(ticket).forEach(key => {
       if (!['id', 'ticket_id', 'employee_id', 'branch', 'description', 
             'image_url', 'status', 'created_at', 'updated_at', 
-            'image_file', 'response'].includes(key)) {
-        cleanTicket[key] = (ticket as any)[key];
+            'image_file', 'response', 'anydesk_number', 'extension_number',
+            'custom_fields'].includes(key)) {
+        customFields[key] = ticket[key];
       }
     });
     
-    // Add anydesk_number and extension_number if they exist
-    if (ticket.anydesk_number) cleanTicket.anydesk_number = ticket.anydesk_number;
-    if (ticket.extension_number) cleanTicket.extension_number = ticket.extension_number;
+    // Add custom fields to the cleanTicket
+    cleanTicket.custom_fields = customFields;
 
     const { data, error } = await supabase
       .from('tickets')
-      .insert([cleanTicket])
+      .insert(cleanTicket)
       .select();
 
     if (error) {
@@ -362,7 +374,7 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
     const { data, error } = await supabase
       .from('site_fields')
       .select('*')
-      .order('display_name', { ascending: true });
+      .order('sort_order', { ascending: true });
 
     if (error) {
       throw error;
@@ -400,9 +412,25 @@ export const createSiteField = async (
   fieldData: Omit<SiteField, 'id' | 'created_at'>
 ): Promise<SiteField | null> => {
   try {
+    // Get the highest sort_order to add the new field at the end
+    const { data: existingFields, error: fieldsError } = await supabase
+      .from('site_fields')
+      .select('sort_order')
+      .order('sort_order', { ascending: false })
+      .limit(1);
+      
+    let nextSortOrder = 1;
+    
+    if (!fieldsError && existingFields && existingFields.length > 0) {
+      nextSortOrder = (existingFields[0].sort_order || 0) + 1;
+    }
+    
     const { data, error } = await supabase
       .from('site_fields')
-      .insert([fieldData])
+      .insert([{
+        ...fieldData,
+        sort_order: nextSortOrder
+      }])
       .select();
 
     if (error) {
@@ -432,6 +460,68 @@ export const deleteSiteField = async (id: string): Promise<boolean> => {
     return true;
   } catch (error) {
     console.error('Error deleting site field:', error);
+    return false;
+  }
+};
+
+// New function to update field order
+export const updateFieldOrder = async (
+  id: string,
+  direction: 'up' | 'down'
+): Promise<boolean> => {
+  try {
+    // Get the current field
+    const { data: currentField, error: currentError } = await supabase
+      .from('site_fields')
+      .select('*')
+      .eq('id', id)
+      .single();
+      
+    if (currentError || !currentField) {
+      throw new Error('Field not found');
+    }
+    
+    const currentSortOrder = currentField.sort_order || 0;
+    
+    // Find the adjacent field based on direction
+    const { data: adjacentFields, error: adjacentError } = await supabase
+      .from('site_fields')
+      .select('*')
+      .order('sort_order', { ascending: direction === 'up' ? false : true })
+      .gt('sort_order', direction === 'up' ? 0 : currentSortOrder)
+      .lt('sort_order', direction === 'up' ? currentSortOrder : Number.MAX_SAFE_INTEGER)
+      .limit(1);
+      
+    if (adjacentError || !adjacentFields || adjacentFields.length === 0) {
+      // No adjacent field found in that direction
+      return false;
+    }
+    
+    const adjacentField = adjacentFields[0];
+    const adjacentSortOrder = adjacentField.sort_order || 0;
+    
+    // Swap the sort orders
+    const { error: updateCurrentError } = await supabase
+      .from('site_fields')
+      .update({ sort_order: adjacentSortOrder })
+      .eq('id', id);
+      
+    if (updateCurrentError) {
+      throw updateCurrentError;
+    }
+    
+    const { error: updateAdjacentError } = await supabase
+      .from('site_fields')
+      .update({ sort_order: currentSortOrder })
+      .eq('id', adjacentField.id);
+      
+    if (updateAdjacentError) {
+      throw updateAdjacentError;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error updating field order:', error);
     return false;
   }
 };
