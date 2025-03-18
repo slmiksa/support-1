@@ -5,11 +5,12 @@ import DateTimeDisplay from '@/components/DateTimeDisplay';
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-blue-50">
+    <div className="min-h-screen bg-background bg-pattern-light">
       <Header />
       <main className="container px-4 py-8">
-        <div className="flex flex-col items-end mb-8">
-          <h2 className="text-2xl font-semibold mb-2 text-right">نظام الدعم الفني</h2>
+        <div className="flex flex-col items-end mb-8 bg-white rounded-lg p-4 shadow-md">
+          <h2 className="text-2xl font-semibold mb-4 text-right text-company">نظام الدعم الفني</h2>
+          <div className="w-28 h-1 bg-accent-gold mb-4"></div>
           <DateTimeDisplay />
         </div>
         <SupportForm />

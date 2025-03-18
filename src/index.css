@@ -5,33 +5,33 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222 14% 25%;
+    --background: 210 50% 98%;
+    --foreground: 222 47% 11%;
     
     --card: 0 0% 100%;
-    --card-foreground: 222 14% 25%;
+    --card-foreground: 222 47% 11%;
     
     --popover: 0 0% 100%;
-    --popover-foreground: 222 14% 25%;
+    --popover-foreground: 222 47% 11%;
     
-    --primary: 210 100% 40%;
-    --primary-foreground: 210 10% 98%;
+    --primary: 211 70% 29%;
+    --primary-foreground: 210 40% 98%;
     
-    --secondary: 210 20% 96.1%;
-    --secondary-foreground: 222 14% 25%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222 47% 11%;
     
-    --muted: 210 20% 96.1%;
-    --muted-foreground: 220 10% 50%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215 25% 40%;
     
-    --accent: 210 20% 96.1%;
-    --accent-foreground: 222 14% 25%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222 47% 11%;
     
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 10% 98%;
+    --destructive-foreground: 210 40% 98%;
     
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 210 100% 40%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 211 70% 29%;
     
     --radius: 0.5rem;
     
@@ -39,29 +39,29 @@
   }
 
   .dark {
-    --background: 222 14% 18%;
-    --foreground: 210 10% 98%;
+    --background: 222 47% 11%;
+    --foreground: 210 40% 98%;
     
-    --card: 222 14% 18%;
-    --card-foreground: 210 10% 98%;
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
     
-    --popover: 222 14% 18%;
-    --popover-foreground: 210 10% 98%;
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
     
-    --primary: 210 100% 45%;
-    --primary-foreground: 210 10% 98%;
+    --primary: 211 70% 29%;
+    --primary-foreground: 210 40% 98%;
     
     --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 10% 98%;
+    --secondary-foreground: 210 40% 98%;
     
     --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 10% 65%;
+    --muted-foreground: 215 20% 65%;
     
     --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 10% 98%;
+    --accent-foreground: 210 40% 98%;
     
-    --destructive: 0 72.2% 50.6%;
-    --destructive-foreground: 210 10% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
     
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
@@ -77,10 +77,11 @@
   body {
     @apply bg-background text-foreground antialiased;
     direction: rtl;
+    background-image: var(--bg-pattern);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    @apply font-semibold tracking-tight text-company;
   }
 
   h1 {
@@ -111,6 +112,25 @@
   font-display: swap;
 }
 
+/* Custom components */
+@layer components {
+  .button-gold {
+    @apply bg-accent-gold text-white hover:bg-accent-gold/90 transition-all;
+  }
+  
+  .card-enhanced {
+    @apply bg-white rounded-lg shadow-lg border border-border/50 hover:shadow-xl transition-all duration-300;
+  }
+
+  .header-enhanced {
+    @apply bg-gradient-primary text-white shadow-md;
+  }
+  
+  .section-container {
+    @apply py-8 px-4 md:py-12 md:px-6;
+  }
+}
+
 /* Animations and transitions */
 .page-transition-enter {
   opacity: 0;
@@ -136,7 +156,7 @@
 
 /* Glass morphism effect */
 .glass {
-  @apply bg-white/80 backdrop-blur-md border border-white/20;
+  @apply bg-white/90 backdrop-blur-md border border-white/30 shadow-lg;
 }
 
 .glass-dark {
@@ -145,6 +165,10 @@
 
 /* Loader styles */
 .loader {
-  @apply w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin;
+  @apply w-6 h-6 rounded-full border-2 border-company border-t-transparent animate-spin;
 }
 
+/* Custom background with subtle pattern */
+:root {
+  --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2315437f' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}

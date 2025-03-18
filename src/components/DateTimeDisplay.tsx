@@ -29,14 +29,14 @@ const DateTimeDisplay = () => {
   });
 
   return (
-    <div className="text-muted-foreground text-sm md:text-base flex flex-col md:flex-row items-end gap-1 md:gap-3 animate-fade-in">
+    <div className="text-company-dark text-sm md:text-base flex flex-col md:flex-row items-end gap-2 md:gap-4 bg-accent-silver/30 p-2 rounded-lg animate-fade-in">
       <div className="flex items-center gap-1">
-        <span className="font-medium">{formattedTime}</span>
-        <span>الوقت:</span>
+        <span className="font-medium bg-white px-2 py-1 rounded shadow-sm">{formattedTime}</span>
+        <span className="text-company">الوقت:</span>
       </div>
       <div className="flex items-center gap-1">
-        <span className="font-medium">{formattedDate}</span>
-        <span>التاريخ:</span>
+        <span className="font-medium bg-white px-2 py-1 rounded shadow-sm">{formattedDate}</span>
+        <span className="text-company">التاريخ:</span>
       </div>
     </div>
   );
