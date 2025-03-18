@@ -22,6 +22,7 @@ export interface SupportTicket {
   created_at?: string;
   updated_at?: string;
   response?: string;
+  assigned_to?: string;
   custom_fields?: Record<string, any> | Json;
   [key: string]: any; // Allow dynamic fields
 }
@@ -263,6 +264,84 @@ export const simulateTicketResponse = async (ticketId: string): Promise<boolean>
       response: randomResponse,
       status: 'resolved'
     });
+  }
+};
+
+// Get ticket statistics by date range
+export const getTicketStats = async (startDate: string, endDate: string): Promise<{
+  total: number;
+  byStatus: Record<string, number>;
+  byBranch: Record<string, number>;
+  byStaff: Record<string, number>;
+}> => {
+  try {
+    // Fetch tickets within the date range
+    const { data, error } = await supabase
+      .from('tickets')
+      .select('*')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate);
+
+    if (error) {
+      throw error;
+    }
+
+    const tickets = data as SupportTicket[];
+    const total = tickets.length;
+    
+    // Calculate status distribution
+    const byStatus: Record<string, number> = {};
+    
+    // Initialize with all possible statuses
+    ['pending', 'open', 'inprogress', 'resolved', 'closed'].forEach(status => {
+      byStatus[status] = 0;
+    });
+    
+    // Count tickets by status
+    tickets.forEach(ticket => {
+      if (byStatus[ticket.status] !== undefined) {
+        byStatus[ticket.status]++;
+      } else {
+        byStatus[ticket.status] = 1;
+      }
+    });
+    
+    // Calculate branch distribution
+    const byBranch: Record<string, number> = {};
+    tickets.forEach(ticket => {
+      if (byBranch[ticket.branch] !== undefined) {
+        byBranch[ticket.branch]++;
+      } else {
+        byBranch[ticket.branch] = 1;
+      }
+    });
+    
+    // Calculate staff distribution
+    const byStaff: Record<string, number> = {};
+    tickets.forEach(ticket => {
+      if (ticket.assigned_to) {
+        if (byStaff[ticket.assigned_to] !== undefined) {
+          byStaff[ticket.assigned_to]++;
+        } else {
+          byStaff[ticket.assigned_to] = 1;
+        }
+      }
+    });
+    
+    return {
+      total,
+      byStatus,
+      byBranch,
+      byStaff
+    };
+  } catch (error) {
+    console.error('Error fetching ticket statistics:', error);
+    return {
+      total: 0,
+      byStatus: {},
+      byBranch: {},
+      byStaff: {}
+    };
   }
 };
 
@@ -574,4 +653,3 @@ export const updateFieldOrder = async (
     return false;
   }
 };
-
