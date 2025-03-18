@@ -11,7 +11,9 @@ const Index = () => {
         <div className="flex flex-col items-end mb-8 bg-white rounded-lg p-4 shadow-md">
           <h2 className="text-2xl font-semibold mb-4 text-right text-company">نظام الدعم الفني</h2>
           <div className="w-28 h-1 bg-accent-gold mb-4"></div>
-          <DateTimeDisplay />
+          <div className="self-end">
+            <DateTimeDisplay />
+          </div>
         </div>
         <SupportForm />
       </main>
