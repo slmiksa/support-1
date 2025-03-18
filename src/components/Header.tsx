@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { Home } from 'lucide-react';
+import { Home, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import logoSvg from '../assets/logo.svg';
@@ -94,22 +94,18 @@ const Header = () => {
         </div>
       </div>
       
-      {/* Navigation bar */}
-      <nav 
-        className="w-full py-3 px-6 shadow-md mb-6"
-        style={{ backgroundColor: settings.secondary_color }}
-      >
+      {/* Navigation bar with dark background */}
+      <nav className="w-full py-3 px-6 shadow-md mb-6 bg-[#222222]">
         <div className="container mx-auto flex justify-center space-x-6 rtl:space-x-reverse">
           <Link 
             to="/" 
             className="flex items-center"
           >
-            <div className="px-4 py-2 rounded-lg flex items-center gap-2 border-2 border-white/30 hover:border-white/60 transition-all bg-white"
-                 style={{ color: settings.secondary_color }}>
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2 bg-white shadow-md">
               <div className="h-5 w-5 rounded-full flex items-center justify-center">
-                <Home className="h-3 w-3" style={{ color: settings.secondary_color }} />
+                <Home className="h-3 w-3 text-[#222222]" />
               </div>
-              <span className="font-medium text-lg">الرئيسية</span>
+              <span className="font-medium text-lg text-[#222222]">الرئيسية</span>
             </div>
           </Link>
           <div className="border-r border-white/20 h-8 self-center"></div>
@@ -117,14 +113,11 @@ const Header = () => {
             to="/ticket-status" 
             className="flex items-center"
           >
-            <div className="px-4 py-2 rounded-lg flex items-center gap-2 border-2 border-white/30 hover:border-white/60 transition-all bg-white"
-                 style={{ color: settings.secondary_color }}>
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2 bg-white shadow-md">
               <div className="h-5 w-5 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" style={{ color: settings.secondary_color }} viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                </svg>
+                <Search className="h-3 w-3 text-[#222222]" />
               </div>
-              <span className="font-medium text-lg">متابعة التذاكر</span>
+              <span className="font-medium text-lg text-[#222222]">متابعة التذاكر</span>
             </div>
           </Link>
         </div>
