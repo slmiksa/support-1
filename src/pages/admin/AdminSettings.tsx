@@ -11,7 +11,7 @@ import NotificationSettings from '@/components/admin/NotificationSettings';
 import SiteCustomizationManager from '@/components/admin/SiteCustomizationManager';
 import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 const AdminSettings = () => {
@@ -22,7 +22,11 @@ const AdminSettings = () => {
   useEffect(() => {
     // Check permissions
     if (!hasPermission('view_only')) {
-      toast.error('ليس لديك الصلاحية للوصول لهذه الصفحة');
+      toast({
+        title: "خطأ",
+        description: "ليس لديك الصلاحية للوصول لهذه الصفحة",
+        variant: "destructive"
+      });
       navigate('/admin/dashboard');
     }
   }, [hasPermission, navigate]);

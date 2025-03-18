@@ -1,11 +1,10 @@
-
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketStats, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
+import { useToast } from '@/components/ui/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -58,10 +57,15 @@ const ReportGenerator = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const navigate = useNavigate();
   const reportRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   const handleGenerateReport = async () => {
     if (!startDate || !endDate) {
-      toast.error('يرجى تحديد تاريخ البداية والنهاية');
+      toast({
+        title: "خطأ",
+        description: 'يرجى تحديد تاريخ البداية والنهاية',
+        variant: "destructive"
+      });
       return;
     }
 
@@ -88,7 +92,11 @@ const ReportGenerator = () => {
       setHasSearched(true);
     } catch (error) {
       console.error('Error generating report:', error);
-      toast.error('حدث خطأ أثناء إنشاء التقرير');
+      toast({
+        title: "خطأ",
+        description: 'حدث خطأ أثناء إنشاء التقرير',
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -96,7 +104,11 @@ const ReportGenerator = () => {
 
   const exportToCSV = () => {
     if (tickets.length === 0) {
-      toast.error('لا توجد بيانات للتصدير');
+      toast({
+        title: "خطأ",
+        description: 'لا توجد بيانات للتصدير',
+        variant: "destructive"
+      });
       return;
     }
 
@@ -145,7 +157,11 @@ const ReportGenerator = () => {
 
   const exportToPDF = () => {
     if (tickets.length === 0) {
-      toast.error('لا توجد بيانات للتصدير');
+      toast({
+        title: "خطأ",
+        description: "لا توجد بيانات للتصدير",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -159,19 +175,11 @@ const ReportGenerator = () => {
         compress: true
       });
       
-      // Import the Arabic font (Amiri)
-      doc.addFont('https://cdn.jsdelivr.net/npm/amiri-font@1.0.0/amiri/Amiri-Regular.ttf', 'Amiri', 'normal');
-      doc.addFont('https://cdn.jsdelivr.net/npm/amiri-font@1.0.0/amiri/Amiri-Bold.ttf', 'Amiri', 'bold');
-      
       // Set right-to-left mode for Arabic text
       doc.setR2L(true);
       
-      // Add company logo
-      const imgData = logo;
-      doc.addImage(imgData, 'SVG', 20, 10, 40, 15);
-      
-      // Set fonts for Arabic
-      doc.setFont('Amiri', 'bold');
+      // Use default fonts since Amiri font requires additional setup
+      doc.setFont("courier", "bold");
       doc.setFontSize(22);
       doc.setTextColor(21, 67, 127); // Company blue color
       
@@ -186,7 +194,7 @@ const ReportGenerator = () => {
       doc.text(currentDate, doc.internal.pageSize.width - 20, 30, { align: 'right' });
       
       // Add statistics section header
-      doc.setFont('Amiri', 'bold');
+      doc.setFont("courier", "bold");
       doc.setFontSize(16);
       doc.setTextColor(21, 67, 127);
       doc.text('إحصائيات التذاكر', doc.internal.pageSize.width / 2, 35, { align: 'center' });
@@ -210,12 +218,12 @@ const ReportGenerator = () => {
         headStyles: { 
           halign: 'center',
           fillColor: [21, 67, 127],
-          font: 'Amiri',
+          font: 'courier',
           fontStyle: 'bold'
         },
         bodyStyles: { 
           halign: 'center',
-          font: 'Amiri'
+          font: 'courier'
         },
         margin: { left: 100, right: 100 },
         tableWidth: 'auto'
@@ -224,85 +232,41 @@ const ReportGenerator = () => {
       // Get current Y position after the stats table
       const finalStatsY = (doc as any).lastAutoTable.finalY + 10;
       
-      // Add charts section
-      if (Object.keys(ticketStats.byStatus).length > 0) {
-        // Create a new div element for the status chart
-        const chartDiv = document.createElement('div');
-        chartDiv.style.width = '400px';
-        chartDiv.style.height = '300px';
-        chartDiv.style.position = 'absolute';
-        chartDiv.style.top = '-9999px';
-        document.body.appendChild(chartDiv);
+      // Add branch distribution section if data exists
+      if (Object.keys(ticketStats.byBranch).length > 0) {
+        // Create top branches table
+        const branchData = Object.entries(ticketStats.byBranch)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([branch, count]) => [branch, count.toString()]);
         
-        // Prepare the chart data
-        const chartData = Object.entries(ticketStats.byStatus).map(([status, count]) => ({
-          name: statusLabels[status] || status,
-          value: count
-        }));
+        // Add branch table title
+        doc.text('توزيع التذاكر حسب الفروع', doc.internal.pageSize.width / 2, finalStatsY, { align: 'center' });
         
-        // Create a PieChart in the div
-        const renderChart = () => {
-          return (
-            <PieChart width={400} height={300}>
-              <Pie
-                data={chartData}
-                cx={200}
-                cy={150}
-                labelLine={false}
-                outerRadius={100}
-                fill="#8884d8"
-                dataKey="value"
-                nameKey="name"
-                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-              >
-                {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend />
-            </PieChart>
-          );
-        };
-        
-        // Add chart title
-        doc.text('توزيع حالات التذاكر', doc.internal.pageSize.width / 2, finalStatsY, { align: 'center' });
-        
-        // Add branch distribution section if data exists
-        if (Object.keys(ticketStats.byBranch).length > 0) {
-          // Create top branches table
-          const branchData = Object.entries(ticketStats.byBranch)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5)
-            .map(([branch, count]) => [branch, count.toString()]);
-          
-          // Add branch distribution table
-          autoTable(doc, {
-            startY: finalStatsY + 5,
-            head: [['الفرع', 'عدد التذاكر']],
-            body: branchData,
-            theme: 'grid',
-            headStyles: { 
-              halign: 'center',
-              fillColor: [21, 67, 127],
-              font: 'Amiri',
-              fontStyle: 'bold'
-            },
-            bodyStyles: { 
-              halign: 'center',
-              font: 'Amiri'
-            },
-            margin: { left: 20, right: doc.internal.pageSize.width / 2 + 10 },
-            tableWidth: 'auto'
-          });
-        }
-        
-        // Clean up
-        document.body.removeChild(chartDiv);
+        // Add branch distribution table
+        autoTable(doc, {
+          startY: finalStatsY + 5,
+          head: [['الفرع', 'عدد التذاكر']],
+          body: branchData,
+          theme: 'grid',
+          headStyles: { 
+            halign: 'center',
+            fillColor: [21, 67, 127],
+            font: 'courier',
+            fontStyle: 'bold'
+          },
+          bodyStyles: { 
+            halign: 'center',
+            font: 'courier'
+          },
+          margin: { left: 20, right: 20 },
+          tableWidth: 'auto'
+        });
       }
       
       // Add ticket details section header
       const ticketsTitleY = (doc as any).lastAutoTable.finalY + 10 || finalStatsY + 50;
-      doc.setFont('Amiri', 'bold');
+      doc.setFont('courier', 'bold');
       doc.setFontSize(16);
       doc.setTextColor(21, 67, 127);
       doc.text('تفاصيل التذاكر', doc.internal.pageSize.width / 2, ticketsTitleY, { align: 'center' });
@@ -326,12 +290,12 @@ const ReportGenerator = () => {
         headStyles: { 
           halign: 'center',
           fillColor: [21, 67, 127],
-          font: 'Amiri',
+          font: 'courier',
           fontStyle: 'bold'
         },
         bodyStyles: { 
           halign: 'center',
-          font: 'Amiri'
+          font: 'courier'
         },
         columnStyles: {
           0: { cellWidth: 25 },
@@ -347,14 +311,14 @@ const ReportGenerator = () => {
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        doc.setFont('Amiri', 'normal');
+        doc.setFont('courier', 'normal');
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
         const pageText = `صفحة ${i} من ${totalPages}`;
         doc.text(pageText, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
         
         // Add the company name in the footer
-        doc.setFont('Amiri', 'bold');
+        doc.setFont('courier', 'bold');
         doc.setTextColor(21, 67, 127);
         doc.text("الوصل لحلول الدعم الفني", 20, doc.internal.pageSize.height - 10);
       }
@@ -362,9 +326,18 @@ const ReportGenerator = () => {
       // Save the PDF
       const dateRange = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`;
       doc.save(`تقرير_التذاكر_${dateRange}.pdf`);
+      
+      toast({
+        title: "تم بنجاح",
+        description: "تم تصدير التقرير بصيغة PDF بنجاح",
+      });
     } catch (error) {
       console.error("PDF generation error:", error);
-      toast.error("حدث خطأ أثناء إنشاء ملف PDF");
+      toast({
+        title: "خطأ",
+        description: "حدث خطأ أثناء إنشاء ملف PDF",
+        variant: "destructive"
+      });
     }
   };
 
