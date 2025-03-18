@@ -9,6 +9,7 @@ interface AdminUser {
   username: string;
   role: AdminRole;
   employee_id?: string;
+  notification_email?: string;
 }
 
 interface AdminAuthContextProps {
@@ -17,6 +18,7 @@ interface AdminAuthContextProps {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   hasPermission: (permission: 'manage_tickets' | 'view_only' | 'manage_admins') => boolean;
+  adminData: AdminUser | null; // Add this property
 }
 
 const AdminAuthContext = createContext<AdminAuthContextProps>({
@@ -25,6 +27,7 @@ const AdminAuthContext = createContext<AdminAuthContextProps>({
   login: async () => false,
   logout: () => {},
   hasPermission: () => false,
+  adminData: null, // Initialize with null
 });
 
 export const useAdminAuth = () => useContext(AdminAuthContext);
@@ -88,7 +91,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
         // Fetch admin details
         const { data: adminData, error: adminError } = await supabase
           .from('admins')
-          .select('id, username, role, employee_id')
+          .select('id, username, role, employee_id, notification_email')
           .eq('username', username)
           .single();
 
@@ -106,7 +109,8 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
           id: adminData.id,
           username: adminData.username,
           role: validRole,
-          employee_id: adminData.employee_id
+          employee_id: adminData.employee_id,
+          notification_email: adminData.notification_email
         };
 
         localStorage.setItem('admin_auth', 'true');
@@ -146,7 +150,14 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AdminAuthContext.Provider value={{ isAuthenticated, currentAdmin, login, logout, hasPermission }}>
+    <AdminAuthContext.Provider value={{ 
+      isAuthenticated, 
+      currentAdmin, 
+      login, 
+      logout, 
+      hasPermission,
+      adminData: currentAdmin // Add this property
+    }}>
       {children}
     </AdminAuthContext.Provider>
   );
