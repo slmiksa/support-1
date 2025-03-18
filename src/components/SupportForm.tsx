@@ -1,13 +1,14 @@
 
-import { useState, FormEvent, ChangeEvent } from 'react';
+import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
-import { SupportTicket, generateTicketId, saveTicket } from '../utils/ticketUtils';
+import { SupportTicket, generateTicketId, saveTicket, getAllBranches } from '../utils/ticketUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Branch } from '@/utils/ticketUtils';
 
 interface FormData {
   employeeId: string;
@@ -31,6 +32,24 @@ const SupportForm = () => {
   
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loadingBranches, setLoadingBranches] = useState(true);
+
+  useEffect(() => {
+    const fetchBranches = async () => {
+      try {
+        const branchesData = await getAllBranches();
+        setBranches(branchesData);
+      } catch (error) {
+        console.error('Error fetching branches:', error);
+        toast.error('حدث خطأ أثناء تحميل الفروع');
+      } finally {
+        setLoadingBranches(false);
+      }
+    };
+
+    fetchBranches();
+  }, []);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -170,13 +189,20 @@ const SupportForm = () => {
                     onValueChange={handleSelectChange}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="اختر الفرع" />
+                      <SelectValue placeholder={loadingBranches ? "جاري تحميل الفروع..." : "اختر الفرع"} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="شركة مدى">شركة مدى</SelectItem>
-                      <SelectItem value="الوصل جدة">الوصل جدة</SelectItem>
-                      <SelectItem value="الوصل الرياض">الوصل الرياض</SelectItem>
-                      <SelectItem value="الوصل الشرقية">الوصل الشرقية</SelectItem>
+                      {loadingBranches ? (
+                        <SelectItem value="loading" disabled>جاري تحميل الفروع...</SelectItem>
+                      ) : branches.length > 0 ? (
+                        branches.map(branch => (
+                          <SelectItem key={branch.id} value={branch.name}>
+                            {branch.name}
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-branches" disabled>لا توجد فروع متاحة</SelectItem>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
