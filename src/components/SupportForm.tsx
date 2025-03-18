@@ -1,4 +1,3 @@
-
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -9,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Branch } from '@/utils/ticketUtils';
+import { sendTicketNotification, getAdminEmails } from '@/utils/notificationUtils';
 
 interface FormData {
   employeeId: string;
@@ -110,7 +110,7 @@ const SupportForm = () => {
     
     // Validate required fields
     if (!formData.employeeId || !formData.branch || !formData.description) {
-      toast.error('يرجى تعبئة جميع الحقول المطلوبة');
+      toast.error('يرجى تعبئة جمي�� الحقول المطلوبة');
       return;
     }
     
@@ -153,6 +153,19 @@ const SupportForm = () => {
         throw new Error('Failed to save ticket');
       }
       
+      // Send email notification to admins
+      try {
+        const adminEmails = await getAdminEmails();
+        
+        if (adminEmails.length > 0) {
+          // Send notification to the first admin in the list (can be modified to send to all)
+          await sendTicketNotification(newTicket, adminEmails[0]);
+        }
+      } catch (notificationError) {
+        console.error('Failed to send notification, but ticket was saved:', notificationError);
+        // We don't want to fail the ticket submission if notification fails
+      }
+      
       // Display success message
       setTicketId(newTicketId);
       
@@ -181,7 +194,6 @@ const SupportForm = () => {
     }
   };
 
-  // Show loading state while fetching data
   if (loadingBranches || loadingFields) {
     return (
       <div className="w-full max-w-2xl mx-auto animate-slide-in">
@@ -266,7 +278,6 @@ const SupportForm = () => {
                   </Select>
                 </div>
                 
-                {/* Render custom fields */}
                 {customFields.map(field => (
                   <div key={field.id} className="grid gap-2">
                     <Label htmlFor={field.field_name} className="text-right">
@@ -291,7 +302,7 @@ const SupportForm = () => {
                     id="description"
                     name="description"
                     required
-                    placeholder="اكتب محتوى الشكوى هنا..."
+                    placeholder="اكتب محتوى ��لشكوى هنا..."
                     className="min-h-[120px] text-right"
                     value={formData.description}
                     onChange={handleChange}
