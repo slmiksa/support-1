@@ -94,24 +94,28 @@ const Header = () => {
         <div className="container mx-auto flex justify-center space-x-4 rtl:space-x-reverse">
           <Link 
             to="/" 
-            className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center bg-white px-4 py-2 rounded-lg"
-            style={{ color: settings.secondary_color }}
+            className="flex items-center mx-4"
           >
-            <span>الرئيسية</span>
-            <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
-              <Home className="h-3 w-3 text-company" />
+            <div className="bg-white px-4 py-2 rounded-lg flex items-center gap-2"
+                 style={{ color: settings.secondary_color }}>
+              <div className="h-5 w-5 rounded-full flex items-center justify-center">
+                <Home className="h-3 w-3 text-company" />
+              </div>
+              <span className="font-medium text-lg">الرئيسية</span>
             </div>
           </Link>
           <Link 
             to="/ticket-status" 
-            className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center bg-white px-4 py-2 rounded-lg"
-            style={{ color: settings.secondary_color }}
+            className="flex items-center mx-4"
           >
-            <span>متابعة التذاكر</span>
-            <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-company" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-              </svg>
+            <div className="bg-white px-4 py-2 rounded-lg flex items-center gap-2"
+                 style={{ color: settings.secondary_color }}>
+              <div className="h-5 w-5 rounded-full flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-company" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                </svg>
+              </div>
+              <span className="font-medium text-lg">متابعة التذاكر</span>
             </div>
           </Link>
         </div>
