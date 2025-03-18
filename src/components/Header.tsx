@@ -24,23 +24,12 @@ const Header = () => {
       
       {/* Navigation bar */}
       <nav className="w-full bg-company-dark py-3 px-6 shadow-md mb-6">
-        <div className="container mx-auto flex justify-center space-x-8">
+        <div className="container mx-auto flex justify-center">
           <Link 
             to="/ticket-status" 
             className="text-white hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
           >
             <span>متابعة طلب الدعم</span>
-            <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-company" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-              </svg>
-            </div>
-          </Link>
-          <Link 
-            to="/" 
-            className="text-white hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
-          >
-            <span>طلب دعم فني</span>
             <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-company" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
