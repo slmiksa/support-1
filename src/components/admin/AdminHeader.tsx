@@ -4,15 +4,7 @@ import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { LogOut, Home, Settings, FileText } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-
-interface SiteSettings {
-  site_name: string;
-  logo_url: string;
-  primary_color: string;
-  secondary_color: string;
-  text_color: string;
-}
+import { supabase, SiteSettings } from '@/integrations/supabase/client';
 
 const DEFAULT_SETTINGS = {
   primary_color: '#15437f',

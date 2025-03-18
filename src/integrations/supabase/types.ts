@@ -87,6 +87,39 @@ export type Database = {
         }
         Relationships: []
       }
+      site_settings: {
+        Row: {
+          created_at: string
+          footer_text: string
+          id: string
+          logo_url: string | null
+          primary_color: string
+          secondary_color: string
+          site_name: string
+          text_color: string
+        }
+        Insert: {
+          created_at?: string
+          footer_text?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          site_name?: string
+          text_color?: string
+        }
+        Update: {
+          created_at?: string
+          footer_text?: string
+          id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          site_name?: string
+          text_color?: string
+        }
+        Relationships: []
+      }
       ticket_responses: {
         Row: {
           created_at: string

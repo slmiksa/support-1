@@ -2,17 +2,8 @@
 import { Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import logoSvg from '../assets/logo.svg';
-
-interface SiteSettings {
-  site_name: string;
-  logo_url: string;
-  primary_color: string;
-  secondary_color: string;
-  text_color: string;
-  footer_text: string;
-}
 
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
