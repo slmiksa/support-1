@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Generate a unique ticket ID with wsl- prefix
@@ -231,7 +230,17 @@ export const getAllAdmins = async (): Promise<Admin[]> => {
       throw error;
     }
 
-    return data;
+    // Validate and transform each admin to ensure role is one of the allowed values
+    return data.map(admin => {
+      const validRole = ['super_admin', 'admin', 'viewer'].includes(admin.role) 
+        ? admin.role as 'super_admin' | 'admin' | 'viewer'
+        : 'viewer' as const;
+        
+      return {
+        ...admin,
+        role: validRole
+      };
+    });
   } catch (error) {
     console.error('Error fetching admins:', error);
     return [];
@@ -240,9 +249,17 @@ export const getAllAdmins = async (): Promise<Admin[]> => {
 
 export const createAdmin = async (admin: Omit<Admin, 'id' | 'created_at'>): Promise<{ success: boolean; error?: any }> => {
   try {
+    // Validate role before inserting
+    const validRole = ['super_admin', 'admin', 'viewer'].includes(admin.role) 
+      ? admin.role 
+      : 'viewer';
+      
     const { error } = await supabase
       .from('admins')
-      .insert([admin]);
+      .insert([{
+        ...admin,
+        role: validRole
+      }]);
 
     if (error) {
       throw error;

@@ -41,7 +41,27 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (adminAuth === 'true' && adminData) {
         setIsAuthenticated(true);
-        setCurrentAdmin(JSON.parse(adminData));
+        try {
+          const parsedData = JSON.parse(adminData);
+          // Ensure role is one of the allowed AdminRole values
+          if (
+            parsedData.role === 'super_admin' ||
+            parsedData.role === 'admin' ||
+            parsedData.role === 'viewer'
+          ) {
+            setCurrentAdmin(parsedData as AdminUser);
+          } else {
+            // Default to viewer if role is invalid
+            setCurrentAdmin({
+              ...parsedData,
+              role: 'viewer' as AdminRole
+            });
+          }
+        } catch (error) {
+          console.error('Error parsing admin data:', error);
+          setIsAuthenticated(false);
+          setCurrentAdmin(null);
+        }
       } else {
         setIsAuthenticated(false);
         setCurrentAdmin(null);
@@ -77,10 +97,22 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
           return false;
         }
 
+        // Ensure the role is a valid AdminRole type
+        const validRole = ['super_admin', 'admin', 'viewer'].includes(adminData.role) 
+          ? adminData.role as AdminRole 
+          : 'viewer' as AdminRole;
+
+        const validatedAdminData: AdminUser = {
+          id: adminData.id,
+          username: adminData.username,
+          role: validRole,
+          employee_id: adminData.employee_id
+        };
+
         localStorage.setItem('admin_auth', 'true');
-        localStorage.setItem('admin_data', JSON.stringify(adminData));
+        localStorage.setItem('admin_data', JSON.stringify(validatedAdminData));
         setIsAuthenticated(true);
-        setCurrentAdmin(adminData);
+        setCurrentAdmin(validatedAdminData);
         return true;
       }
       
