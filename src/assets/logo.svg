@@ -1,5 +1,7 @@
 
 <svg width="180" height="50" viewBox="0 0 180 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="25" cy="24" r="13" fill="#15437F" stroke="#D4AF37" stroke-width="2"/>
-  <text x="55" y="30" font-family="Arial, sans-serif" font-weight="bold" font-size="20" fill="#15437F">الوصل</text>
+  <circle cx="25" cy="25" r="20" fill="#15437F"/>
+  <circle cx="25" cy="25" r="15" fill="#FFFFFF"/>
+  <circle cx="25" cy="25" r="10" fill="#D4AF37"/>
+  <text x="60" y="32" font-family="Arial, sans-serif" font-weight="bold" font-size="24" fill="#15437F">الوصل</text>
 </svg>

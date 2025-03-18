@@ -12,6 +12,13 @@ const DateTimeDisplay = () => {
     return () => clearInterval(intervalId);
   }, []);
 
+  // Format time
+  const formattedTime = currentDateTime.toLocaleTimeString('ar-SA', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
   // Format date to Arabic locale
   const formattedDate = currentDateTime.toLocaleDateString('ar-SA', {
     weekday: 'long',
@@ -20,24 +27,12 @@ const DateTimeDisplay = () => {
     day: 'numeric'
   });
 
-  // Format time
-  const formattedTime = currentDateTime.toLocaleTimeString('ar-SA', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true
-  });
-
   return (
-    <div className="text-company-dark text-sm md:text-base flex flex-col md:flex-row items-end gap-2 md:gap-4 bg-accent-silver/30 p-2 rounded-lg animate-fade-in">
-      <div className="flex items-center gap-1">
-        <span className="font-medium bg-white px-2 py-1 rounded shadow-sm">{formattedTime}</span>
-        <span className="text-company">الوقت:</span>
-      </div>
-      <div className="flex items-center gap-1">
-        <span className="font-medium bg-white px-2 py-1 rounded shadow-sm">{formattedDate}</span>
-        <span className="text-company">التاريخ:</span>
-      </div>
+    <div className="text-company-dark text-right">
+      <span className="ml-2 font-medium">الوقت:</span>
+      <span className="font-medium">{formattedTime}</span>
+      <span className="mr-8 ml-2 font-medium">التاريخ:</span>
+      <span className="font-medium">{formattedDate}</span>
     </div>
   );
 };

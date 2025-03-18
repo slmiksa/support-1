@@ -36,6 +36,11 @@
     --radius: 0.5rem;
     
     --font-sans: 'Tajawal', system-ui, sans-serif;
+
+    /* Company colors */
+    --company: 217 72% 26%; /* Darker blue for header */
+    --company-dark: 218 76% 18%; /* Even darker blue for navigation */
+    --accent-gold: 43 74% 49%; /* Gold accent */
   }
 
   .dark {
@@ -122,8 +127,24 @@
     @apply bg-white rounded-lg shadow-lg border border-border/50 hover:shadow-xl transition-all duration-300;
   }
 
-  .header-enhanced {
-    @apply bg-gradient-primary text-white shadow-md;
+  .bg-company {
+    @apply bg-[#15437F];  /* Matching the deep blue from the reference image */
+  }
+
+  .bg-company-dark {
+    @apply bg-[#0c325f];  /* Darker blue for the navigation bar */
+  }
+
+  .text-company {
+    @apply text-[#15437F];
+  }
+
+  .text-company-dark {
+    @apply text-[#0c325f];
+  }
+
+  .bg-accent-gold {
+    @apply bg-[#D4AF37];
   }
   
   .section-container {
