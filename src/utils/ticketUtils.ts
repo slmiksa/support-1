@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -50,6 +49,14 @@ export interface SiteField {
   is_active: boolean;
   created_at: string;
   sort_order?: number;
+}
+
+export interface TicketResponse {
+  id: string;
+  ticket_id: string;
+  response: string;
+  is_admin: boolean;
+  created_at: string;
 }
 
 // Save ticket to Supabase
@@ -150,6 +157,26 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
   } catch (error) {
     console.error('Error finding ticket:', error);
     return undefined;
+  }
+};
+
+// Get ticket responses
+export const getTicketResponses = async (ticketId: string): Promise<TicketResponse[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('ticket_responses')
+      .select('*')
+      .eq('ticket_id', ticketId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return data as TicketResponse[];
+  } catch (error) {
+    console.error('Error fetching ticket responses:', error);
+    return [];
   }
 };
 

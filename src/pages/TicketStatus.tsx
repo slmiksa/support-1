@@ -4,7 +4,7 @@ import TicketTracker from '@/components/TicketTracker';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { findTicketById, SupportTicket } from '@/utils/ticketUtils';
+import { findTicketById, SupportTicket, getTicketResponses } from '@/utils/ticketUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -14,6 +14,7 @@ const TicketStatus = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
   const [ticket, setTicket] = useState<SupportTicket | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [responses, setResponses] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -32,6 +33,8 @@ const TicketStatus = () => {
       
       if (fetchedTicket) {
         setTicket(fetchedTicket);
+        // ردود على الطلب Fetch
+        fetchTicketResponses(id);
       } else {
         toast({
           title: "خطأ",
@@ -48,6 +51,15 @@ const TicketStatus = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTicketResponses = async (id: string) => {
+    try {
+      const fetchedResponses = await getTicketResponses(id);
+      setResponses(fetchedResponses);
+    } catch (error) {
+      console.error("Error fetching ticket responses:", error);
     }
   };
 
@@ -164,11 +176,24 @@ const TicketStatus = () => {
                   </div>
                 )}
                 
-                {ticket.response && (
+                {/* Display ticket responses */}
+                {responses.length > 0 && (
                   <div className="space-y-2">
-                    <p className="text-right font-medium">رد الدعم الفني:</p>
-                    <div className="p-4 bg-company-light/20 rounded-md border border-company/20 text-right">
-                      {ticket.response}
+                    <p className="text-right font-medium">ردود الدعم الفني:</p>
+                    <div className="space-y-3">
+                      {responses.map((response, index) => (
+                        <div key={index} className="p-4 bg-company-light/20 rounded-md border border-company/20 text-right">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="text-xs text-gray-500">
+                              {new Date(response.created_at).toLocaleString('ar-SA')}
+                            </span>
+                            <span className="font-medium">
+                              {response.is_admin ? 'الدعم الفني' : 'الموظف'}
+                            </span>
+                          </div>
+                          <p>{response.response}</p>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
