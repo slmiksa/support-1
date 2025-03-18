@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -12,9 +13,9 @@ import { Image, Palette, Type } from 'lucide-react';
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
   logo_url: '',
-  primary_color: '#15437f', // الأزرق الداكن
-  secondary_color: '#093467', // الأزرق الأكثر قتامة
-  text_color: '#ffffff', // أبيض
+  primary_color: '#15437f', 
+  secondary_color: '#093467', 
+  text_color: '#ffffff', 
   footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.',
 };
 
