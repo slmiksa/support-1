@@ -34,6 +34,15 @@ const statusLabels = {
   closed: 'مغلقة',
 };
 
+// Define ticket status labels in English for PDF export
+const statusLabelsEn = {
+  pending: 'Pending',
+  open: 'Open',
+  inprogress: 'In Progress',
+  resolved: 'Resolved',
+  closed: 'Closed',
+};
+
 // Colors for the charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -165,49 +174,46 @@ const ReportGenerator = () => {
     }
 
     try {
-      // Create a new PDF document instance with RTL support
+      // Create a new PDF document instance
       const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4',
       });
-
-      // Set right-to-left mode for Arabic text
-      doc.setR2L(true);
       
       // Set font size for the header
       doc.setFontSize(18);
       doc.setTextColor(21, 67, 127); // Company blue color
       
-      // Add title - using standard fonts to avoid encoding issues
-      const title = `تقرير التذاكر: ${format(startDate, 'yyyy/MM/dd')} - ${format(endDate, 'yyyy/MM/dd')}`;
+      // Add title in English
+      const title = `Ticket Report: ${format(startDate, 'yyyy/MM/dd')} - ${format(endDate, 'yyyy/MM/dd')}`;
       doc.text(title, doc.internal.pageSize.width / 2, 20, { align: 'center' });
       
       // Add the current date
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      const currentDate = `تاريخ التقرير: ${format(new Date(), 'yyyy/MM/dd HH:mm')}`;
+      const currentDate = `Report Date: ${format(new Date(), 'yyyy/MM/dd HH:mm')}`;
       doc.text(currentDate, doc.internal.pageSize.width - 20, 30, { align: 'right' });
       
       // Add statistics section header
       doc.setFontSize(14);
       doc.setTextColor(21, 67, 127);
-      doc.text('إحصائيات التذاكر', doc.internal.pageSize.width / 2, 40, { align: 'center' });
+      doc.text('Ticket Statistics', doc.internal.pageSize.width / 2, 40, { align: 'center' });
       
-      // Create statistics table with Arabic text
+      // Create statistics table in English
       const statsData = [
-        ['إجمالي التذاكر', ticketStats.total.toString()],
-        ['قيد الانتظار', (ticketStats.byStatus.pending || 0).toString()],
-        ['مفتوحة', (ticketStats.byStatus.open || 0).toString()],
-        ['جاري المعالجة', (ticketStats.byStatus.inprogress || 0).toString()],
-        ['تم الحل', (ticketStats.byStatus.resolved || 0).toString()],
-        ['مغلقة', (ticketStats.byStatus.closed || 0).toString()]
+        ['Total Tickets', ticketStats.total.toString()],
+        ['Pending', (ticketStats.byStatus.pending || 0).toString()],
+        ['Open', (ticketStats.byStatus.open || 0).toString()],
+        ['In Progress', (ticketStats.byStatus.inprogress || 0).toString()],
+        ['Resolved', (ticketStats.byStatus.resolved || 0).toString()],
+        ['Closed', (ticketStats.byStatus.closed || 0).toString()]
       ];
       
-      // Add the statistics table with RTL support
+      // Add the statistics table
       autoTable(doc, {
         startY: 45,
-        head: [['الحالة', 'العدد']],
+        head: [['Status', 'Count']],
         body: statsData,
         theme: 'grid',
         headStyles: { 
@@ -222,10 +228,6 @@ const ReportGenerator = () => {
         },
         margin: { left: 100, right: 100 },
         tableWidth: 'auto',
-        styles: {
-          font: 'helvetica', // Using a standard font that supports basic Arabic
-          overflow: 'linebreak'
-        }
       });
 
       // Get current Y position after the stats table
@@ -240,12 +242,12 @@ const ReportGenerator = () => {
           .map(([branch, count]) => [branch, count.toString()]);
         
         // Add branch table title
-        doc.text('توزيع التذاكر حسب الفروع', doc.internal.pageSize.width / 2, finalStatsY, { align: 'center' });
+        doc.text('Ticket Distribution by Branch', doc.internal.pageSize.width / 2, finalStatsY, { align: 'center' });
         
         // Add branch distribution table
         autoTable(doc, {
           startY: finalStatsY + 5,
-          head: [['الفرع', 'عدد التذاكر']],
+          head: [['Branch', 'Ticket Count']],
           body: branchData,
           theme: 'grid',
           headStyles: { 
@@ -260,10 +262,6 @@ const ReportGenerator = () => {
           },
           margin: { left: 20, right: 20 },
           tableWidth: 'auto',
-          styles: {
-            font: 'helvetica',
-            overflow: 'linebreak'
-          }
         });
       }
       
@@ -271,22 +269,22 @@ const ReportGenerator = () => {
       const ticketsTitleY = (doc as any).lastAutoTable.finalY + 15 || finalStatsY + 50;
       doc.setFontSize(14);
       doc.setTextColor(21, 67, 127);
-      doc.text('تفاصيل التذاكر', doc.internal.pageSize.width / 2, ticketsTitleY, { align: 'center' });
+      doc.text('Ticket Details', doc.internal.pageSize.width / 2, ticketsTitleY, { align: 'center' });
       
-      // Prepare ticket data for the table with proper status labels
+      // Prepare ticket data for the table with English status labels
       const ticketRows = tickets.map(ticket => [
         ticket.ticket_id,
         ticket.employee_id,
         ticket.branch,
-        statusLabels[ticket.status] || ticket.status,
-        ticket.assigned_to || 'لم يتم التعيين',
-        new Date(ticket.created_at || '').toLocaleDateString('ar-SA')
+        statusLabelsEn[ticket.status] || ticket.status,
+        ticket.assigned_to || 'Not Assigned',
+        new Date(ticket.created_at || '').toLocaleDateString('en-US')
       ]);
       
       // Add the ticket details table
       autoTable(doc, {
         startY: ticketsTitleY + 5,
-        head: [['رقم التذكرة', 'الرقم الوظيفي', 'الفرع', 'الحالة', 'موظف الدعم', 'تاريخ الإنشاء']],
+        head: [['Ticket ID', 'Employee ID', 'Branch', 'Status', 'Support Staff', 'Created Date']],
         body: ticketRows,
         theme: 'grid',
         headStyles: { 
@@ -298,10 +296,6 @@ const ReportGenerator = () => {
         bodyStyles: { 
           halign: 'center',
           fontSize: 10
-        },
-        styles: {
-          font: 'helvetica',
-          overflow: 'linebreak'
         },
         columnStyles: {
           0: { cellWidth: 20 },
@@ -319,17 +313,17 @@ const ReportGenerator = () => {
         doc.setPage(i);
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        const pageText = `صفحة ${i} من ${totalPages}`;
+        const pageText = `Page ${i} of ${totalPages}`;
         doc.text(pageText, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
         
         // Add the company name in the footer
         doc.setTextColor(21, 67, 127);
-        doc.text("الوصل لحلول الدعم الفني", 20, doc.internal.pageSize.height - 10);
+        doc.text("Al-Wasl Technical Support", 20, doc.internal.pageSize.height - 10);
       }
       
       // Save the PDF
       const dateRange = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`;
-      doc.save(`تقرير_التذاكر_${dateRange}.pdf`);
+      doc.save(`Ticket_Report_${dateRange}.pdf`);
       
       toast({
         title: "تم بنجاح",

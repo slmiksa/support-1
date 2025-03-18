@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,13 +10,14 @@ import NotificationSettings from '@/components/admin/NotificationSettings';
 import SiteCustomizationManager from '@/components/admin/SiteCustomizationManager';
 import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('branches');
   const { hasPermission } = useAdminAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check permissions
@@ -29,7 +29,7 @@ const AdminSettings = () => {
       });
       navigate('/admin/dashboard');
     }
-  }, [hasPermission, navigate]);
+  }, [hasPermission, navigate, toast]);
 
   return (
     <div className="min-h-screen bg-background">
