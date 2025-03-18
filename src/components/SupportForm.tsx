@@ -1,7 +1,7 @@
 
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
-import { SupportTicket, generateTicketId, saveTicket, getAllBranches } from '../utils/ticketUtils';
+import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,10 +13,9 @@ import { Branch } from '@/utils/ticketUtils';
 interface FormData {
   employeeId: string;
   branch: string;
-  anydeskNumber: string;
-  extensionNumber: string;
   description: string;
   imageFile: File | null;
+  [key: string]: string | File | null; // Dynamic fields
 }
 
 const SupportForm = () => {
@@ -24,8 +23,6 @@ const SupportForm = () => {
   const [formData, setFormData] = useState<FormData>({
     employeeId: '',
     branch: '',
-    anydeskNumber: '',
-    extensionNumber: '',
     description: '',
     imageFile: null
   });
@@ -33,7 +30,9 @@ const SupportForm = () => {
   const [ticketId, setTicketId] = useState<string | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
+  const [customFields, setCustomFields] = useState<SiteField[]>([]);
   const [loadingBranches, setLoadingBranches] = useState(true);
+  const [loadingFields, setLoadingFields] = useState(true);
 
   useEffect(() => {
     const fetchBranches = async () => {
@@ -48,7 +47,37 @@ const SupportForm = () => {
       }
     };
 
+    const fetchCustomFields = async () => {
+      try {
+        const fieldsData = await getAllSiteFields();
+        // Filter only active fields
+        const activeFields = fieldsData.filter(field => field.is_active);
+        setCustomFields(activeFields);
+        
+        // Initialize form data with custom fields
+        const initialFormData: FormData = {
+          employeeId: '',
+          branch: '',
+          description: '',
+          imageFile: null
+        };
+        
+        // Add custom fields to form data
+        activeFields.forEach(field => {
+          initialFormData[field.field_name] = '';
+        });
+        
+        setFormData(initialFormData);
+      } catch (error) {
+        console.error('Error fetching custom fields:', error);
+        toast.error('حدث خطأ أثناء تحميل الحقول المخصصة');
+      } finally {
+        setLoadingFields(false);
+      }
+    };
+
     fetchBranches();
+    fetchCustomFields();
   }, []);
 
   const handleChange = (
@@ -79,10 +108,18 @@ const SupportForm = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // Validate form
+    // Validate required fields
     if (!formData.employeeId || !formData.branch || !formData.description) {
       toast.error('يرجى تعبئة جميع الحقول المطلوبة');
       return;
+    }
+    
+    // Validate custom required fields
+    for (const field of customFields) {
+      if (field.is_required && !formData[field.field_name]) {
+        toast.error(`الحقل "${field.display_name}" مطلوب`);
+        return;
+      }
     }
     
     setIsSubmitting(true);
@@ -91,18 +128,23 @@ const SupportForm = () => {
       // Generate new ticket ID
       const newTicketId = generateTicketId();
       
-      // Create ticket object
+      // Create ticket object with base fields
       const newTicket: SupportTicket = {
         ticket_id: newTicketId,
         employee_id: formData.employeeId,
         branch: formData.branch,
-        anydesk_number: formData.anydeskNumber,
-        extension_number: formData.extensionNumber,
         description: formData.description,
         image_url: imagePreview || undefined,
         status: 'pending',
         created_at: new Date().toISOString()
       };
+      
+      // Add custom fields to ticket
+      customFields.forEach(field => {
+        if (formData[field.field_name]) {
+          (newTicket as any)[field.field_name] = formData[field.field_name];
+        }
+      });
       
       // Save ticket to storage
       const result = await saveTicket(newTicket);
@@ -115,14 +157,19 @@ const SupportForm = () => {
       setTicketId(newTicketId);
       
       // Reset form after submission
-      setFormData({
+      const resetFormData: FormData = {
         employeeId: '',
         branch: '',
-        anydeskNumber: '',
-        extensionNumber: '',
         description: '',
         imageFile: null
+      };
+      
+      // Reset custom fields
+      customFields.forEach(field => {
+        resetFormData[field.field_name] = '';
       });
+      
+      setFormData(resetFormData);
       setImagePreview(null);
       
       toast.success('تم إرسال طلب الدعم بنجاح');
@@ -133,6 +180,20 @@ const SupportForm = () => {
       setIsSubmitting(false);
     }
   };
+
+  // Show loading state while fetching data
+  if (loadingBranches || loadingFields) {
+    return (
+      <div className="w-full max-w-2xl mx-auto animate-slide-in">
+        <Card className="border-company/20 glass">
+          <CardContent className="flex items-center justify-center min-h-[300px]">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
+            <p className="mr-2">جاري تحميل النموذج...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto animate-slide-in">
@@ -189,12 +250,10 @@ const SupportForm = () => {
                     onValueChange={handleSelectChange}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={loadingBranches ? "جاري تحميل الفروع..." : "اختر الفرع"} />
+                      <SelectValue placeholder="اختر الفرع" />
                     </SelectTrigger>
                     <SelectContent>
-                      {loadingBranches ? (
-                        <SelectItem value="loading" disabled>جاري تحميل الفروع...</SelectItem>
-                      ) : branches.length > 0 ? (
+                      {branches.length > 0 ? (
                         branches.map(branch => (
                           <SelectItem key={branch.id} value={branch.name}>
                             {branch.name}
@@ -207,31 +266,24 @@ const SupportForm = () => {
                   </Select>
                 </div>
                 
-                <div className="grid gap-2">
-                  <Label htmlFor="anydeskNumber" className="text-right">رقم anydesk</Label>
-                  <Input
-                    id="anydeskNumber"
-                    name="anydeskNumber"
-                    type="text"
-                    placeholder="أدخل رقم anydesk"
-                    className="text-right"
-                    value={formData.anydeskNumber}
-                    onChange={handleChange}
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="extensionNumber" className="text-right">رقم التحويلة</Label>
-                  <Input
-                    id="extensionNumber"
-                    name="extensionNumber"
-                    type="text"
-                    placeholder="أدخل رقم التحويلة"
-                    className="text-right"
-                    value={formData.extensionNumber}
-                    onChange={handleChange}
-                  />
-                </div>
+                {/* Render custom fields */}
+                {customFields.map(field => (
+                  <div key={field.id} className="grid gap-2">
+                    <Label htmlFor={field.field_name} className="text-right">
+                      {field.display_name} {field.is_required && <span className="text-destructive">*</span>}
+                    </Label>
+                    <Input
+                      id={field.field_name}
+                      name={field.field_name}
+                      type="text"
+                      required={field.is_required}
+                      placeholder={`أدخل ${field.display_name}`}
+                      className="text-right"
+                      value={(formData[field.field_name] as string) || ''}
+                      onChange={handleChange}
+                    />
+                  </div>
+                ))}
                 
                 <div className="grid gap-2">
                   <Label htmlFor="description" className="text-right">محتوى الشكوى</Label>

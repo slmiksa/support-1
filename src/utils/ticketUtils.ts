@@ -50,20 +50,32 @@ export interface SiteField {
 // Save ticket to Supabase
 export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean; ticket_id?: string; error?: any }> => {
   try {
+    // Create a clean object with only the properties we want to save
+    const cleanTicket: Record<string, any> = {
+      ticket_id: ticket.ticket_id,
+      employee_id: ticket.employee_id,
+      branch: ticket.branch,
+      description: ticket.description,
+      image_url: ticket.image_url,
+      status: ticket.status,
+    };
+    
+    // Add any additional custom fields from site_fields table
+    Object.keys(ticket).forEach(key => {
+      if (!['id', 'ticket_id', 'employee_id', 'branch', 'description', 
+            'image_url', 'status', 'created_at', 'updated_at', 
+            'image_file', 'response'].includes(key)) {
+        cleanTicket[key] = (ticket as any)[key];
+      }
+    });
+    
+    // Add anydesk_number and extension_number if they exist
+    if (ticket.anydesk_number) cleanTicket.anydesk_number = ticket.anydesk_number;
+    if (ticket.extension_number) cleanTicket.extension_number = ticket.extension_number;
+
     const { data, error } = await supabase
       .from('tickets')
-      .insert([
-        {
-          ticket_id: ticket.ticket_id,
-          employee_id: ticket.employee_id,
-          branch: ticket.branch,
-          anydesk_number: ticket.anydesk_number,
-          extension_number: ticket.extension_number,
-          description: ticket.description,
-          image_url: ticket.image_url,
-          status: ticket.status,
-        }
-      ])
+      .insert([cleanTicket])
       .select();
 
     if (error) {

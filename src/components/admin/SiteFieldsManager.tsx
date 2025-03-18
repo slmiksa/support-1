@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -57,7 +57,13 @@ const SiteFieldsManager = () => {
   const fetchFields = async () => {
     setLoading(true);
     const data = await getAllSiteFields();
-    setFields(data);
+    
+    // Sort fields by display_name for initial load
+    const sortedFields = [...data].sort((a, b) => 
+      a.display_name.localeCompare(b.display_name, 'ar')
+    );
+    
+    setFields(sortedFields);
     setLoading(false);
   };
 
@@ -165,6 +171,23 @@ const SiteFieldsManager = () => {
     setDeleteDialogOpen(true);
   };
 
+  // New functions for reordering fields
+  const moveFieldUp = (index: number) => {
+    if (index === 0) return; // Already at the top
+    const newFields = [...fields];
+    [newFields[index-1], newFields[index]] = [newFields[index], newFields[index-1]];
+    setFields(newFields);
+    toast.success('تم تحريك الحقل للأعلى');
+  };
+
+  const moveFieldDown = (index: number) => {
+    if (index === fields.length - 1) return; // Already at the bottom
+    const newFields = [...fields];
+    [newFields[index], newFields[index+1]] = [newFields[index+1], newFields[index]];
+    setFields(newFields);
+    toast.success('تم تحريك الحقل للأسفل');
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -228,6 +251,7 @@ const SiteFieldsManager = () => {
             <Table>
               <TableHeader>
                 <TableRow>
+                  {canManageAdmins && <TableHead className="text-center w-16">ترتيب</TableHead>}
                   <TableHead className="text-right">اسم الحقل</TableHead>
                   <TableHead className="text-right">مطلوب</TableHead>
                   <TableHead className="text-right">نشط</TableHead>
@@ -236,8 +260,30 @@ const SiteFieldsManager = () => {
               </TableHeader>
               <TableBody>
                 {fields.length > 0 ? (
-                  fields.map((field) => (
+                  fields.map((field, index) => (
                     <TableRow key={field.id}>
+                      {canManageAdmins && (
+                        <TableCell className="flex items-center justify-center space-x-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => moveFieldUp(index)}
+                            disabled={index === 0}
+                          >
+                            <ArrowUp size={16} />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => moveFieldDown(index)}
+                            disabled={index === fields.length - 1}
+                          >
+                            <ArrowDown size={16} />
+                          </Button>
+                        </TableCell>
+                      )}
                       <TableCell className="font-medium text-right">{field.display_name}</TableCell>
                       <TableCell>
                         <Switch
@@ -269,7 +315,7 @@ const SiteFieldsManager = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={canManageAdmins ? 4 : 3} className="text-center h-24">
+                    <TableCell colSpan={canManageAdmins ? 5 : 3} className="text-center h-24">
                       <p>لا توجد حقول مسجلة</p>
                     </TableCell>
                   </TableRow>
