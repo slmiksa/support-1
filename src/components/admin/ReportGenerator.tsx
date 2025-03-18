@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketStats, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -466,7 +465,7 @@ const ReportGenerator = () => {
                                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                               </Pie>
-                              <ChartTooltip content={<ChartTooltipContent nameKey="name" valueKey="value" />} />
+                              <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
                             </PieChart>
                           </ResponsiveContainer>
                         </ChartContainer>
