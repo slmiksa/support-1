@@ -38,7 +38,6 @@ const SiteCustomizationManager = () => {
         .single();
         
       if (error) {
-        // إذا لم يوجد إعدادات، سنقوم بإنشائها
         if (error.code === 'PGRST116') {
           await createDefaultSettings();
         } else {
@@ -86,7 +85,6 @@ const SiteCustomizationManager = () => {
       
       toast.success('تم حفظ إعدادات الموقع بنجاح');
       
-      // نخبر المستخدم أنه يجب تحديث الصفحة لرؤية التغييرات
       toast.info('قم بتحديث الصفحة لرؤية التغييرات على الموقع');
     } catch (error) {
       console.error('Error saving site settings:', error);
@@ -105,7 +103,6 @@ const SiteCustomizationManager = () => {
     const file = event.target.files?.[0];
     if (!file) return;
     
-    // التحقق من نوع الملف
     if (!file.type.startsWith('image/')) {
       toast.error('يرجى تحميل ملف صورة فقط');
       return;
@@ -113,24 +110,20 @@ const SiteCustomizationManager = () => {
     
     setUploading(true);
     try {
-      // إنشاء اسم فريد للملف
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `logos/${fileName}`;
       
-      // رفع الملف إلى التخزين
       const { error: uploadError } = await supabase.storage
         .from('public')
         .upload(filePath, file);
         
       if (uploadError) throw uploadError;
       
-      // الحصول على رابط الصورة العام
       const { data } = supabase.storage
         .from('public')
         .getPublicUrl(filePath);
         
-      // تحديث الإعدادات بالرابط الجديد
       setSettings({
         ...settings,
         logo_url: data.publicUrl
@@ -290,25 +283,6 @@ const SiteCustomizationManager = () => {
                     type="color"
                     value={settings.secondary_color}
                     onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })}
-                    className="w-10 h-10 rounded cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="text_color" className="text-right block">لون النص</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="text_color"
-                    value={settings.text_color}
-                    onChange={(e) => setSettings({ ...settings, text_color: e.target.value })}
-                    placeholder="#ffffff"
-                    className="text-right"
-                  />
-                  <input
-                    type="color"
-                    value={settings.text_color}
-                    onChange={(e) => setSettings({ ...settings, text_color: e.target.value })}
                     className="w-10 h-10 rounded cursor-pointer"
                   />
                 </div>

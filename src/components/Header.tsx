@@ -125,6 +125,11 @@ const Header = () => {
           </Link>
         </div>
       </nav>
+      
+      {/* Developer footer */}
+      <div className="fixed bottom-0 left-0 right-0 py-1 px-4 bg-gray-100 text-gray-600 text-xs text-center z-10 border-t">
+        Developed by trindsky version 1.0
+      </div>
     </div>
   );
 };
