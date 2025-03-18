@@ -14,8 +14,8 @@ import { Calendar as CalendarIcon, Download, FileText, BarChart } from 'lucide-r
 import { useNavigate } from 'react-router-dom';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Define ticket status color map
 const statusColorMap = {
@@ -148,87 +148,89 @@ const ReportGenerator = () => {
       return;
     }
 
-    // Create PDF document
-    const doc = new jsPDF({
-      orientation: 'landscape',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    // Add Arabic font support
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(18);
-    
-    // Set RTL mode
-    doc.setR2L(true);
-
-    // Add title
-    const title = `تقرير التذاكر ${format(startDate, 'yyyy/MM/dd', { locale: ar })} - ${format(endDate, 'yyyy/MM/dd', { locale: ar })}`;
-    doc.text(title, 150, 15, { align: 'center' });
-    
-    // Add statistics section
-    doc.setFontSize(14);
-    doc.text('إحصائيات التذاكر', 150, 25, { align: 'center' });
-    
-    // Create statistics table
-    const statsData = [
-      ['الإجمالي', ticketStats.total.toString()],
-      ['قيد الانتظار', (ticketStats.byStatus.pending || 0).toString()],
-      ['مفتوحة', (ticketStats.byStatus.open || 0).toString()],
-      ['جاري المعالجة', (ticketStats.byStatus.inprogress || 0).toString()],
-      ['تم الحل', (ticketStats.byStatus.resolved || 0).toString()],
-      ['مغلقة', (ticketStats.byStatus.closed || 0).toString()]
-    ];
-    
-    // @ts-ignore - jspdf-autotable is not typed correctly
-    doc.autoTable({
-      startY: 30,
-      head: [['الحالة', 'العدد']],
-      body: statsData,
-      theme: 'grid',
-      headStyles: { halign: 'center', fillColor: [21, 67, 127] },
-      bodyStyles: { halign: 'center' },
-      styles: { font: 'helvetica', fontSize: 12 },
-      margin: { top: 30 }
-    });
-    
-    // Add tickets table
-    doc.setFontSize(14);
-    // @ts-ignore - jspdf-autotable is not typed correctly
-    const finalY = doc.lastAutoTable.finalY || 40;
-    doc.text('تفاصيل التذاكر', 150, finalY + 10, { align: 'center' });
-    
-    const ticketRows = tickets.map(ticket => [
-      ticket.ticket_id,
-      ticket.employee_id,
-      ticket.branch,
-      statusLabels[ticket.status] || ticket.status,
-      ticket.assigned_to || 'لم يتم التعيين',
-      new Date(ticket.created_at || '').toLocaleDateString('ar-SA')
-    ]);
-    
-    // @ts-ignore - jspdf-autotable is not typed correctly
-    doc.autoTable({
-      startY: finalY + 15,
-      head: [['رقم التذكرة', 'الرقم الوظيفي', 'الفرع', 'الحالة', 'موظف الدعم', 'تاريخ الإنشاء']],
-      body: ticketRows,
-      theme: 'grid',
-      headStyles: { halign: 'center', fillColor: [21, 67, 127] },
-      bodyStyles: { halign: 'center' },
-      styles: { font: 'helvetica', fontSize: 10 },
-      columnStyles: {
-        0: { cellWidth: 25 },
-        1: { cellWidth: 25 },
-        2: { cellWidth: 40 },
-        3: { cellWidth: 25 },
-        4: { cellWidth: 35 },
-        5: { cellWidth: 30 }
-      }
-    });
-    
-    // Save PDF
-    const dateRange = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`;
-    doc.save(`تقرير_التذاكر_${dateRange}.pdf`);
+    try {
+      // Create PDF document with Arabic support
+      const doc = new jsPDF({
+        orientation: 'landscape',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      // Add title
+      doc.setFont("Helvetica");
+      doc.setFontSize(18);
+      doc.setTextColor(21, 67, 127);
+      
+      // Enable right-to-left for Arabic
+      doc.setR2L(true);
+      
+      const title = `تقرير التذاكر ${format(startDate, 'yyyy/MM/dd', { locale: ar })} - ${format(endDate, 'yyyy/MM/dd', { locale: ar })}`;
+      doc.text(title, 150, 15, { align: 'center' });
+      
+      // Add statistics section
+      doc.setFontSize(14);
+      doc.text('إحصائيات التذاكر', 150, 25, { align: 'center' });
+      
+      // Create statistics table
+      const statsData = [
+        ['الإجمالي', ticketStats.total.toString()],
+        ['قيد الانتظار', (ticketStats.byStatus.pending || 0).toString()],
+        ['مفتوحة', (ticketStats.byStatus.open || 0).toString()],
+        ['جاري المعالجة', (ticketStats.byStatus.inprogress || 0).toString()],
+        ['تم الحل', (ticketStats.byStatus.resolved || 0).toString()],
+        ['مغلقة', (ticketStats.byStatus.closed || 0).toString()]
+      ];
+      
+      autoTable(doc, {
+        startY: 30,
+        head: [['الحالة', 'العدد']],
+        body: statsData,
+        theme: 'grid',
+        headStyles: { halign: 'center', fillColor: [21, 67, 127] },
+        bodyStyles: { halign: 'center' },
+        styles: { font: 'Helvetica', fontSize: 12 },
+        margin: { top: 30 }
+      });
+      
+      // Add tickets table
+      doc.setFontSize(14);
+      const finalY = (doc as any).lastAutoTable.finalY || 40;
+      doc.text('تفاصيل التذاكر', 150, finalY + 10, { align: 'center' });
+      
+      const ticketRows = tickets.map(ticket => [
+        ticket.ticket_id,
+        ticket.employee_id,
+        ticket.branch,
+        statusLabels[ticket.status] || ticket.status,
+        ticket.assigned_to || 'لم يتم التعيين',
+        new Date(ticket.created_at || '').toLocaleDateString('ar-SA')
+      ]);
+      
+      autoTable(doc, {
+        startY: finalY + 15,
+        head: [['رقم التذكرة', 'الرقم الوظيفي', 'الفرع', 'الحالة', 'موظف الدعم', 'تاريخ الإنشاء']],
+        body: ticketRows,
+        theme: 'grid',
+        headStyles: { halign: 'center', fillColor: [21, 67, 127] },
+        bodyStyles: { halign: 'center' },
+        styles: { font: 'Helvetica', fontSize: 10 },
+        columnStyles: {
+          0: { cellWidth: 25 },
+          1: { cellWidth: 25 },
+          2: { cellWidth: 40 },
+          3: { cellWidth: 25 },
+          4: { cellWidth: 35 },
+          5: { cellWidth: 30 }
+        }
+      });
+      
+      // Save PDF
+      const dateRange = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`;
+      doc.save(`تقرير_التذاكر_${dateRange}.pdf`);
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      toast.error("حدث خطأ أثناء إنشاء ملف PDF");
+    }
   };
 
   const handleViewTicket = (ticketId: string) => {
@@ -359,186 +361,203 @@ const ReportGenerator = () => {
 
             {tickets.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-lg font-medium text-right mb-4">إحصائيات التذاكر</h3>
+                <h3 className="text-lg font-medium text-right mb-4 text-company">إحصائيات التذاكر</h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                  {/* Ticket status statistics */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-right text-base">توزيع حالات التذاكر</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex flex-col space-y-3">
-                        <div className="flex justify-between items-center">
-                          <Badge className="bg-company">{ticketStats.total}</Badge>
-                          <span className="font-medium">إجمالي التذاكر</span>
+                {/* Improved layout: Stats and Charts in separate boxes */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                  {/* Left Column - Statistics */}
+                  <div className="space-y-6">
+                    {/* Ticket status statistics */}
+                    <Card className="shadow-md">
+                      <CardHeader className="pb-2 bg-gray-50">
+                        <CardTitle className="text-right text-base text-company">توزيع حالات التذاكر</CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <div className="flex flex-col space-y-3">
+                          <div className="flex justify-between items-center pb-2 border-b">
+                            <Badge className="bg-company text-white px-3 py-1">{ticketStats.total}</Badge>
+                            <span className="font-medium">إجمالي التذاكر</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <Badge className={`${statusColorMap.pending} px-3 py-1`}>{ticketStats.byStatus.pending || 0}</Badge>
+                            <span>قيد الانتظار</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <Badge className={`${statusColorMap.open} px-3 py-1`}>{ticketStats.byStatus.open || 0}</Badge>
+                            <span>مفتوحة</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <Badge className={`${statusColorMap.inprogress} px-3 py-1`}>{ticketStats.byStatus.inprogress || 0}</Badge>
+                            <span>جاري المعالجة</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <Badge className={`${statusColorMap.resolved} px-3 py-1`}>{ticketStats.byStatus.resolved || 0}</Badge>
+                            <span>تم الحل</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <Badge className={`${statusColorMap.closed} px-3 py-1`}>{ticketStats.byStatus.closed || 0}</Badge>
+                            <span>مغلقة</span>
+                          </div>
                         </div>
-                        <div className="flex justify-between items-center">
-                          <Badge className={statusColorMap.pending}>{ticketStats.byStatus.pending || 0}</Badge>
-                          <span>قيد الانتظار</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <Badge className={statusColorMap.open}>{ticketStats.byStatus.open || 0}</Badge>
-                          <span>مفتوحة</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <Badge className={statusColorMap.inprogress}>{ticketStats.byStatus.inprogress || 0}</Badge>
-                          <span>جاري المعالجة</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <Badge className={statusColorMap.resolved}>{ticketStats.byStatus.resolved || 0}</Badge>
-                          <span>تم الحل</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <Badge className={statusColorMap.closed}>{ticketStats.byStatus.closed || 0}</Badge>
-                          <span>مغلقة</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Staff distribution */}
+                    {Object.keys(ticketStats.byStaff).length > 0 && (
+                      <Card className="shadow-md">
+                        <CardHeader className="pb-2 bg-gray-50">
+                          <CardTitle className="text-right text-base text-company">موظفي الدعم الفني الأكثر نشاطًا</CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                          <Table>
+                            <TableHeader className="bg-gray-50">
+                              <TableRow>
+                                <TableHead className="text-right font-bold text-company">اسم الموظف</TableHead>
+                                <TableHead className="text-right font-bold text-company">عدد التذاكر المعالجة</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {Object.entries(ticketStats.byStaff)
+                                .sort((a, b) => b[1] - a[1])
+                                .map(([staff, count]) => (
+                                  <TableRow key={staff}>
+                                    <TableCell className="text-right font-medium">{staff}</TableCell>
+                                    <TableCell className="text-right">{count}</TableCell>
+                                  </TableRow>
+                                ))}
+                            </TableBody>
+                          </Table>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                   
-                  {/* Pie chart for ticket status distribution */}
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-right text-base">الرسم البياني للحالات</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-64">
-                      <ChartContainer
-                        config={{
-                          status1: { color: "#FFBB28" },
-                          status2: { color: "#0088FE" },
-                          status3: { color: "#8884d8" },
-                          status4: { color: "#00C49F" },
-                          status5: { color: "#999999" },
-                        }}
-                      >
-                        <PieChart>
-                          <Pie
-                            data={prepareStatusChartData()}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  {/* Right Column - Charts */}
+                  <div className="space-y-6">
+                    {/* Pie chart for ticket status distribution */}
+                    <Card className="shadow-md">
+                      <CardHeader className="pb-2 bg-gray-50">
+                        <CardTitle className="text-right text-base text-company">توزيع حالات التذاكر</CardTitle>
+                      </CardHeader>
+                      <CardContent className="h-64 pt-4">
+                        <ChartContainer
+                          config={{
+                            status1: { color: "#FFBB28" },  // pending
+                            status2: { color: "#0088FE" },  // open
+                            status3: { color: "#8884d8" },  // inprogress
+                            status4: { color: "#00C49F" },  // resolved
+                            status5: { color: "#999999" },  // closed
+                          }}
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={prepareStatusChartData()}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                outerRadius={80}
+                                fill="#8884d8"
+                                dataKey="value"
+                                nameKey="name"
+                                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                              >
+                                {prepareStatusChartData().map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                ))}
+                              </Pie>
+                              <ChartTooltip content={<ChartTooltipContent nameKey="name" valueKey="value" />} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Branch distribution chart */}
+                    {Object.keys(ticketStats.byBranch).length > 0 && (
+                      <Card className="shadow-md">
+                        <CardHeader className="pb-2 bg-gray-50">
+                          <CardTitle className="text-right text-base text-company">توزيع التذاكر حسب الفروع</CardTitle>
+                        </CardHeader>
+                        <CardContent className="h-72 pt-4">
+                          <ChartContainer
+                            config={{
+                              branch: { color: "#15437f" },
+                            }}
                           >
-                            {prepareStatusChartData().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                        </PieChart>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
+                            <ResponsiveContainer width="100%" height="100%">
+                              <ReBarChart data={prepareBranchChartData()} layout="vertical">
+                                <XAxis type="number" />
+                                <YAxis dataKey="name" type="category" width={120} />
+                                <Tooltip formatter={(value) => [`${value} تذكرة`, '']} />
+                                <Bar dataKey="count" name="عدد التذاكر" fill="#15437f" />
+                              </ReBarChart>
+                            </ResponsiveContainer>
+                          </ChartContainer>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
                 </div>
-                
-                {/* Branch distribution chart */}
-                {Object.keys(ticketStats.byBranch).length > 0 && (
-                  <Card className="mb-6">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-right text-base">توزيع التذاكر حسب الفروع</CardTitle>
-                    </CardHeader>
-                    <CardContent className="h-72">
-                      <ChartContainer
-                        config={{
-                          branch: { color: "#15437f" },
-                        }}
-                      >
-                        <ReBarChart data={prepareBranchChartData()}>
-                          <XAxis dataKey="name" />
-                          <YAxis />
-                          <Tooltip />
-                          <Legend />
-                          <Bar dataKey="count" name="عدد التذاكر" fill="#15437f" />
-                        </ReBarChart>
-                      </ChartContainer>
-                    </CardContent>
-                  </Card>
-                )}
-                
-                {/* Staff distribution */}
-                {Object.keys(ticketStats.byStaff).length > 0 && (
-                  <Card className="mb-6">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-right text-base">موظفي الدعم الفني الأكثر نشاطًا</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+
+                {/* Ticket details table with improved styling */}
+                <Card className="shadow-md">
+                  <CardHeader className="pb-2 bg-gray-50">
+                    <CardTitle className="text-right text-base text-company">تفاصيل التذاكر</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="rounded-md overflow-hidden">
                       <Table>
-                        <TableHeader>
+                        <TableHeader className="bg-gray-50">
                           <TableRow>
-                            <TableHead className="text-right">اسم الموظف</TableHead>
-                            <TableHead className="text-right">عدد التذاكر المعالجة</TableHead>
+                            <TableHead className="text-right font-bold text-company">رقم التذكرة</TableHead>
+                            <TableHead className="text-right font-bold text-company">الرقم الوظيفي</TableHead>
+                            <TableHead className="text-right font-bold text-company">الفرع</TableHead>
+                            <TableHead className="text-right font-bold text-company">الحالة</TableHead>
+                            <TableHead className="text-right font-bold text-company">موظف الدعم</TableHead>
+                            <TableHead className="text-right font-bold text-company">تاريخ الإنشاء</TableHead>
+                            <TableHead className="text-right font-bold text-company">إجراءات</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {Object.entries(ticketStats.byStaff)
-                            .sort((a, b) => b[1] - a[1])
-                            .map(([staff, count]) => (
-                              <TableRow key={staff}>
-                                <TableCell className="text-right font-medium">{staff}</TableCell>
-                                <TableCell className="text-right">{count}</TableCell>
-                              </TableRow>
-                            ))}
+                          {tickets.map((ticket) => (
+                            <TableRow key={ticket.id} className="hover:bg-gray-50">
+                              <TableCell className="font-medium text-right">{ticket.ticket_id}</TableCell>
+                              <TableCell className="text-right">{ticket.employee_id}</TableCell>
+                              <TableCell className="text-right">{ticket.branch}</TableCell>
+                              <TableCell className="text-right">
+                                <Badge className={`${statusColorMap[ticket.status] || 'bg-gray-100'} px-3 py-1`}>
+                                  {statusLabels[ticket.status] || ticket.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">{ticket.assigned_to || 'لم يتم التعيين'}</TableCell>
+                              <TableCell className="text-right">
+                                {new Date(ticket.created_at || '').toLocaleDateString('ar-SA')}
+                              </TableCell>
+                              <TableCell>
+                                <Button 
+                                  size="sm"
+                                  className="bg-company hover:bg-company-dark"
+                                  onClick={() => handleViewTicket(ticket.ticket_id)}
+                                >
+                                  عرض التفاصيل
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
                         </TableBody>
                       </Table>
-                    </CardContent>
-                  </Card>
-                )}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
-
-            <div className="rounded-md border overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="text-right">رقم التذكرة</TableHead>
-                    <TableHead className="text-right">الرقم الوظيفي</TableHead>
-                    <TableHead className="text-right">الفرع</TableHead>
-                    <TableHead className="text-right">الحالة</TableHead>
-                    <TableHead className="text-right">موظف الدعم</TableHead>
-                    <TableHead className="text-right">تاريخ الإنشاء</TableHead>
-                    <TableHead className="text-right">إجراءات</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {tickets.length > 0 ? (
-                    tickets.map((ticket) => (
-                      <TableRow key={ticket.id}>
-                        <TableCell className="font-medium text-right">{ticket.ticket_id}</TableCell>
-                        <TableCell className="text-right">{ticket.employee_id}</TableCell>
-                        <TableCell className="text-right">{ticket.branch}</TableCell>
-                        <TableCell className="text-right">
-                          <Badge className={statusColorMap[ticket.status] || 'bg-gray-100'}>
-                            {statusLabels[ticket.status] || ticket.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">{ticket.assigned_to || 'لم يتم التعيين'}</TableCell>
-                        <TableCell className="text-right">
-                          {new Date(ticket.created_at || '').toLocaleDateString('ar-SA')}
-                        </TableCell>
-                        <TableCell>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleViewTicket(ticket.ticket_id)}
-                          >
-                            عرض التفاصيل
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center h-24">
-                        <p>لا توجد تذاكر خلال الفترة المحددة</p>
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+            
+            {tickets.length === 0 && hasSearched && (
+              <div className="text-center py-12 bg-gray-50 rounded-lg">
+                <p className="text-lg text-gray-500">لا توجد تذاكر خلال الفترة المحددة</p>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
