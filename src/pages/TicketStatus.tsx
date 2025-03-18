@@ -19,6 +19,9 @@ const TicketStatus = () => {
   useEffect(() => {
     if (ticketId) {
       fetchTicket(ticketId);
+    } else {
+      // No ticket ID in URL, so we're not loading
+      setLoading(false);
     }
   }, [ticketId]);
 
@@ -80,15 +83,18 @@ const TicketStatus = () => {
           <DateTimeDisplay />
         </div>
 
-        {loading ? (
-          <Card className="border-company/20 glass text-center p-8">
+        {/* Always show the TicketTracker at the top of the page */}
+        <TicketTracker onSearchTicket={fetchTicket} />
+
+        {loading && ticketId ? (
+          <Card className="border-company/20 glass text-center p-8 mt-6">
             <div className="flex flex-col items-center justify-center h-48">
               <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
               <p className="mt-4">جاري تحميل بيانات الطلب...</p>
             </div>
           </Card>
         ) : ticket ? (
-          <div className="space-y-6">
+          <div className="space-y-6 mt-6">
             <Card className="border-company/20 glass">
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -168,17 +174,15 @@ const TicketStatus = () => {
                 )}
               </CardContent>
             </Card>
-            
-            <TicketTracker />
           </div>
-        ) : (
-          <Card className="border-company/20 glass text-center p-8">
+        ) : ticketId ? (
+          <Card className="border-company/20 glass text-center p-8 mt-6">
             <CardContent>
               <p className="text-lg">لم يتم العثور على الطلب</p>
               <p className="text-muted-foreground mt-2">يرجى التأكد من رقم الطلب والمحاولة مرة أخرى</p>
             </CardContent>
           </Card>
-        )}
+        ) : null}
       </main>
     </div>
   );

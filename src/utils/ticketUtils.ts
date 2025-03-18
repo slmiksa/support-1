@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -55,7 +56,7 @@ export interface SiteField {
 export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean; ticket_id?: string; error?: any }> => {
   try {
     // Create a clean object with only the properties we want to save
-    const cleanTicket = {
+    const cleanTicket: any = {
       ticket_id: ticket.ticket_id,
       employee_id: ticket.employee_id,
       branch: ticket.branch,
@@ -129,8 +130,8 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
     return {
       ...data,
       status: data.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed',
-      custom_fields: data.custom_fields as Record<string, any> || {}
-    };
+      custom_fields: typeof data.custom_fields === 'object' ? data.custom_fields : {}
+    } as SupportTicket;
   } catch (error) {
     console.error('Error finding ticket:', error);
     return undefined;
@@ -237,8 +238,8 @@ export const getTicketsByDateRange = async (startDate: string, endDate: string):
     return data.map(ticket => ({
       ...ticket,
       status: ticket.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed',
-      custom_fields: ticket.custom_fields as Record<string, any> || {}
-    }));
+      custom_fields: typeof ticket.custom_fields === 'object' ? ticket.custom_fields : {}
+    })) as SupportTicket[];
   } catch (error) {
     console.error('Error fetching tickets by date range:', error);
     return [];
