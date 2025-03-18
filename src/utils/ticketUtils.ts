@@ -85,6 +85,7 @@ export const saveTicket = async (ticket: SupportTicket): Promise<{ success: bool
     // Add custom fields to the cleanTicket
     cleanTicket.custom_fields = customFields;
 
+    // Fix: Pass cleanTicket directly as a single object, not in an array
     const { data, error } = await supabase
       .from('tickets')
       .insert(cleanTicket)
