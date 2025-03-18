@@ -173,6 +173,9 @@ export const getTicketResponses = async (ticketId: string): Promise<TicketRespon
       throw error;
     }
 
+    // Log fetched responses for debugging
+    console.log('Fetched responses:', data);
+    
     return data as TicketResponse[];
   } catch (error) {
     console.error('Error fetching ticket responses:', error);
@@ -571,3 +574,4 @@ export const updateFieldOrder = async (
     return false;
   }
 };
+

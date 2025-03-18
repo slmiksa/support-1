@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import TicketTracker from '@/components/TicketTracker';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
@@ -33,8 +32,8 @@ const TicketStatus = () => {
       
       if (fetchedTicket) {
         setTicket(fetchedTicket);
-        // ردود على الطلب Fetch
-        fetchTicketResponses(id);
+        // Fetch ticket responses
+        await fetchTicketResponses(id);
       } else {
         toast({
           title: "خطأ",
@@ -56,7 +55,9 @@ const TicketStatus = () => {
 
   const fetchTicketResponses = async (id: string) => {
     try {
+      console.log('Fetching responses for ticket:', id);
       const fetchedResponses = await getTicketResponses(id);
+      console.log('Fetched responses in component:', fetchedResponses);
       setResponses(fetchedResponses);
     } catch (error) {
       console.error("Error fetching ticket responses:", error);
@@ -143,7 +144,6 @@ const TicketStatus = () => {
                     </div>
                   )}
                   
-                  {/* Display custom fields if they exist */}
                   {ticket.custom_fields && typeof ticket.custom_fields === 'object' && 
                     Object.entries(ticket.custom_fields).map(([key, value]) => (
                       <div className="space-y-2" key={key}>
@@ -176,8 +176,7 @@ const TicketStatus = () => {
                   </div>
                 )}
                 
-                {/* Display ticket responses */}
-                {responses.length > 0 && (
+                {responses && responses.length > 0 ? (
                   <div className="space-y-2">
                     <p className="text-right font-medium">ردود الدعم الفني:</p>
                     <div className="space-y-3">
@@ -196,7 +195,7 @@ const TicketStatus = () => {
                       ))}
                     </div>
                   </div>
-                )}
+                ) : null}
               </CardContent>
             </Card>
           </div>
