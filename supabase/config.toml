@@ -112,4 +112,5 @@ scopes = []
 
 [functions]
 # For development version of the functions.
+[functions.serve]
 port = 9999
