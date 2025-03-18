@@ -1,4 +1,6 @@
 
+import { supabase } from '@/integrations/supabase/client';
+
 // Generate a unique ticket ID with wsl- prefix
 export const generateTicketId = (): string => {
   const timestamp = Date.now().toString(36);
@@ -6,53 +8,115 @@ export const generateTicketId = (): string => {
   return `wsl-${timestamp}${randomStr}`.substring(0, 12);
 };
 
-// Simulate ticket storage 
-// (in a real app, this would connect to a backend)
-const STORAGE_KEY = 'wsl_support_tickets';
-
 export interface SupportTicket {
-  id: string;
-  employeeId: string;
+  id?: string;
+  ticket_id: string;
+  employee_id: string;
   branch: string;
-  anydeskNumber: string;
-  extensionNumber: string;
+  anydesk_number?: string;
+  extension_number?: string;
   description: string;
-  imageFile?: File | null;
-  imageUrl?: string;
-  status: 'pending' | 'resolved';
-  createdAt: number;
+  image_file?: File | null;
+  image_url?: string;
+  status: 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed';
+  created_at?: number;
+  updated_at?: number;
   response?: string;
 }
 
-export const saveTicket = (ticket: SupportTicket): void => {
-  const existingTickets = getStoredTickets();
-  const updatedTickets = [...existingTickets, ticket];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTickets));
+// Save ticket to Supabase
+export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean; ticket_id?: string; error?: any }> => {
+  try {
+    const { data, error } = await supabase
+      .from('tickets')
+      .insert([
+        {
+          ticket_id: ticket.ticket_id,
+          employee_id: ticket.employee_id,
+          branch: ticket.branch,
+          anydesk_number: ticket.anydesk_number,
+          extension_number: ticket.extension_number,
+          description: ticket.description,
+          image_url: ticket.image_url,
+          status: 'pending',
+        }
+      ])
+      .select();
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true, ticket_id: ticket.ticket_id };
+  } catch (error) {
+    console.error('Error saving ticket:', error);
+    return { success: false, error };
+  }
 };
 
+// Legacy function to support the transition from localStorage to Supabase
+// This will be kept for backward compatibility
 export const getStoredTickets = (): SupportTicket[] => {
+  const STORAGE_KEY = 'wsl_support_tickets';
   const storedTickets = localStorage.getItem(STORAGE_KEY);
   return storedTickets ? JSON.parse(storedTickets) : [];
 };
 
-export const findTicketById = (ticketId: string): SupportTicket | undefined => {
-  const tickets = getStoredTickets();
-  return tickets.find(ticket => ticket.id === ticketId);
+// Legacy function to support the transition from localStorage to Supabase
+export const findTicketById = async (ticketId: string): Promise<SupportTicket | undefined> => {
+  try {
+    const { data, error } = await supabase
+      .from('tickets')
+      .select('*')
+      .eq('ticket_id', ticketId)
+      .single();
+
+    if (error) {
+      // Check localStorage as fallback for old tickets
+      const localTickets = getStoredTickets();
+      return localTickets.find(ticket => ticket.ticket_id === ticketId);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error finding ticket:', error);
+    return undefined;
+  }
 };
 
-export const updateTicket = (ticketId: string, updates: Partial<SupportTicket>): boolean => {
-  const tickets = getStoredTickets();
-  const ticketIndex = tickets.findIndex(ticket => ticket.id === ticketId);
-  
-  if (ticketIndex === -1) return false;
-  
-  tickets[ticketIndex] = { ...tickets[ticketIndex], ...updates };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(tickets));
-  return true;
+// Legacy function to support the transition from localStorage to Supabase
+export const updateTicket = async (
+  ticketId: string, 
+  updates: Partial<SupportTicket>
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('tickets')
+      .update(updates)
+      .eq('ticket_id', ticketId);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating ticket:', error);
+    
+    // Fallback to local storage
+    const tickets = getStoredTickets();
+    const ticketIndex = tickets.findIndex(ticket => ticket.ticket_id === ticketId);
+    
+    if (ticketIndex === -1) return false;
+    
+    tickets[ticketIndex] = { ...tickets[ticketIndex], ...updates };
+    localStorage.setItem('wsl_support_tickets', JSON.stringify(tickets));
+    return true;
+  }
 };
 
-// Simulating a response for demo purposes
-export const simulateTicketResponse = (ticketId: string): boolean => {
+// Legacy function - simulating a response is no longer needed with the admin panel
+export const simulateTicketResponse = async (ticketId: string): Promise<boolean> => {
   const responses = [
     "تم استلام طلبك وسنقوم بالتواصل معك قريباً",
     "نعمل حالياً على حل المشكلة، يرجى المحاولة مرة أخرى بعد ساعة",
@@ -63,8 +127,32 @@ export const simulateTicketResponse = (ticketId: string): boolean => {
   
   const randomResponse = responses[Math.floor(Math.random() * responses.length)];
   
-  return updateTicket(ticketId, { 
-    response: randomResponse,
-    status: 'resolved'
-  });
+  try {
+    // Add a response to the ticket
+    const { data, error } = await supabase.rpc('add_ticket_response', {
+      p_ticket_id: ticketId,
+      p_response: randomResponse,
+      p_is_admin: true
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    // Also update the ticket status
+    await supabase.rpc('update_ticket_status', {
+      p_ticket_id: ticketId,
+      p_status: 'resolved'
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Error simulating response:', error);
+    
+    // Fallback to local storage
+    return updateTicket(ticketId, { 
+      response: randomResponse,
+      status: 'resolved'
+    });
+  }
 };

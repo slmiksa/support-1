@@ -9,13 +9,128 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      admins: {
+        Row: {
+          created_at: string
+          id: string
+          password: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      ticket_responses: {
+        Row: {
+          created_at: string
+          id: string
+          is_admin: boolean | null
+          response: string
+          ticket_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          response: string
+          ticket_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_admin?: boolean | null
+          response?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_responses_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["ticket_id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          anydesk_number: string | null
+          branch: string
+          created_at: string
+          description: string
+          employee_id: string
+          extension_number: string | null
+          id: string
+          image_url: string | null
+          status: string
+          ticket_id: string
+          updated_at: string
+        }
+        Insert: {
+          anydesk_number?: string | null
+          branch: string
+          created_at?: string
+          description: string
+          employee_id: string
+          extension_number?: string | null
+          id?: string
+          image_url?: string | null
+          status?: string
+          ticket_id: string
+          updated_at?: string
+        }
+        Update: {
+          anydesk_number?: string | null
+          branch?: string
+          created_at?: string
+          description?: string
+          employee_id?: string
+          extension_number?: string | null
+          id?: string
+          image_url?: string | null
+          status?: string
+          ticket_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      add_ticket_response: {
+        Args: {
+          p_ticket_id: string
+          p_response: string
+          p_is_admin?: boolean
+        }
+        Returns: string
+      }
+      check_admin_credentials: {
+        Args: {
+          p_username: string
+          p_password: string
+        }
+        Returns: boolean
+      }
+      update_ticket_status: {
+        Args: {
+          p_ticket_id: string
+          p_status: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
