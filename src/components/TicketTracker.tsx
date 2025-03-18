@@ -43,15 +43,15 @@ const TicketTracker = ({ onSearchTicket }: TicketTrackerProps) => {
     <div className="w-full max-w-2xl mx-auto animate-slide-in">
       <Card className="border-company/20 glass mb-6">
         <CardHeader>
-          <CardTitle className="text-right">متابعة طلب الدعم</CardTitle>
+          <CardTitle className="text-right">متابعة التذاكر</CardTitle>
           <CardDescription className="text-right">
-            أدخل رقم الطلب للاطلاع على حالته ورد الدعم الفني
+            أدخل رقم التذكرة للاطلاع على حالتها ورد الدعم الفني
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="ticket-id" className="text-right">رقم الطلب</Label>
+              <Label htmlFor="ticket-id" className="text-right">رقم التذكرة</Label>
               <div className="flex gap-2">
                 <Button type="submit" disabled={isLoading}>
                   {isLoading ? (
@@ -62,7 +62,7 @@ const TicketTracker = ({ onSearchTicket }: TicketTrackerProps) => {
                   id="ticket-id"
                   value={ticketId}
                   onChange={(e) => setTicketId(e.target.value)}
-                  placeholder="أدخل رقم الطلب (مثال: wsl-abc123)"
+                  placeholder="أدخل رقم التذكرة (مثال: wsl-abc123)"
                   className="flex-1 text-right"
                 />
               </div>

@@ -107,7 +107,7 @@ const Header = () => {
             className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
             style={{ color: settings.text_color }}
           >
-            <span>متابعة طلب الدعم</span>
+            <span>متابعة التذاكر</span>
             <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-company" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
