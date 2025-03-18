@@ -1,3 +1,4 @@
+
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -8,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Branch } from '@/utils/ticketUtils';
-import { sendTicketNotification, getAdminEmails } from '@/utils/notificationUtils';
+import { sendTicketNotificationsToAllAdmins } from '@/utils/notificationUtils';
 
 interface FormData {
   employeeId: string;
@@ -110,7 +111,7 @@ const SupportForm = () => {
     
     // Validate required fields
     if (!formData.employeeId || !formData.branch || !formData.description) {
-      toast.error('يرجى تعبئة جمي�� الحقول المطلوبة');
+      toast.error('يرجى تعبئة جميع الحقول المطلوبة');
       return;
     }
     
@@ -153,16 +154,17 @@ const SupportForm = () => {
         throw new Error('Failed to save ticket');
       }
       
-      // Send email notification to admins
+      // Send email notifications to all admins
       try {
-        const adminEmails = await getAdminEmails();
+        const notificationSent = await sendTicketNotificationsToAllAdmins(newTicket);
         
-        if (adminEmails.length > 0) {
-          // Send notification to the first admin in the list (can be modified to send to all)
-          await sendTicketNotification(newTicket, adminEmails[0]);
+        if (notificationSent) {
+          console.log('Email notifications sent successfully');
+        } else {
+          console.warn('Failed to send email notifications, but ticket was saved');
         }
       } catch (notificationError) {
-        console.error('Failed to send notification, but ticket was saved:', notificationError);
+        console.error('Failed to send notifications, but ticket was saved:', notificationError);
         // We don't want to fail the ticket submission if notification fails
       }
       

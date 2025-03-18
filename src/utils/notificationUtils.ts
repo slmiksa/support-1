@@ -18,6 +18,8 @@ export const sendTicketNotification = async (
       admin_email: adminEmail
     };
 
+    console.log('Sending notification for ticket', ticket.ticket_id, 'to', adminEmail);
+
     // Call the Supabase edge function to send the email
     const { data, error } = await supabase.functions.invoke(
       'send-ticket-notification',
@@ -39,21 +41,58 @@ export const sendTicketNotification = async (
   }
 };
 
+// Send email notifications to all admins when a new ticket is created
+export const sendTicketNotificationsToAllAdmins = async (
+  ticket: SupportTicket
+): Promise<boolean> => {
+  try {
+    // Get all admin emails
+    const adminEmails = await getAdminEmails();
+    
+    if (adminEmails.length === 0) {
+      console.warn('No admin emails found. Skipping notifications.');
+      return false;
+    }
+    
+    console.log('Sending notifications to admins:', adminEmails);
+    
+    // Send notifications to all admins
+    const results = await Promise.allSettled(
+      adminEmails.map(email => sendTicketNotification(ticket, email))
+    );
+    
+    // Check if at least one notification was sent successfully
+    const atLeastOneSuccess = results.some(
+      result => result.status === 'fulfilled' && result.value === true
+    );
+    
+    return atLeastOneSuccess;
+  } catch (error) {
+    console.error('Error sending notifications to admins:', error);
+    return false;
+  }
+};
+
 // Fetch admin emails from the database
 export const getAdminEmails = async (): Promise<string[]> => {
   try {
     const { data, error } = await supabase
       .from('admins')
       .select('username, notification_email')
-      .eq('role', 'super_admin')
-      .or('role.eq.admin');
+      .or('role.eq.super_admin,role.eq.admin');
 
     if (error) {
+      console.error('Error fetching admin emails:', error);
       throw error;
     }
 
     // Use notification_email if available, otherwise use username (which is the email)
-    return data.map(admin => admin.notification_email || admin.username).filter(Boolean);
+    const emails = data
+      .map(admin => admin.notification_email || admin.username)
+      .filter(Boolean);
+    
+    console.log('Found admin emails:', emails);
+    return emails;
   } catch (error) {
     console.error('Error fetching admin emails:', error);
     return [];

@@ -40,12 +40,26 @@ const handler = async (req: Request): Promise<Response> => {
     // SMTP client configuration
     const client = new SmtpClient();
     
-    await client.connectTLS({
-      hostname: Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com",
-      port: parseInt(Deno.env.get("EMAIL_PORT") || "587"),
-      username: Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com",
-      password: Deno.env.get("EMAIL_PASSWORD") || "",
-    });
+    const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
+    const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
+    const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
+    const emailPassword = Deno.env.get("EMAIL_PASSWORD") || "";
+    
+    console.log(`Connecting to SMTP server: ${emailHost}:${emailPort}`);
+    
+    try {
+      await client.connectTLS({
+        hostname: emailHost,
+        port: emailPort,
+        username: emailUsername,
+        password: emailPassword,
+      });
+      
+      console.log("Successfully connected to SMTP server");
+    } catch (smtpError) {
+      console.error("SMTP connection error:", smtpError);
+      throw new Error(`Failed to connect to SMTP server: ${smtpError.message}`);
+    }
 
     // Create the email message
     const emailHtml = `
@@ -64,17 +78,27 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Send the email
-    await client.send({
-      from: Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com",
-      to: admin_email,
-      subject: `تذكرة جديدة: ${ticket_id}`,
-      content: "تم إنشاء تذكرة دعم فني جديدة",
-      html: emailHtml,
-    });
-
-    await client.close();
-
-    console.log("Email notification sent successfully to", admin_email);
+    try {
+      await client.send({
+        from: emailUsername,
+        to: admin_email,
+        subject: `تذكرة جديدة: ${ticket_id}`,
+        content: "تم إنشاء تذكرة دعم فني جديدة",
+        html: emailHtml,
+      });
+      
+      console.log("Email sent successfully to", admin_email);
+    } catch (sendError) {
+      console.error("Email sending error:", sendError);
+      throw new Error(`Failed to send email: ${sendError.message}`);
+    } finally {
+      try {
+        await client.close();
+        console.log("SMTP connection closed");
+      } catch (closeError) {
+        console.error("Error closing SMTP connection:", closeError);
+      }
+    }
 
     return new Response(JSON.stringify({ success: true, message: "Email sent successfully" }), {
       status: 200,
