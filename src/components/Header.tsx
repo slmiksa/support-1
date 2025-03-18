@@ -94,8 +94,8 @@ const Header = () => {
         <div className="container mx-auto flex justify-center space-x-4 rtl:space-x-reverse">
           <Link 
             to="/" 
-            className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
-            style={{ color: settings.text_color }}
+            className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center bg-white px-4 py-2 rounded-lg"
+            style={{ color: settings.secondary_color }}
           >
             <span>الرئيسية</span>
             <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
@@ -104,8 +104,8 @@ const Header = () => {
           </Link>
           <Link 
             to="/ticket-status" 
-            className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
-            style={{ color: settings.text_color }}
+            className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center bg-white px-4 py-2 rounded-lg"
+            style={{ color: settings.secondary_color }}
           >
             <span>متابعة التذاكر</span>
             <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
