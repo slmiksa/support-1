@@ -23,7 +23,7 @@ export interface SupportTicket {
   created_at?: string;
   updated_at?: string;
   response?: string;
-  custom_fields?: Record<string, any>;
+  custom_fields?: Record<string, any> | Json;
   [key: string]: any; // Allow dynamic fields
 }
 
@@ -66,7 +66,7 @@ export const saveTicket = async (ticket: SupportTicket): Promise<{ success: bool
       custom_fields: {}
     };
     
-    // Add anydesk_number and extension_number if they exist
+    // Add anydesk_number and extension_number if they exist in the ticket object
     if (ticket.anydesk_number) cleanTicket.anydesk_number = ticket.anydesk_number;
     if (ticket.extension_number) cleanTicket.extension_number = ticket.extension_number;
     
@@ -126,11 +126,26 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
       return localTickets.find(ticket => ticket.ticket_id === ticketId);
     }
 
+    // Process custom_fields to ensure it's a proper object
+    let customFields = {};
+    if (data.custom_fields) {
+      // Handle both string and object formats
+      if (typeof data.custom_fields === 'string') {
+        try {
+          customFields = JSON.parse(data.custom_fields);
+        } catch (e) {
+          console.error('Error parsing custom_fields:', e);
+        }
+      } else if (typeof data.custom_fields === 'object') {
+        customFields = data.custom_fields;
+      }
+    }
+
     // Cast the status to ensure type compatibility and handle custom_fields
     return {
       ...data,
       status: data.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed',
-      custom_fields: typeof data.custom_fields === 'object' ? data.custom_fields : {}
+      custom_fields: customFields
     } as SupportTicket;
   } catch (error) {
     console.error('Error finding ticket:', error);
