@@ -15,6 +15,7 @@ const AdminHeader = () => {
   const { logout, hasPermission, currentAdmin } = useAdminAuth();
   const navigate = useNavigate();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settingsInitialized, setSettingsInitialized] = useState(false);
 
   useEffect(() => {
     fetchSiteSettings();
@@ -31,6 +32,7 @@ const AdminHeader = () => {
         if (error.code !== 'PGRST116') { // Not found error
           console.error('Error fetching site settings:', error);
         }
+        setSettingsInitialized(true);
         return;
       }
 
@@ -40,8 +42,10 @@ const AdminHeader = () => {
           text_color: data.text_color,
         });
       }
+      setSettingsInitialized(true);
     } catch (error) {
       console.error('Error:', error);
+      setSettingsInitialized(true);
     }
   };
 
@@ -49,6 +53,11 @@ const AdminHeader = () => {
     logout();
     navigate('/admin');
   };
+  
+  // Don't render until settings are initialized
+  if (!settingsInitialized) {
+    return null;
+  }
   
   return (
     <header style={{ backgroundColor: settings.primary_color }} className="shadow-md">

@@ -17,6 +17,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
 const Header = () => {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
+  const [settingsInitialized, setSettingsInitialized] = useState(false);
 
   useEffect(() => {
     fetchSiteSettings();
@@ -34,6 +35,7 @@ const Header = () => {
           console.error('Error fetching site settings:', error);
         }
         // Use default settings if no settings found
+        setSettingsInitialized(true);
         setLoading(false);
         return;
       }
@@ -41,8 +43,10 @@ const Header = () => {
       if (data) {
         setSettings(data as SiteSettings);
       }
+      setSettingsInitialized(true);
     } catch (error) {
       console.error('Error:', error);
+      setSettingsInitialized(true);
     } finally {
       setLoading(false);
     }
@@ -50,6 +54,11 @@ const Header = () => {
 
   // Use default logo if no logo_url is set
   const logoUrl = settings.logo_url || logoSvg;
+  
+  // Don't render anything until settings are initialized to prevent flash of default styling
+  if (!settingsInitialized) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col w-full">
