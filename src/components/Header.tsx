@@ -1,34 +1,102 @@
 
 import { Link } from 'react-router-dom';
-import logoSvg from '../assets/logo.svg';
 import { Home } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import logoSvg from '../assets/logo.svg';
+
+interface SiteSettings {
+  site_name: string;
+  logo_url: string;
+  primary_color: string;
+  secondary_color: string;
+  text_color: string;
+  footer_text: string;
+}
+
+const DEFAULT_SETTINGS: SiteSettings = {
+  site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
+  logo_url: '',
+  primary_color: '#15437f',
+  secondary_color: '#093467',
+  text_color: '#ffffff',
+  footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.',
+};
 
 const Header = () => {
+  const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSiteSettings();
+  }, []);
+
+  const fetchSiteSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .single();
+
+      if (error) {
+        if (error.code !== 'PGRST116') { // Not found error
+          console.error('Error fetching site settings:', error);
+        }
+        // Use default settings if no settings found
+        setLoading(false);
+        return;
+      }
+
+      if (data) {
+        setSettings(data as SiteSettings);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Use default logo if no logo_url is set
+  const logoUrl = settings.logo_url || logoSvg;
+
   return (
     <div className="flex flex-col w-full">
       {/* Top header with logo and company name */}
-      <div className="w-full bg-company py-4 px-6">
+      <div 
+        className="w-full py-4 px-6" 
+        style={{ backgroundColor: settings.primary_color }}
+      >
         <div className="container mx-auto flex flex-col items-center space-y-3">
           <div className="bg-white rounded-lg p-3 shadow-md w-48">
             <img 
-              src={logoSvg} 
-              alt="شركة الوصل الوطنية" 
+              src={logoUrl} 
+              alt={settings.site_name} 
               className="h-10 w-auto" 
             />
           </div>
           <div className="flex flex-col items-center">
-            <h1 className="text-xl md:text-2xl font-bold text-white text-center">شركة الوصل الوطنية لتحصيل ديون جهات التمويل</h1>
+            <h1 
+              className="text-xl md:text-2xl font-bold text-center" 
+              style={{ color: settings.text_color }}
+            >
+              {settings.site_name}
+            </h1>
             <div className="h-0.5 w-full bg-accent-gold mt-1"></div>
           </div>
         </div>
       </div>
       
       {/* Navigation bar */}
-      <nav className="w-full bg-company-dark py-3 px-6 shadow-md mb-6">
+      <nav 
+        className="w-full py-3 px-6 shadow-md mb-6"
+        style={{ backgroundColor: settings.secondary_color }}
+      >
         <div className="container mx-auto flex justify-center space-x-4 rtl:space-x-reverse">
           <Link 
             to="/" 
-            className="text-white hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
+            className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
+            style={{ color: settings.text_color }}
           >
             <span>الرئيسية</span>
             <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
@@ -37,7 +105,8 @@ const Header = () => {
           </Link>
           <Link 
             to="/ticket-status" 
-            className="text-white hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
+            className="hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
+            style={{ color: settings.text_color }}
           >
             <span>متابعة طلب الدعم</span>
             <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
