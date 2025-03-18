@@ -37,13 +37,14 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${description.substring(0, 100)}...` 
       : description;
 
-    // SMTP client configuration
+    // SMTP client configuration - using your provided credentials
     const client = new SmtpClient();
     
-    const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
-    const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
-    const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
-    const emailPassword = Deno.env.get("EMAIL_PASSWORD") || "";
+    // Using the provided email configuration
+    const emailHost = "ex.alwaslsaudi.com";
+    const emailPort = 587;
+    const emailUsername = "help@alwaslsaudi.com";
+    const emailPassword = "vlh4pefmnx$gtcdsOzwj";
     
     console.log(`Connecting to SMTP server: ${emailHost}:${emailPort}`);
     
