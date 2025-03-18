@@ -1,6 +1,7 @@
 
 import { Link } from 'react-router-dom';
 import logoSvg from '../assets/logo.svg';
+import { Home } from 'lucide-react';
 
 const Header = () => {
   return (
@@ -24,7 +25,16 @@ const Header = () => {
       
       {/* Navigation bar */}
       <nav className="w-full bg-company-dark py-3 px-6 shadow-md mb-6">
-        <div className="container mx-auto flex justify-center">
+        <div className="container mx-auto flex justify-center space-x-4 rtl:space-x-reverse">
+          <Link 
+            to="/" 
+            className="text-white hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
+          >
+            <span>الرئيسية</span>
+            <div className="h-5 w-5 rounded-full bg-white mr-2 flex items-center justify-center">
+              <Home className="h-3 w-3 text-company" />
+            </div>
+          </Link>
           <Link 
             to="/ticket-status" 
             className="text-white hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"
