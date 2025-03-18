@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -99,12 +98,12 @@ const Header = () => {
         className="w-full py-3 px-6 shadow-md mb-6"
         style={{ backgroundColor: settings.secondary_color }}
       >
-        <div className="container mx-auto flex justify-center space-x-4 rtl:space-x-reverse">
+        <div className="container mx-auto flex justify-center space-x-6 rtl:space-x-reverse">
           <Link 
             to="/" 
-            className="flex items-center mx-4"
+            className="flex items-center"
           >
-            <div className="px-4 py-2 rounded-lg flex items-center gap-2"
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2 border-2 border-white/30 hover:border-white/60 transition-all"
                  style={{ color: settings.text_color }}>
               <div className="h-5 w-5 rounded-full flex items-center justify-center">
                 <Home className="h-3 w-3" style={{ color: settings.text_color }} />
@@ -112,11 +111,12 @@ const Header = () => {
               <span className="font-medium text-lg">الرئيسية</span>
             </div>
           </Link>
+          <div className="border-r border-white/20 h-8 self-center"></div>
           <Link 
             to="/ticket-status" 
-            className="flex items-center mx-4"
+            className="flex items-center"
           >
-            <div className="px-4 py-2 rounded-lg flex items-center gap-2"
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2 border-2 border-white/30 hover:border-white/60 transition-all"
                  style={{ color: settings.text_color }}>
               <div className="h-5 w-5 rounded-full flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" style={{ color: settings.text_color }} viewBox="0 0 20 20" fill="currentColor">
