@@ -68,12 +68,21 @@ const Header = () => {
         style={{ backgroundColor: settings.primary_color }}
       >
         <div className="container mx-auto flex flex-col items-center space-y-3">
-          {/* Logo without background rectangle, now twice as large */}
-          <img 
-            src={logoUrl} 
-            alt={settings.site_name} 
-            className="h-32 w-auto" 
-          />
+          {/* Logo with glowing effect */}
+          <div className="relative">
+            <div className="absolute inset-0 rounded-full animate-pulse-light" 
+                 style={{ 
+                   boxShadow: '0 0 15px 5px #D4AF37', 
+                   filter: 'blur(8px)',
+                   opacity: 0.6
+                 }}>
+            </div>
+            <img 
+              src={logoUrl} 
+              alt={settings.site_name} 
+              className="h-32 w-auto relative z-10" 
+            />
+          </div>
           <div className="flex flex-col items-center">
             <h1 
               className="text-xl md:text-2xl font-bold text-center" 
@@ -81,7 +90,6 @@ const Header = () => {
             >
               {settings.site_name}
             </h1>
-            {/* Removed the underline div that was here */}
           </div>
         </div>
       </div>
@@ -96,10 +104,10 @@ const Header = () => {
             to="/" 
             className="flex items-center mx-4"
           >
-            <div className="bg-white px-4 py-2 rounded-lg flex items-center gap-2"
-                 style={{ color: settings.secondary_color }}>
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2"
+                 style={{ color: settings.text_color }}>
               <div className="h-5 w-5 rounded-full flex items-center justify-center">
-                <Home className="h-3 w-3 text-company" />
+                <Home className="h-3 w-3" style={{ color: settings.text_color }} />
               </div>
               <span className="font-medium text-lg">الرئيسية</span>
             </div>
@@ -108,10 +116,10 @@ const Header = () => {
             to="/ticket-status" 
             className="flex items-center mx-4"
           >
-            <div className="bg-white px-4 py-2 rounded-lg flex items-center gap-2"
-                 style={{ color: settings.secondary_color }}>
+            <div className="px-4 py-2 rounded-lg flex items-center gap-2"
+                 style={{ color: settings.text_color }}>
               <div className="h-5 w-5 rounded-full flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 text-company" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" style={{ color: settings.text_color }} viewBox="0 0 20 20" fill="currentColor">
                   <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                 </svg>
               </div>
