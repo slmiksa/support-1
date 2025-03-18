@@ -10,6 +10,7 @@ import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminTicketDetails from "./pages/admin/AdminTicketDetails";
+import AdminSettings from "./pages/admin/AdminSettings";
 import { AdminAuthProvider, useAdminAuth } from "./contexts/AdminAuthContext";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,14 @@ const App = () => (
               element={
                 <ProtectedAdminRoute>
                   <AdminTicketDetails />
+                </ProtectedAdminRoute>
+              } 
+            />
+            <Route 
+              path="/admin/settings" 
+              element={
+                <ProtectedAdminRoute>
+                  <AdminSettings />
                 </ProtectedAdminRoute>
               } 
             />

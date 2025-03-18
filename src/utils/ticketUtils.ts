@@ -24,6 +24,30 @@ export interface SupportTicket {
   response?: string;
 }
 
+export interface Admin {
+  id: string;
+  username: string;
+  password: string;
+  employee_id?: string;
+  role: 'super_admin' | 'admin' | 'viewer';
+  created_at: string;
+}
+
+export interface Branch {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface SiteField {
+  id: string;
+  field_name: string;
+  display_name: string;
+  is_required: boolean;
+  is_active: boolean;
+  created_at: string;
+}
+
 // Save ticket to Supabase
 export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean; ticket_id?: string; error?: any }> => {
   try {
@@ -168,5 +192,174 @@ export const simulateTicketResponse = async (ticketId: string): Promise<boolean>
       response: randomResponse,
       status: 'resolved'
     });
+  }
+};
+
+// New function to get tickets by date range
+export const getTicketsByDateRange = async (startDate: string, endDate: string): Promise<SupportTicket[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('tickets')
+      .select('*')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data.map(ticket => ({
+      ...ticket,
+      status: ticket.status as 'pending' | 'open' | 'inprogress' | 'resolved' | 'closed'
+    }));
+  } catch (error) {
+    console.error('Error fetching tickets by date range:', error);
+    return [];
+  }
+};
+
+// Admin Management Functions
+export const getAllAdmins = async (): Promise<Admin[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('admins')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching admins:', error);
+    return [];
+  }
+};
+
+export const createAdmin = async (admin: Omit<Admin, 'id' | 'created_at'>): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const { error } = await supabase
+      .from('admins')
+      .insert([admin]);
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating admin:', error);
+    return { success: false, error };
+  }
+};
+
+export const deleteAdmin = async (adminId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('admins')
+      .delete()
+      .eq('id', adminId);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting admin:', error);
+    return false;
+  }
+};
+
+// Branch Management Functions
+export const getAllBranches = async (): Promise<Branch[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('branches')
+      .select('*')
+      .order('name', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching branches:', error);
+    return [];
+  }
+};
+
+export const createBranch = async (name: string): Promise<{ success: boolean; error?: any }> => {
+  try {
+    const { error } = await supabase
+      .from('branches')
+      .insert([{ name }]);
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating branch:', error);
+    return { success: false, error };
+  }
+};
+
+export const deleteBranch = async (branchId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('branches')
+      .delete()
+      .eq('id', branchId);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error deleting branch:', error);
+    return false;
+  }
+};
+
+// Site Fields Management Functions
+export const getAllSiteFields = async (): Promise<SiteField[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('site_fields')
+      .select('*')
+      .order('display_name', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching site fields:', error);
+    return [];
+  }
+};
+
+export const updateSiteField = async (fieldId: string, updates: Partial<SiteField>): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('site_fields')
+      .update(updates)
+      .eq('id', fieldId);
+
+    if (error) {
+      throw error;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error updating site field:', error);
+    return false;
   }
 };

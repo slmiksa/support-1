@@ -12,21 +12,72 @@ export type Database = {
       admins: {
         Row: {
           created_at: string
+          employee_id: string | null
           id: string
           password: string
+          role: string
           username: string
         }
         Insert: {
           created_at?: string
+          employee_id?: string | null
           id?: string
           password: string
+          role?: string
           username: string
         }
         Update: {
           created_at?: string
+          employee_id?: string | null
           id?: string
           password?: string
+          role?: string
           username?: string
+        }
+        Relationships: []
+      }
+      branches: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      site_fields: {
+        Row: {
+          created_at: string
+          display_name: string
+          field_name: string
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          display_name: string
+          field_name: string
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          display_name?: string
+          field_name?: string
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
         }
         Relationships: []
       }
