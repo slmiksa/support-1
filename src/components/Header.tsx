@@ -59,11 +59,11 @@ const Header = () => {
         style={{ backgroundColor: settings.primary_color }}
       >
         <div className="container mx-auto flex flex-col items-center space-y-3">
-          {/* Logo without background rectangle */}
+          {/* Logo without background rectangle, now twice as large */}
           <img 
             src={logoUrl} 
             alt={settings.site_name} 
-            className="h-16 w-auto" 
+            className="h-32 w-auto" 
           />
           <div className="flex flex-col items-center">
             <h1 
