@@ -59,13 +59,12 @@ const Header = () => {
         style={{ backgroundColor: settings.primary_color }}
       >
         <div className="container mx-auto flex flex-col items-center space-y-3">
-          <div className="bg-white rounded-lg p-3 shadow-md w-48">
-            <img 
-              src={logoUrl} 
-              alt={settings.site_name} 
-              className="h-10 w-auto" 
-            />
-          </div>
+          {/* Logo without background rectangle */}
+          <img 
+            src={logoUrl} 
+            alt={settings.site_name} 
+            className="h-16 w-auto" 
+          />
           <div className="flex flex-col items-center">
             <h1 
               className="text-xl md:text-2xl font-bold text-center" 
@@ -73,7 +72,7 @@ const Header = () => {
             >
               {settings.site_name}
             </h1>
-            <div className="h-0.5 w-full bg-accent-gold mt-1"></div>
+            {/* Removed the underline div that was here */}
           </div>
         </div>
       </div>
