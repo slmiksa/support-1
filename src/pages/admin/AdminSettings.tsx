@@ -11,7 +11,7 @@ import NotificationSettings from '@/components/admin/NotificationSettings';
 import SiteCustomizationManager from '@/components/admin/SiteCustomizationManager';
 import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 const AdminSettings = () => {

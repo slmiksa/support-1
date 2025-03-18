@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
@@ -15,7 +15,6 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { PieChart, Pie, Cell, BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import logo from '@/assets/logo.svg';
 
 // Define ticket status color map
 const statusColorMap = {
@@ -166,40 +165,36 @@ const ReportGenerator = () => {
     }
 
     try {
-      // Create a new PDF document instance with proper options for Arabic support
+      // Create a new PDF document instance with RTL support
       const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4',
-        putOnlyUsedFonts: true,
-        compress: true
       });
-      
+
       // Set right-to-left mode for Arabic text
       doc.setR2L(true);
       
-      // Use default fonts since Amiri font requires additional setup
-      doc.setFont("courier", "bold");
-      doc.setFontSize(22);
+      // Set font size for the header
+      doc.setFontSize(18);
       doc.setTextColor(21, 67, 127); // Company blue color
       
-      // Add title
-      const title = `تقرير التذاكر: ${format(startDate, 'yyyy/MM/dd', { locale: ar })} - ${format(endDate, 'yyyy/MM/dd', { locale: ar })}`;
+      // Add title - using standard fonts to avoid encoding issues
+      const title = `تقرير التذاكر: ${format(startDate, 'yyyy/MM/dd')} - ${format(endDate, 'yyyy/MM/dd')}`;
       doc.text(title, doc.internal.pageSize.width / 2, 20, { align: 'center' });
       
       // Add the current date
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
-      const currentDate = `تاريخ التقرير: ${format(new Date(), 'yyyy/MM/dd HH:mm', { locale: ar })}`;
+      const currentDate = `تاريخ التقرير: ${format(new Date(), 'yyyy/MM/dd HH:mm')}`;
       doc.text(currentDate, doc.internal.pageSize.width - 20, 30, { align: 'right' });
       
       // Add statistics section header
-      doc.setFont("courier", "bold");
-      doc.setFontSize(16);
+      doc.setFontSize(14);
       doc.setTextColor(21, 67, 127);
-      doc.text('إحصائيات التذاكر', doc.internal.pageSize.width / 2, 35, { align: 'center' });
+      doc.text('إحصائيات التذاكر', doc.internal.pageSize.width / 2, 40, { align: 'center' });
       
-      // Create statistics table
+      // Create statistics table with Arabic text
       const statsData = [
         ['إجمالي التذاكر', ticketStats.total.toString()],
         ['قيد الانتظار', (ticketStats.byStatus.pending || 0).toString()],
@@ -209,24 +204,28 @@ const ReportGenerator = () => {
         ['مغلقة', (ticketStats.byStatus.closed || 0).toString()]
       ];
       
-      // Add the statistics table
+      // Add the statistics table with RTL support
       autoTable(doc, {
-        startY: 40,
+        startY: 45,
         head: [['الحالة', 'العدد']],
         body: statsData,
         theme: 'grid',
         headStyles: { 
           halign: 'center',
           fillColor: [21, 67, 127],
-          font: 'courier',
-          fontStyle: 'bold'
+          textColor: [255, 255, 255],
+          fontSize: 12
         },
         bodyStyles: { 
           halign: 'center',
-          font: 'courier'
+          fontSize: 10
         },
         margin: { left: 100, right: 100 },
-        tableWidth: 'auto'
+        tableWidth: 'auto',
+        styles: {
+          font: 'helvetica', // Using a standard font that supports basic Arabic
+          overflow: 'linebreak'
+        }
       });
 
       // Get current Y position after the stats table
@@ -252,26 +251,29 @@ const ReportGenerator = () => {
           headStyles: { 
             halign: 'center',
             fillColor: [21, 67, 127],
-            font: 'courier',
-            fontStyle: 'bold'
+            textColor: [255, 255, 255],
+            fontSize: 12
           },
           bodyStyles: { 
             halign: 'center',
-            font: 'courier'
+            fontSize: 10
           },
           margin: { left: 20, right: 20 },
-          tableWidth: 'auto'
+          tableWidth: 'auto',
+          styles: {
+            font: 'helvetica',
+            overflow: 'linebreak'
+          }
         });
       }
       
       // Add ticket details section header
-      const ticketsTitleY = (doc as any).lastAutoTable.finalY + 10 || finalStatsY + 50;
-      doc.setFont('courier', 'bold');
-      doc.setFontSize(16);
+      const ticketsTitleY = (doc as any).lastAutoTable.finalY + 15 || finalStatsY + 50;
+      doc.setFontSize(14);
       doc.setTextColor(21, 67, 127);
       doc.text('تفاصيل التذاكر', doc.internal.pageSize.width / 2, ticketsTitleY, { align: 'center' });
       
-      // Prepare ticket data for the table
+      // Prepare ticket data for the table with proper status labels
       const ticketRows = tickets.map(ticket => [
         ticket.ticket_id,
         ticket.employee_id,
@@ -290,20 +292,24 @@ const ReportGenerator = () => {
         headStyles: { 
           halign: 'center',
           fillColor: [21, 67, 127],
-          font: 'courier',
-          fontStyle: 'bold'
+          textColor: [255, 255, 255],
+          fontSize: 12
         },
         bodyStyles: { 
           halign: 'center',
-          font: 'courier'
+          fontSize: 10
+        },
+        styles: {
+          font: 'helvetica',
+          overflow: 'linebreak'
         },
         columnStyles: {
-          0: { cellWidth: 25 },
-          1: { cellWidth: 25 },
-          2: { cellWidth: 40 },
-          3: { cellWidth: 25 },
-          4: { cellWidth: 35 },
-          5: { cellWidth: 30 }
+          0: { cellWidth: 20 },
+          1: { cellWidth: 20 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 20 },
+          4: { cellWidth: 30 },
+          5: { cellWidth: 25 }
         }
       });
       
@@ -311,14 +317,12 @@ const ReportGenerator = () => {
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
-        doc.setFont('courier', 'normal');
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
         const pageText = `صفحة ${i} من ${totalPages}`;
         doc.text(pageText, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
         
         // Add the company name in the footer
-        doc.setFont('courier', 'bold');
         doc.setTextColor(21, 67, 127);
         doc.text("الوصل لحلول الدعم الفني", 20, doc.internal.pageSize.height - 10);
       }
