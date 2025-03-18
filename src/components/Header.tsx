@@ -7,7 +7,7 @@ const Header = () => {
     <div className="flex flex-col w-full">
       {/* Top header with logo and company name */}
       <div className="w-full bg-company py-4 px-6">
-        <div className="container mx-auto flex flex-col items-end space-y-3">
+        <div className="container mx-auto flex flex-col items-center space-y-3">
           <div className="bg-white rounded-lg p-3 shadow-md w-48">
             <img 
               src={logoSvg} 
@@ -15,8 +15,8 @@ const Header = () => {
               className="h-10 w-auto" 
             />
           </div>
-          <div className="flex flex-col items-end">
-            <h1 className="text-xl md:text-2xl font-bold text-white">شركة الوصل الوطنية لتحصيل ديون جهات التمويل</h1>
+          <div className="flex flex-col items-center">
+            <h1 className="text-xl md:text-2xl font-bold text-white text-center">شركة الوصل الوطنية لتحصيل ديون جهات التمويل</h1>
             <div className="h-0.5 w-full bg-accent-gold mt-1"></div>
           </div>
         </div>
@@ -24,7 +24,7 @@ const Header = () => {
       
       {/* Navigation bar */}
       <nav className="w-full bg-company-dark py-3 px-6 shadow-md mb-6">
-        <div className="container mx-auto flex justify-center md:justify-end space-x-8">
+        <div className="container mx-auto flex justify-center space-x-8">
           <Link 
             to="/ticket-status" 
             className="text-white hover:text-accent-gold transition-colors duration-200 mx-4 font-medium text-lg flex items-center"

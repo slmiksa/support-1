@@ -28,10 +28,10 @@ const DateTimeDisplay = () => {
   });
 
   return (
-    <div className="text-company-dark text-right">
+    <div className="text-company-dark text-center">
       <span className="ml-2 font-medium">الوقت:</span>
       <span className="font-medium">{formattedTime}</span>
-      <span className="mr-8 ml-2 font-medium">التاريخ:</span>
+      <span className="mx-4 font-medium">التاريخ:</span>
       <span className="font-medium">{formattedDate}</span>
     </div>
   );
