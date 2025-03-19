@@ -10,8 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Branch } from '@/utils/ticketUtils';
 import { sendTicketNotificationsToAllAdmins } from '@/utils/notificationUtils';
-
-type PriorityType = 'urgent' | 'medium' | 'normal';
+import { PriorityType } from '@/integrations/supabase/client';
 
 interface FormData {
   employeeId: string;
@@ -19,7 +18,7 @@ interface FormData {
   priority: PriorityType;
   description: string;
   imageFile: File | null;
-  [key: string]: string | File | null | PriorityType; // Update to allow PriorityType
+  [key: string]: string | File | null | PriorityType;
 }
 
 const SupportForm = () => {
@@ -93,7 +92,11 @@ const SupportForm = () => {
   const handleSelectChange = (value: string, fieldName: string = 'branch') => {
     // For priority field, ensure we only accept valid priority types
     if (fieldName === 'priority') {
-      const priorityValue = value as PriorityType;
+      // Validate that the value is one of the allowed priority types
+      const validPriorities: PriorityType[] = ['urgent', 'medium', 'normal'];
+      const priorityValue = validPriorities.includes(value as PriorityType) 
+        ? value as PriorityType 
+        : 'normal';
       setFormData(prev => ({ ...prev, [fieldName]: priorityValue }));
     } else {
       setFormData(prev => ({ ...prev, [fieldName]: value }));

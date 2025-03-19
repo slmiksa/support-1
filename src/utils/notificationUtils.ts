@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, PriorityType } from '@/integrations/supabase/client';
 import { SupportTicket } from './ticketUtils';
 import { toast } from 'sonner';
 

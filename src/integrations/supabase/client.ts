@@ -22,6 +22,5 @@ export interface SiteSettings {
   created_at?: string;
 }
 
-// We need to make sure the priority type is properly typed in our utils
+// Define PriorityType as a literal union type
 export type PriorityType = 'urgent' | 'medium' | 'normal';
-
