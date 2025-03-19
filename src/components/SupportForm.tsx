@@ -1,4 +1,3 @@
-
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -90,9 +89,7 @@ const SupportForm = () => {
   };
 
   const handleSelectChange = (value: string, fieldName: string = 'branch') => {
-    // For priority field, ensure we only accept valid priority types
     if (fieldName === 'priority') {
-      // Validate that the value is one of the allowed priority types
       const validPriorities: PriorityType[] = ['urgent', 'medium', 'normal'];
       const priorityValue = validPriorities.includes(value as PriorityType) 
         ? value as PriorityType 

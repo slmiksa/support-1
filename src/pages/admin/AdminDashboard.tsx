@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Search, X, Flag, AlertTriangle, CircleCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 // Define ticket status color map with more vibrant colors
 const statusColorMap = {
@@ -57,10 +58,58 @@ const AdminDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState('all');
   const navigate = useNavigate();
+  const { isAuthenticated } = useAdminAuth();
 
   useEffect(() => {
-    fetchTickets();
-  }, []);
+    if (isAuthenticated) {
+      fetchTickets();
+      setupRealtimeSubscription();
+    }
+  }, [isAuthenticated]);
+
+  const setupRealtimeSubscription = () => {
+    // Subscribe to realtime updates for the tickets table
+    const channel = supabase
+      .channel('admin-dashboard-tickets')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'tickets' 
+      }, (payload) => {
+        // Handle new ticket
+        const newTicket = payload.new;
+        
+        // Show toast notification for new ticket
+        toast.success(
+          <div className="rtl">
+            <div className="font-bold">تذكرة جديدة</div>
+            <div>تم استلام تذكرة جديدة: {newTicket.ticket_id}</div>
+            <div>الفرع: {newTicket.branch}</div>
+            <div>الأهمية: {priorityLabels[newTicket.priority] || 'عادية'}</div>
+          </div>,
+          {
+            duration: 5000,
+            position: 'top-left',
+            action: {
+              label: 'عرض',
+              onClick: () => navigate(`/admin/tickets/${newTicket.ticket_id}`),
+            },
+          }
+        );
+        
+        // Update tickets state with the new ticket
+        setTickets(prevTickets => {
+          // Add the new ticket to the beginning of the array
+          return [newTicket, ...prevTickets];
+        });
+      })
+      .subscribe();
+
+    // Return cleanup function
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  };
 
   const fetchTickets = async () => {
     try {
