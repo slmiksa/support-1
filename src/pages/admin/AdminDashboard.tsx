@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Search, X, Flag, AlertTriangle, CircleCheck } from 'lucide-react';
+import { Search, X, Flag, AlertTriangle, CircleCheck, Bell } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
@@ -72,21 +72,28 @@ const AdminDashboard = () => {
       }, (payload) => {
         const newTicket = payload.new;
         
-        toast.success(
-          <div className="rtl">
-            <div className="font-bold">تذكرة جديدة</div>
-            <div>تم استلام تذكرة جديدة: {newTicket.ticket_id}</div>
-            <div>الفرع: {newTicket.branch}</div>
-            <div>الأهمية: {priorityLabels[newTicket.priority] || 'عادية'}</div>
-            <div>الموظف: {newTicket.employee_id}</div>
+        // تحسين شكل وأداء الإشعارات
+        toast(
+          <div className="flex items-start space-x-2 rtl:space-x-reverse">
+            <Bell className="h-5 w-5 text-company flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="font-bold text-base">تذكرة جديدة</div>
+              <div className="text-sm">تم استلام تذكرة جديدة: {newTicket.ticket_id}</div>
+              <div className="text-sm">الفرع: {newTicket.branch}</div>
+              <div className="text-sm">الأهمية: {priorityLabels[newTicket.priority] || 'عادية'}</div>
+              <div className="text-sm">الموظف: {newTicket.employee_id}</div>
+            </div>
           </div>,
           {
-            duration: 30000, // Changed to 30 seconds (30000ms)
+            duration: 30000,
             position: 'top-left',
+            onDismiss: () => console.log("تم إغلاق الإشعار"),
+            onAutoClose: () => console.log("تم إغلاق الإشعار تلقائيًا"),
             action: {
-              label: 'عرض',
+              label: "عرض التذكرة",
               onClick: () => navigate(`/admin/tickets/${newTicket.ticket_id}`),
             },
+            closeButton: true,
           }
         );
         

@@ -1,3 +1,4 @@
+
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -117,13 +118,21 @@ const SupportForm = () => {
     e.preventDefault();
     
     if (!formData.employeeId || !formData.branch || !formData.description || !formData.priority) {
-      toast.error('يرجى تعبئة جميع الحقول المطلوبة');
+      toast.error('يرجى تعبئة جميع الحقول المطلوبة', {
+        closeButton: true,
+        position: 'top-center',
+        duration: 5000
+      });
       return;
     }
     
     for (const field of customFields) {
       if (field.is_required && !formData[field.field_name]) {
-        toast.error(`الحقل "${field.display_name}" مطلوب`);
+        toast.error(`الحقل "${field.display_name}" مطلوب`, {
+          closeButton: true,
+          position: 'top-center',
+          duration: 5000
+        });
         return;
       }
     }
@@ -181,10 +190,18 @@ const SupportForm = () => {
       setFormData(resetFormData);
       setImagePreview(null);
       
-      toast.success('تم إرسال طلب الدعم بنجاح');
+      toast.success('تم إرسال طلب الدعم بنجاح', {
+        closeButton: true,
+        position: 'top-center',
+        duration: 5000
+      });
     } catch (error) {
       console.error('Error submitting form:', error);
-      toast.error('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى');
+      toast.error('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى', {
+        closeButton: true,
+        position: 'top-center',
+        duration: 5000
+      });
     } finally {
       setIsSubmitting(false);
     }
