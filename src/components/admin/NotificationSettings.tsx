@@ -12,7 +12,6 @@ import { saveAdminNotificationEmail } from '@/utils/notificationUtils';
 const NotificationSettings = () => {
   const [notificationEmail, setNotificationEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [testLoading, setTestLoading] = useState(false);
   const [initialEmail, setInitialEmail] = useState('');
   const { adminData } = useAdminAuth();
 
@@ -77,84 +76,6 @@ const NotificationSettings = () => {
     }
   };
 
-  const sendTestNotification = async () => {
-    const emailToTest = notificationEmail || initialEmail;
-    
-    if (!emailToTest) {
-      toast.error('الرجاء إدخال بريد إلكتروني أولاً', {
-        duration: 30000
-      });
-      return;
-    }
-
-    setTestLoading(true);
-    try {
-      // Create a mock ticket for testing
-      const mockTicket = {
-        ticket_id: 'TEST-' + Date.now().toString().slice(-6),
-        employee_id: 'TEST-EMPLOYEE',
-        branch: 'الفرع الرئيسي (اختبار)',
-        description: 'هذه رسالة اختبار للتأكد من عمل نظام الإشعارات بشكل صحيح. تم إرسالها في ' + new Date().toLocaleString('ar-SA'),
-        priority: 'normal'
-      };
-
-      // Display a toast to show we're testing
-      toast.info('جاري إرسال الإشعار الاختباري...', {
-        duration: 30000
-      });
-      
-      console.log('Sending test notification to:', emailToTest);
-      console.log('Test data:', mockTicket);
-
-      // Call the edge function directly but don't show error toasts
-      const { data, error } = await supabase.functions.invoke(
-        'send-ticket-notification',
-        {
-          body: {
-            ticket_id: mockTicket.ticket_id,
-            employee_id: mockTicket.employee_id,
-            branch: mockTicket.branch,
-            description: mockTicket.description,
-            priority: mockTicket.priority,
-            admin_email: emailToTest
-          }
-        }
-      );
-
-      console.log('Edge function complete response:', data, error);
-
-      if (error) {
-        console.error('Edge function error:', error);
-        // Don't show error toast, just log it
-        toast.success(`تم إرسال إشعار اختباري`, {
-          duration: 30000
-        });
-        return;
-      }
-
-      if (data?.success === false) {
-        console.error('Email sending error details:', data.error, data.details);
-        // Don't show error toast, just log it
-        toast.success(`تم إرسال إشعار اختباري`, {
-          duration: 30000
-        });
-        return;
-      }
-
-      toast.success(`تم إرسال إشعار اختباري إلى ${emailToTest} بنجاح`, {
-        duration: 30000
-      });
-    } catch (error: any) {
-      console.error('Error sending test notification:', error);
-      // Show generic success message instead of error
-      toast.success(`تم إرسال إشعار اختباري`, {
-        duration: 30000
-      });
-    } finally {
-      setTestLoading(false);
-    }
-  };
-
   const hasChanges = notificationEmail !== initialEmail;
 
   return (
@@ -187,22 +108,6 @@ const NotificationSettings = () => {
           </div>
           <p className="text-sm text-muted-foreground text-right">
             سيتم إرسال إشعار إلى هذا البريد الإلكتروني عند إنشاء تذكرة دعم فني جديدة
-          </p>
-        </div>
-
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <div className="flex items-center justify-between">
-            <Button 
-              onClick={sendTestNotification} 
-              variant="outline" 
-              disabled={testLoading}
-              className="w-full"
-            >
-              {testLoading ? 'جاري إرسال الاختبار...' : 'إرسال إشعار اختباري الآن'}
-            </Button>
-          </div>
-          <p className="text-sm text-muted-foreground text-right mt-2">
-            اختبر إعدادات الإشعارات بإرسال رسالة تجريبية إلى البريد الإلكتروني المحدد أعلاه
           </p>
         </div>
       </CardContent>
