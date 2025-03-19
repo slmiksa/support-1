@@ -1,6 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-// Update to a more recent version of the SMTP client library
+// Using a different SMTP client library that's compatible with Deno Deploy
 import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
@@ -48,39 +48,42 @@ const handler = async (req: Request): Promise<Response> => {
     };
     const priorityLabel = priorityLabels[priority as keyof typeof priorityLabels] || 'عادية';
 
-    try {
-      // Configure SMTP client
-      const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
-      const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
-      const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
-      const emailPassword = Deno.env.get("EMAIL_PASSWORD") || "vlh4pefmnx$gtcdsOzwj";
-      
-      console.log(`Connecting to SMTP server: ${emailHost}:${emailPort}`);
+    // Configure SMTP client
+    const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
+    const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
+    const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
+    const emailPassword = Deno.env.get("EMAIL_PASSWORD") || "";
+    
+    console.log(`Email configuration: Host=${emailHost}, Port=${emailPort}, User=${emailUsername}`);
+    console.log(`Attempting to send email to ${admin_email}`);
 
-      // Create email HTML content
-      const emailHtml = `
-        <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
-          <h1 style="color: #15437f;">تم إنشاء تذكرة دعم فني جديدة</h1>
-          <p>تم إنشاء تذكرة دعم فني جديدة في النظام. إليك التفاصيل:</p>
-          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; border-right: 4px solid #15437f;">
-            <p><strong>رقم التذكرة:</strong> ${ticket_id}</p>
-            <p><strong>الرقم الوظيفي:</strong> ${employee_id}</p>
-            <p><strong>الفرع:</strong> ${branch}</p>
-            <p><strong>الأهمية:</strong> <span style="background-color: ${priority === 'urgent' ? '#ffebee' : priority === 'medium' ? '#fff8e1' : '#e8f5e9'}; padding: 3px 8px; border-radius: 4px; color: ${priority === 'urgent' ? '#c62828' : priority === 'medium' ? '#ff8f00' : '#2e7d32'};">${priorityLabel}</span></p>
-            <p><strong>وصف المشكلة:</strong> ${truncatedDescription}</p>
-          </div>
-          <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login" style="color: #15437f; text-decoration: none; font-weight: bold;">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
-          <p style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #eee; color: #777; font-size: 12px;">
-            تم إرسال هذا البريد الإلكتروني تلقائياً من نظام دعم الوصل. يرجى عدم الرد على هذا البريد.
-          </p>
+    // Create email HTML content
+    const emailHtml = `
+      <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
+        <h1 style="color: #15437f;">تم إنشاء تذكرة دعم فني جديدة</h1>
+        <p>تم إنشاء تذكرة دعم فني جديدة في النظام. إليك التفاصيل:</p>
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; border-right: 4px solid #15437f;">
+          <p><strong>رقم التذكرة:</strong> ${ticket_id}</p>
+          <p><strong>الرقم الوظيفي:</strong> ${employee_id}</p>
+          <p><strong>الفرع:</strong> ${branch}</p>
+          <p><strong>الأهمية:</strong> <span style="background-color: ${priority === 'urgent' ? '#ffebee' : priority === 'medium' ? '#fff8e1' : '#e8f5e9'}; padding: 3px 8px; border-radius: 4px; color: ${priority === 'urgent' ? '#c62828' : priority === 'medium' ? '#ff8f00' : '#2e7d32'};">${priorityLabel}</span></p>
+          <p><strong>وصف المشكلة:</strong> ${truncatedDescription}</p>
         </div>
-      `;
+        <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login" style="color: #15437f; text-decoration: none; font-weight: bold;">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
+        <p style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #eee; color: #777; font-size: 12px;">
+          تم إرسال هذا البريد الإلكتروني تلقائياً من نظام دعم الوصل. يرجى عدم الرد على هذا البريد.
+        </p>
+      </div>
+    `;
 
+    try {
       // Initialize SMTP client
       const client = new SmtpClient();
+      
+      console.log("Connecting to SMTP server...");
 
-      // Connect to SMTP server
-      await client.connect({
+      // Connect to SMTP server with explicit error handling
+      await client.connectTLS({
         hostname: emailHost,
         port: emailPort,
         username: emailUsername,
@@ -88,9 +91,9 @@ const handler = async (req: Request): Promise<Response> => {
       });
       
       console.log("Successfully connected to SMTP server");
-
-      // Send the email
-      await client.send({
+      
+      // Send the email with explicit error handling
+      const sendResult = await client.send({
         from: emailUsername,
         to: admin_email,
         subject: `تذكرة جديدة: ${ticket_id} - ${priorityLabel}`,
@@ -98,7 +101,7 @@ const handler = async (req: Request): Promise<Response> => {
         html: emailHtml,
       });
       
-      console.log("Email sent successfully to", admin_email);
+      console.log("Email sent successfully:", sendResult);
       
       // Close the connection
       await client.close();
@@ -113,12 +116,28 @@ const handler = async (req: Request): Promise<Response> => {
       });
     } catch (emailError: any) {
       console.error("Email error details:", emailError);
-      throw new Error(`Failed to send email: ${emailError.message}`);
+      console.error("Error stack:", emailError.stack);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to send email: ${emailError.message}`,
+          details: emailError.stack
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
   } catch (error: any) {
     console.error("Error in send-ticket-notification function:", error);
+    console.error("Error stack:", error.stack);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message,
+        details: error.stack 
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

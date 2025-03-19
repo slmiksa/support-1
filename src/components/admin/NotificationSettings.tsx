@@ -93,8 +93,16 @@ const NotificationSettings = () => {
         employee_id: 'TEST-EMPLOYEE',
         branch: 'الفرع الرئيسي (اختبار)',
         description: 'هذه رسالة اختبار للتأكد من عمل نظام الإشعارات بشكل صحيح. تم إرسالها في ' + new Date().toLocaleString('ar-SA'),
-        status: 'new'
+        priority: 'normal'
       };
+
+      // Display a toast to show we're testing
+      toast.info('جاري إرسال الإشعار الاختباري...', {
+        duration: 30000
+      });
+      
+      console.log('Sending test notification to:', emailToTest);
+      console.log('Test data:', mockTicket);
 
       // Call the function
       const { data, error } = await supabase.functions.invoke(
@@ -105,21 +113,30 @@ const NotificationSettings = () => {
             employee_id: mockTicket.employee_id,
             branch: mockTicket.branch,
             description: mockTicket.description,
+            priority: mockTicket.priority,
             admin_email: emailToTest
           }
         }
       );
 
+      console.log('Edge function response:', data, error);
+
       if (error) {
-        throw error;
+        console.error('Edge function error:', error);
+        throw new Error(`فشل في إرسال الإشعار: ${error.message}`);
+      }
+
+      if (data?.success === false) {
+        console.error('Email sending error:', data.error);
+        throw new Error(`فشل في إرسال البريد: ${data.error}`);
       }
 
       toast.success(`تم إرسال إشعار اختباري إلى ${emailToTest} بنجاح`, {
         duration: 30000
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending test notification:', error);
-      toast.error('فشل في إرسال الإشعار الاختباري', {
+      toast.error(`فشل في إرسال الإشعار الاختباري: ${error.message}`, {
         duration: 30000
       });
     } finally {
