@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Search, X } from 'lucide-react';
+import { Search, X, Flag, AlertTriangle, CircleCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Define ticket status color map with more vibrant colors
@@ -21,6 +21,20 @@ const statusColorMap = {
   closed: 'bg-slate-100 text-slate-800 border border-slate-200 hover:bg-slate-200',
 };
 
+// Define priority color map
+const priorityColorMap = {
+  urgent: 'bg-red-100 text-red-800 border border-red-200 hover:bg-red-200',
+  medium: 'bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200',
+  normal: 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200',
+};
+
+// Define priority icons
+const priorityIconMap = {
+  urgent: <Flag className="h-4 w-4 mr-1" />,
+  medium: <AlertTriangle className="h-4 w-4 mr-1" />,
+  normal: <CircleCheck className="h-4 w-4 mr-1" />,
+};
+
 // Define ticket status labels in Arabic
 const statusLabels = {
   pending: 'قيد الانتظار',
@@ -28,6 +42,13 @@ const statusLabels = {
   inprogress: 'جاري المعالجة',
   resolved: 'تم الحل',
   closed: 'مغلقة',
+};
+
+// Define priority labels in Arabic
+const priorityLabels = {
+  urgent: 'عاجلة',
+  medium: 'متوسطة',
+  normal: 'عادية',
 };
 
 const AdminDashboard = () => {
@@ -86,6 +107,17 @@ const AdminDashboard = () => {
 
   const handleViewTicket = (ticketId) => {
     navigate(`/admin/tickets/${ticketId}`);
+  };
+
+  const getPriorityDisplay = (priority) => {
+    // Default to normal if not specified
+    const actualPriority = priority || 'normal';
+    return (
+      <Badge className={`font-medium px-3 py-1 rounded-md text-sm flex items-center ${priorityColorMap[actualPriority] || 'bg-green-100'}`}>
+        {priorityIconMap[actualPriority]}
+        {priorityLabels[actualPriority] || 'عادية'}
+      </Badge>
+    );
   };
 
   return (
@@ -184,6 +216,7 @@ const AdminDashboard = () => {
                       <TableHead className="text-right font-bold text-company py-4">رقم التذكرة</TableHead>
                       <TableHead className="text-right font-bold text-company py-4">الرقم الوظيفي</TableHead>
                       <TableHead className="text-right font-bold text-company py-4">الفرع</TableHead>
+                      <TableHead className="text-right font-bold text-company py-4">الأهمية</TableHead>
                       <TableHead className="text-right font-bold text-company py-4">الحالة</TableHead>
                       <TableHead className="text-right font-bold text-company py-4">تاريخ الإنشاء</TableHead>
                       <TableHead className="text-right font-bold text-company py-4">إجراءات</TableHead>
@@ -199,6 +232,9 @@ const AdminDashboard = () => {
                           <TableCell className="font-medium text-right py-4">{ticket.ticket_id}</TableCell>
                           <TableCell className="text-right py-4">{ticket.employee_id}</TableCell>
                           <TableCell className="text-right py-4">{ticket.branch}</TableCell>
+                          <TableCell className="text-right py-4">
+                            {getPriorityDisplay(ticket.priority)}
+                          </TableCell>
                           <TableCell className="text-right py-4">
                             <Badge className={`font-medium px-3 py-1 rounded-md text-sm ${statusColorMap[ticket.status] || 'bg-gray-100'}`}>
                               {statusLabels[ticket.status] || ticket.status}
@@ -224,7 +260,7 @@ const AdminDashboard = () => {
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={6} className="text-center h-32">
+                        <TableCell colSpan={7} className="text-center h-32">
                           {searchQuery ? (
                             <p className="text-lg text-gray-500">لا توجد تذاكر تطابق معايير البحث</p>
                           ) : (

@@ -1,4 +1,3 @@
-
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -14,6 +13,7 @@ import { sendTicketNotificationsToAllAdmins } from '@/utils/notificationUtils';
 interface FormData {
   employeeId: string;
   branch: string;
+  priority: string;
   description: string;
   imageFile: File | null;
   [key: string]: string | File | null; // Dynamic fields
@@ -24,6 +24,7 @@ const SupportForm = () => {
   const [formData, setFormData] = useState<FormData>({
     employeeId: '',
     branch: '',
+    priority: 'normal',
     description: '',
     imageFile: null
   });
@@ -51,19 +52,17 @@ const SupportForm = () => {
     const fetchCustomFields = async () => {
       try {
         const fieldsData = await getAllSiteFields();
-        // Filter only active fields
         const activeFields = fieldsData.filter(field => field.is_active);
         setCustomFields(activeFields);
         
-        // Initialize form data with custom fields
         const initialFormData: FormData = {
           employeeId: '',
           branch: '',
+          priority: 'normal',
           description: '',
           imageFile: null
         };
         
-        // Add custom fields to form data
         activeFields.forEach(field => {
           initialFormData[field.field_name] = '';
         });
@@ -88,8 +87,8 @@ const SupportForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (value: string) => {
-    setFormData(prev => ({ ...prev, branch: value }));
+  const handleSelectChange = (value: string, fieldName: string = 'branch') => {
+    setFormData(prev => ({ ...prev, [fieldName]: value }));
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -97,7 +96,6 @@ const SupportForm = () => {
       const file = e.target.files[0];
       setFormData(prev => ({ ...prev, imageFile: file }));
       
-      // Create image preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result as string);
@@ -109,13 +107,11 @@ const SupportForm = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.employeeId || !formData.branch || !formData.description) {
+    if (!formData.employeeId || !formData.branch || !formData.description || !formData.priority) {
       toast.error('يرجى تعبئة جميع الحقول المطلوبة');
       return;
     }
     
-    // Validate custom required fields
     for (const field of customFields) {
       if (field.is_required && !formData[field.field_name]) {
         toast.error(`الحقل "${field.display_name}" مطلوب`);
@@ -126,60 +122,49 @@ const SupportForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Generate new ticket ID
       const newTicketId = generateTicketId();
       
-      // Create ticket object with base fields
       const newTicket: SupportTicket = {
         ticket_id: newTicketId,
         employee_id: formData.employeeId,
         branch: formData.branch,
+        priority: formData.priority,
         description: formData.description,
         image_url: imagePreview || undefined,
         status: 'pending',
         created_at: new Date().toISOString()
       };
       
-      // Add custom fields to ticket
       customFields.forEach(field => {
         if (formData[field.field_name]) {
           (newTicket as any)[field.field_name] = formData[field.field_name];
         }
       });
       
-      // Save ticket to storage
       const result = await saveTicket(newTicket);
       
       if (!result.success) {
         throw new Error('Failed to save ticket');
       }
       
-      // Send email notifications to all admins
-      try {
-        const notificationSent = await sendTicketNotificationsToAllAdmins(newTicket);
-        
-        if (notificationSent) {
-          console.log('Email notifications sent successfully');
-        } else {
-          console.warn('Failed to send email notifications, but ticket was saved');
-        }
-      } catch (notificationError) {
-        console.error('Failed to send notifications, but ticket was saved:', notificationError);
-        // We don't want to fail the ticket submission if notification fails
+      const notificationSent = await sendTicketNotificationsToAllAdmins(newTicket);
+      
+      if (notificationSent) {
+        console.log('Email notifications sent successfully');
+      } else {
+        console.warn('Failed to send email notifications, but ticket was saved');
       }
       
-      // Display success message
       setTicketId(newTicketId);
       
-      // Reset form after submission
       const resetFormData: FormData = {
         employeeId: '',
         branch: '',
+        priority: 'normal',
         description: '',
         imageFile: null
       };
       
-      // Reset custom fields
       customFields.forEach(field => {
         resetFormData[field.field_name] = '';
       });
@@ -261,7 +246,7 @@ const SupportForm = () => {
                   <Label htmlFor="branch" className="text-right">الفرع</Label>
                   <Select
                     value={formData.branch}
-                    onValueChange={handleSelectChange}
+                    onValueChange={(value) => handleSelectChange(value, 'branch')}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="اختر الفرع" />
@@ -276,6 +261,23 @@ const SupportForm = () => {
                       ) : (
                         <SelectItem value="no-branches" disabled>لا توجد فروع متاحة</SelectItem>
                       )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="grid gap-2">
+                  <Label htmlFor="priority" className="text-right">الأهمية</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) => handleSelectChange(value, 'priority')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر مستوى الأهمية" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="urgent">عاجلة</SelectItem>
+                      <SelectItem value="medium">متوسطة</SelectItem>
+                      <SelectItem value="normal">عادية</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -304,7 +306,7 @@ const SupportForm = () => {
                     id="description"
                     name="description"
                     required
-                    placeholder="اكتب محتوى ��لشكوى هنا..."
+                    placeholder="اكتب محتوى الشكوى هنا..."
                     className="min-h-[120px] text-right"
                     value={formData.description}
                     onChange={handleChange}

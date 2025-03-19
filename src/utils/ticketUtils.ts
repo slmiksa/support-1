@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -13,6 +14,7 @@ export interface SupportTicket {
   ticket_id: string;
   employee_id: string;
   branch: string;
+  priority?: 'urgent' | 'medium' | 'normal';
   anydesk_number?: string;
   extension_number?: string;
   description: string;
@@ -68,6 +70,7 @@ export const saveTicket = async (ticket: SupportTicket): Promise<{ success: bool
       ticket_id: ticket.ticket_id,
       employee_id: ticket.employee_id,
       branch: ticket.branch,
+      priority: ticket.priority || 'normal',
       description: ticket.description,
       image_url: ticket.image_url,
       status: ticket.status,
@@ -83,7 +86,7 @@ export const saveTicket = async (ticket: SupportTicket): Promise<{ success: bool
     
     // Add any additional custom fields from site_fields table
     Object.keys(ticket).forEach(key => {
-      if (!['id', 'ticket_id', 'employee_id', 'branch', 'description', 
+      if (!['id', 'ticket_id', 'employee_id', 'branch', 'priority', 'description', 
             'image_url', 'status', 'created_at', 'updated_at', 
             'image_file', 'response', 'anydesk_number', 'extension_number',
             'custom_fields'].includes(key)) {
