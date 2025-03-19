@@ -5,7 +5,8 @@ import {
   updateSiteField, 
   createSiteField, 
   deleteSiteField, 
-  SiteField 
+  SiteField,
+  updateFieldOrder
 } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -23,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Trash2, ArrowUp, ArrowDown, Info } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +35,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const SiteFieldsManager = () => {
   const [fields, setFields] = useState<SiteField[]>([]);
@@ -58,9 +65,9 @@ const SiteFieldsManager = () => {
     setLoading(true);
     const data = await getAllSiteFields();
     
-    // Sort fields by display_name for initial load
+    // Sort fields by sort_order for initial load
     const sortedFields = [...data].sort((a, b) => 
-      a.display_name.localeCompare(b.display_name, 'ar')
+      (a.sort_order || 0) - (b.sort_order || 0)
     );
     
     setFields(sortedFields);
@@ -69,6 +76,12 @@ const SiteFieldsManager = () => {
 
   const handleToggleRequired = async (field: SiteField) => {
     if (!canManageAdmins) return;
+    
+    // Don't allow changing system fields like 'priority'
+    if (field.field_name === 'priority') {
+      toast.error('لا يمكن تغيير إعدادات حقل الأهمية');
+      return;
+    }
     
     const newValue = !field.is_required;
     const success = await updateSiteField(field.id, { is_required: newValue });
@@ -83,6 +96,12 @@ const SiteFieldsManager = () => {
 
   const handleToggleActive = async (field: SiteField) => {
     if (!canManageAdmins) return;
+    
+    // Don't allow changing system fields like 'priority'
+    if (field.field_name === 'priority') {
+      toast.error('لا يمكن تغيير إعدادات حقل الأهمية');
+      return;
+    }
     
     const newValue = !field.is_active;
     const success = await updateSiteField(field.id, { is_active: newValue });
@@ -147,6 +166,14 @@ const SiteFieldsManager = () => {
   const handleDeleteField = async () => {
     if (!canManageAdmins || !fieldToDelete) return;
     
+    // Don't allow deleting system fields like 'priority'
+    if (fieldToDelete.field_name === 'priority') {
+      toast.error('لا يمكن حذف حقل الأهمية');
+      setDeleteDialogOpen(false);
+      setFieldToDelete(null);
+      return;
+    }
+    
     try {
       const success = await deleteSiteField(fieldToDelete.id);
       
@@ -171,21 +198,58 @@ const SiteFieldsManager = () => {
     setDeleteDialogOpen(true);
   };
 
-  // New functions for reordering fields
-  const moveFieldUp = (index: number) => {
+  // Functions for reordering fields
+  const moveFieldUp = async (index: number) => {
     if (index === 0) return; // Already at the top
-    const newFields = [...fields];
-    [newFields[index-1], newFields[index]] = [newFields[index], newFields[index-1]];
-    setFields(newFields);
-    toast.success('تم تحريك الحقل للأعلى');
+    
+    const field = fields[index];
+    
+    // Don't allow reordering system fields
+    if (field.field_name === 'priority') {
+      toast.error('لا يمكن تغيير ترتيب حقل الأهمية');
+      return;
+    }
+    
+    // Call the backend function to update the order
+    const success = await updateFieldOrder(field.id, 'up');
+    
+    if (success) {
+      const newFields = [...fields];
+      [newFields[index-1], newFields[index]] = [newFields[index], newFields[index-1]];
+      setFields(newFields);
+      toast.success('تم تحريك الحقل للأعلى');
+    } else {
+      toast.error('فشل في تحريك الحقل');
+    }
   };
 
-  const moveFieldDown = (index: number) => {
+  const moveFieldDown = async (index: number) => {
     if (index === fields.length - 1) return; // Already at the bottom
-    const newFields = [...fields];
-    [newFields[index], newFields[index+1]] = [newFields[index+1], newFields[index]];
-    setFields(newFields);
-    toast.success('تم تحريك الحقل للأسفل');
+    
+    const field = fields[index];
+    
+    // Don't allow reordering system fields
+    if (field.field_name === 'priority') {
+      toast.error('لا يمكن تغيير ترتيب حقل الأهمية');
+      return;
+    }
+    
+    // Call the backend function to update the order
+    const success = await updateFieldOrder(field.id, 'down');
+    
+    if (success) {
+      const newFields = [...fields];
+      [newFields[index], newFields[index+1]] = [newFields[index+1], newFields[index]];
+      setFields(newFields);
+      toast.success('تم تحريك الحقل للأسفل');
+    } else {
+      toast.error('فشل في تحريك الحقل');
+    }
+  };
+
+  const isSystemField = (fieldName: string): boolean => {
+    // List of system fields that cannot be modified
+    return ['priority'].includes(fieldName);
   };
 
   return (
@@ -261,42 +325,64 @@ const SiteFieldsManager = () => {
               <TableBody>
                 {fields.length > 0 ? (
                   fields.map((field, index) => (
-                    <TableRow key={field.id}>
+                    <TableRow key={field.id} className={isSystemField(field.field_name) ? "bg-muted/30" : ""}>
                       {canManageAdmins && (
                         <TableCell className="flex items-center justify-center space-x-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => moveFieldUp(index)}
-                            disabled={index === 0}
-                          >
-                            <ArrowUp size={16} />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => moveFieldDown(index)}
-                            disabled={index === fields.length - 1}
-                          >
-                            <ArrowDown size={16} />
-                          </Button>
+                          {isSystemField(field.field_name) ? (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="flex items-center">
+                                    <Info size={16} className="text-amber-500 mr-1" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>حقل نظام لا يمكن تعديله</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          ) : (
+                            <>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={() => moveFieldUp(index)}
+                                disabled={index === 0}
+                              >
+                                <ArrowUp size={16} />
+                              </Button>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={() => moveFieldDown(index)}
+                                disabled={index === fields.length - 1}
+                              >
+                                <ArrowDown size={16} />
+                              </Button>
+                            </>
+                          )}
                         </TableCell>
                       )}
-                      <TableCell className="font-medium text-right">{field.display_name}</TableCell>
+                      <TableCell className="font-medium text-right">
+                        {field.display_name}
+                        {isSystemField(field.field_name) && (
+                          <span className="mr-2 text-sm text-muted-foreground">(حقل نظام)</span>
+                        )}
+                      </TableCell>
                       <TableCell>
                         <Switch
                           checked={field.is_required}
                           onCheckedChange={() => handleToggleRequired(field)}
-                          disabled={!canManageAdmins}
+                          disabled={!canManageAdmins || isSystemField(field.field_name)}
                         />
                       </TableCell>
                       <TableCell>
                         <Switch
                           checked={field.is_active}
                           onCheckedChange={() => handleToggleActive(field)}
-                          disabled={!canManageAdmins}
+                          disabled={!canManageAdmins || isSystemField(field.field_name)}
                         />
                       </TableCell>
                       {canManageAdmins && (
@@ -306,6 +392,7 @@ const SiteFieldsManager = () => {
                             size="icon" 
                             className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
                             onClick={() => openDeleteDialog(field)}
+                            disabled={isSystemField(field.field_name)}
                           >
                             <Trash2 size={16} />
                           </Button>
