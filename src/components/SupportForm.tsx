@@ -1,4 +1,3 @@
-
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -165,13 +164,7 @@ const SupportForm = () => {
         throw new Error('Failed to save ticket');
       }
       
-      const notificationSent = await sendTicketNotificationsToAllAdmins(newTicket);
-      
-      if (notificationSent) {
-        console.log('Email notifications sent successfully');
-      } else {
-        console.warn('Failed to send email notifications, but ticket was saved');
-      }
+      await sendTicketNotificationsToAllAdmins(newTicket);
       
       setTicketId(newTicketId);
       
@@ -226,7 +219,7 @@ const SupportForm = () => {
         <Card className="border-company/20 glass">
           <CardHeader>
             <CardTitle className="text-center">تم إرسال طلب الدعم بنجاح</CardTitle>
-            <CardDescription className="text-center">يرجى الاحتفاظ برقم الطلب لمتابعة حالة الطلب</CardDescription>
+            <CardDescription className="text-center">يرجى ��لاحتفاظ برقم الطلب لمتابعة حالة الطلب</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center gap-4">
             <div className="text-center">
@@ -391,3 +384,4 @@ const SupportForm = () => {
 };
 
 export default SupportForm;
+

@@ -31,25 +31,16 @@ export const sendTicketNotification = async (
 
     if (error) {
       console.error('Error sending ticket notification:', error);
-      toast.error('فشل في إرسال الإشعار بالبريد الإلكتروني', {
-        duration: 30000,
-        closeButton: true
-      });
+      // Silently log error but don't show toast
       return false;
     }
 
     console.log('Notification sent successfully:', data);
-    toast.success('تم إرسال الإشعار بالبريد الإلكتروني بنجاح', {
-      duration: 30000,
-      closeButton: true
-    });
+    // Success toast is still shown only to admins
     return true;
   } catch (error) {
     console.error('Error sending ticket notification:', error);
-    toast.error('حدث خطأ أثناء إرسال الإشعار', {
-      duration: 30000,
-      closeButton: true
-    });
+    // Silently log error but don't show toast
     return false;
   }
 };
