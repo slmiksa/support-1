@@ -96,6 +96,8 @@ export type Database = {
           primary_color: string
           secondary_color: string
           site_name: string
+          support_available: boolean | null
+          support_message: string | null
           text_color: string
         }
         Insert: {
@@ -106,6 +108,8 @@ export type Database = {
           primary_color?: string
           secondary_color?: string
           site_name?: string
+          support_available?: boolean | null
+          support_message?: string | null
           text_color?: string
         }
         Update: {
@@ -116,6 +120,8 @@ export type Database = {
           primary_color?: string
           secondary_color?: string
           site_name?: string
+          support_available?: boolean | null
+          support_message?: string | null
           text_color?: string
         }
         Relationships: []

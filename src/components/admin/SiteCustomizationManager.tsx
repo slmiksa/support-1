@@ -5,10 +5,11 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Image, Palette, Type } from 'lucide-react';
+import { Image, Palette, Type, HeadphonesIcon } from 'lucide-react';
 
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
@@ -17,6 +18,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
   secondary_color: '#093467', 
   text_color: '#ffffff', 
   footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.',
+  support_available: true,
+  support_message: 'الدعم الفني متواجد',
 };
 
 const SiteCustomizationManager = () => {
@@ -158,7 +161,7 @@ const SiteCustomizationManager = () => {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-3 w-full mb-6">
+          <TabsList className="grid grid-cols-4 w-full mb-6">
             <TabsTrigger value="general" className="flex items-center gap-2">
               <Type size={16} />
               <span>الإعدادات العامة</span>
@@ -170,6 +173,10 @@ const SiteCustomizationManager = () => {
             <TabsTrigger value="colors" className="flex items-center gap-2">
               <Palette size={16} />
               <span>الألوان</span>
+            </TabsTrigger>
+            <TabsTrigger value="support" className="flex items-center gap-2">
+              <HeadphonesIcon size={16} />
+              <span>الدعم الفني</span>
             </TabsTrigger>
           </TabsList>
 
@@ -303,6 +310,48 @@ const SiteCustomizationManager = () => {
                 >
                   <span style={{ color: settings.text_color }}>القائمة</span>
                 </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="support">
+            <div className="space-y-6">
+              <div className="p-4 border rounded-lg bg-gray-50">
+                <div className="flex items-center justify-between mb-4">
+                  <Switch 
+                    id="support_available"
+                    checked={settings.support_available}
+                    onCheckedChange={(checked) => 
+                      setSettings({ ...settings, support_available: checked })
+                    }
+                  />
+                  <Label htmlFor="support_available" className="text-right font-medium">
+                    تفعيل الدعم الفني
+                  </Label>
+                </div>
+                
+                <div className="flex gap-2 items-center justify-end">
+                  <div 
+                    className={`w-4 h-4 rounded-full ${settings.support_available ? 'bg-green-500' : 'bg-red-500'}`}
+                  ></div>
+                  <p className="text-sm">
+                    {settings.support_available ? 'الدعم الفني متاح حالياً' : 'الدعم الفني غير متاح حالياً'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="support_message" className="text-right block">رسالة حالة الدعم الفني</Label>
+                <Input
+                  id="support_message"
+                  value={settings.support_message}
+                  onChange={(e) => setSettings({ ...settings, support_message: e.target.value })}
+                  placeholder="الدعم الفني متواجد"
+                  className="text-right"
+                />
+                <p className="text-xs text-gray-500 text-right">
+                  هذه الرسالة ستظهر للمستخدمين عند تفعيل الدعم الفني
+                </p>
               </div>
             </div>
           </TabsContent>

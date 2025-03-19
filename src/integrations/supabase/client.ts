@@ -19,6 +19,8 @@ export interface SiteSettings {
   secondary_color: string;
   text_color: string;
   footer_text: string;
+  support_available?: boolean;
+  support_message?: string;
   created_at?: string;
 }
 
