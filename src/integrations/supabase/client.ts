@@ -14,9 +14,9 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 export interface SiteSettings {
   id?: string;
   site_name: string;
-  page_title?: string; // إضافة حقل عنوان الصفحة
+  page_title?: string;
   logo_url?: string | null;
-  favicon_url?: string | null; // إضافة حقل أيقونة المتصفح
+  favicon_url?: string | null;
   primary_color: string;
   secondary_color: string;
   text_color: string;

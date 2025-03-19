@@ -90,6 +90,7 @@ export type Database = {
       site_settings: {
         Row: {
           created_at: string
+          favicon_url: string | null
           footer_text: string
           id: string
           logo_url: string | null
@@ -103,6 +104,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          favicon_url?: string | null
           footer_text?: string
           id?: string
           logo_url?: string | null
@@ -116,6 +118,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          favicon_url?: string | null
           footer_text?: string
           id?: string
           logo_url?: string | null
