@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -80,7 +81,7 @@ const AdminDashboard = () => {
             <div>الموظف: {newTicket.employee_id}</div>
           </div>,
           {
-            duration: 30000,
+            duration: 30000, // Changed to 30 seconds (30000ms)
             position: 'top-left',
             action: {
               label: 'عرض',

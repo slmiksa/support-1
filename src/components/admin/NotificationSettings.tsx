@@ -45,7 +45,9 @@ const NotificationSettings = () => {
 
   const handleSaveEmail = async () => {
     if (!adminData?.id) {
-      toast.error('لم يتم العثور على بيانات المسؤول');
+      toast.error('لم يتم العثور على بيانات المسؤول', {
+        duration: 30000
+      });
       return;
     }
 
@@ -54,14 +56,20 @@ const NotificationSettings = () => {
       const success = await saveAdminNotificationEmail(adminData.id, notificationEmail);
 
       if (success) {
-        toast.success('تم حفظ البريد الإلكتروني للإشعارات بنجاح');
+        toast.success('تم حفظ البريد الإلكتروني للإشعارات بنجاح', {
+          duration: 30000
+        });
         setInitialEmail(notificationEmail);
       } else {
-        toast.error('فشل في حفظ البريد الإلكتروني');
+        toast.error('فشل في حفظ البريد الإلكتروني', {
+          duration: 30000
+        });
       }
     } catch (error) {
       console.error('Error saving notification email:', error);
-      toast.error('حدث خطأ أثناء حفظ البريد الإلكتروني');
+      toast.error('حدث خطأ أثناء حفظ البريد الإلكتروني', {
+        duration: 30000
+      });
     } finally {
       setLoading(false);
     }
@@ -71,7 +79,9 @@ const NotificationSettings = () => {
     const emailToTest = notificationEmail || initialEmail;
     
     if (!emailToTest) {
-      toast.error('الرجاء إدخال بريد إلكتروني أولاً');
+      toast.error('الرجاء إدخال بريد إلكتروني أولاً', {
+        duration: 30000
+      });
       return;
     }
 
@@ -104,10 +114,14 @@ const NotificationSettings = () => {
         throw error;
       }
 
-      toast.success(`تم إرسال إشعار اختباري إلى ${emailToTest} بنجاح`);
+      toast.success(`تم إرسال إشعار اختباري إلى ${emailToTest} بنجاح`, {
+        duration: 30000
+      });
     } catch (error) {
       console.error('Error sending test notification:', error);
-      toast.error('فشل في إرسال الإشعار الاختباري');
+      toast.error('فشل في إرسال الإشعار الاختباري', {
+        duration: 30000
+      });
     } finally {
       setTestLoading(false);
     }

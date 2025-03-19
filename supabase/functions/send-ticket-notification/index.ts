@@ -39,10 +39,10 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${description.substring(0, 100)}...` 
       : description;
 
-    // SMTP client configuration - using your provided credentials
+    // SMTP client configuration
     const client = new SmtpClient();
     
-    // Using the provided email configuration (retrieving from environment variables for security)
+    // Use the provided email configuration
     const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
     const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
     const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
@@ -51,7 +51,8 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Connecting to SMTP server: ${emailHost}:${emailPort}`);
     
     try {
-      await client.connectTLS({
+      // Fix: Use connect instead of connectTLS for non-secure SMTP connection
+      await client.connect({
         hostname: emailHost,
         port: emailPort,
         username: emailUsername,

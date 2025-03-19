@@ -1,4 +1,3 @@
-
 import { supabase, PriorityType } from '@/integrations/supabase/client';
 import { SupportTicket } from './ticketUtils';
 import { toast } from 'sonner';
@@ -31,13 +30,22 @@ export const sendTicketNotification = async (
 
     if (error) {
       console.error('Error sending ticket notification:', error);
+      toast.error('فشل في إرسال الإشعار بالبريد الإلكتروني', {
+        duration: 30000
+      });
       return false;
     }
 
     console.log('Notification sent successfully:', data);
+    toast.success('تم إرسال الإشعار بالبريد الإلكتروني بنجاح', {
+      duration: 30000
+    });
     return true;
   } catch (error) {
     console.error('Error sending ticket notification:', error);
+    toast.error('حدث خطأ أثناء إرسال الإشعار', {
+      duration: 30000
+    });
     return false;
   }
 };
