@@ -104,7 +104,7 @@ const NotificationSettings = () => {
       console.log('Sending test notification to:', emailToTest);
       console.log('Test data:', mockTicket);
 
-      // Call the function
+      // Call the edge function directly with more detailed error handling
       const { data, error } = await supabase.functions.invoke(
         'send-ticket-notification',
         {
@@ -119,7 +119,7 @@ const NotificationSettings = () => {
         }
       );
 
-      console.log('Edge function response:', data, error);
+      console.log('Edge function complete response:', data, error);
 
       if (error) {
         console.error('Edge function error:', error);
@@ -127,7 +127,7 @@ const NotificationSettings = () => {
       }
 
       if (data?.success === false) {
-        console.error('Email sending error:', data.error);
+        console.error('Email sending error details:', data.error, data.details);
         throw new Error(`فشل في إرسال البريد: ${data.error}`);
       }
 

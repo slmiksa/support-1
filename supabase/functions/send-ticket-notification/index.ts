@@ -77,35 +77,54 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     try {
-      // Initialize SMTP client
+      // Initialize SMTP client with more detailed error handling
       const client = new SmtpClient();
       
-      console.log("Connecting to SMTP server...");
-
-      // Connect to SMTP server with explicit error handling
-      await client.connectTLS({
-        hostname: emailHost,
-        port: emailPort,
-        username: emailUsername,
-        password: emailPassword,
-      });
+      console.log("Establishing secure SMTP connection...");
       
-      console.log("Successfully connected to SMTP server");
+      // Connect to SMTP server with explicit TLS
+      try {
+        await client.connectTLS({
+          hostname: emailHost,
+          port: emailPort,
+          username: emailUsername,
+          password: emailPassword,
+        });
+        
+        console.log("Successfully connected to SMTP server");
+      } catch (connectError: any) {
+        console.error("SMTP connection error:", connectError);
+        console.error("Connection error stack:", connectError.stack);
+        throw new Error(`Failed to connect to SMTP server: ${connectError.message}`);
+      }
       
-      // Send the email with explicit error handling
-      const sendResult = await client.send({
-        from: emailUsername,
-        to: admin_email,
-        subject: `تذكرة جديدة: ${ticket_id} - ${priorityLabel}`,
-        content: "تم إنشاء تذكرة دعم فني جديدة",
-        html: emailHtml,
-      });
+      console.log("Sending email...");
       
-      console.log("Email sent successfully:", sendResult);
+      // Send the email with detailed error handling
+      try {
+        const sendResult = await client.send({
+          from: emailUsername,
+          to: admin_email,
+          subject: `تذكرة جديدة: ${ticket_id} - ${priorityLabel}`,
+          content: "تم إنشاء تذكرة دعم فني جديدة",
+          html: emailHtml,
+        });
+        
+        console.log("Email sent successfully:", sendResult);
+      } catch (sendError: any) {
+        console.error("Email sending error:", sendError);
+        console.error("Sending error stack:", sendError.stack);
+        await client.close();
+        throw new Error(`Failed to send email: ${sendError.message}`);
+      }
       
       // Close the connection
-      await client.close();
-      console.log("SMTP connection closed");
+      try {
+        await client.close();
+        console.log("SMTP connection closed");
+      } catch (closeError: any) {
+        console.error("Error closing SMTP connection:", closeError);
+      }
 
       return new Response(JSON.stringify({ success: true, message: "Email sent successfully" }), {
         status: 200,
@@ -117,6 +136,8 @@ const handler = async (req: Request): Promise<Response> => {
     } catch (emailError: any) {
       console.error("Email error details:", emailError);
       console.error("Error stack:", emailError.stack);
+      
+      // Return more detailed error information
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -132,6 +153,7 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-ticket-notification function:", error);
     console.error("Error stack:", error.stack);
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
