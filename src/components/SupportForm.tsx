@@ -226,7 +226,7 @@ const SupportForm = () => {
         <Card className="border-company/20 glass">
           <CardHeader>
             <CardTitle className="text-center">تم إرسال طلب الدعم بنجاح</CardTitle>
-            <CardDescription className="text-center">يرجى ��لاحتفاظ برقم الطلب لمتابعة حالة الطلب</CardDescription>
+            <CardDescription className="text-center">يرجى الاحتفاظ برقم الطلب لمتابعة حالة الطلب</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center gap-4">
             <div className="text-center">
@@ -254,6 +254,24 @@ const SupportForm = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-4">
+                {/* حقل الأهمية - تم نقله ليكون أول حقل */}
+                <div className="grid gap-2">
+                  <Label htmlFor="priority" className="text-right">الأهمية</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) => handleSelectChange(value, 'priority')}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="اختر مستوى الأهمية" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="urgent">عاجلة</SelectItem>
+                      <SelectItem value="medium">متوسطة</SelectItem>
+                      <SelectItem value="normal">عادية</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
                 <div className="grid gap-2">
                   <Label htmlFor="employeeId" className="text-right">الرقم الوظيفي</Label>
                   <Input
@@ -291,23 +309,7 @@ const SupportForm = () => {
                   </Select>
                 </div>
                 
-                <div className="grid gap-2">
-                  <Label htmlFor="priority" className="text-right">الأهمية</Label>
-                  <Select
-                    value={formData.priority}
-                    onValueChange={(value) => handleSelectChange(value, 'priority')}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="اختر مستوى الأهمية" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="urgent">عاجلة</SelectItem>
-                      <SelectItem value="medium">متوسطة</SelectItem>
-                      <SelectItem value="normal">عادية</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
+                {/* Custom fields */}
                 {customFields.map(field => (
                   <div key={field.id} className="grid gap-2">
                     <Label htmlFor={field.field_name} className="text-right">
