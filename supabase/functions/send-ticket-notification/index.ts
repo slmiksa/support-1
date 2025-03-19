@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+// Update to a more recent version of the SMTP client library
 import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
 
 const corsHeaders = {
@@ -39,32 +40,6 @@ const handler = async (req: Request): Promise<Response> => {
       ? `${description.substring(0, 100)}...` 
       : description;
 
-    // SMTP client configuration
-    const client = new SmtpClient();
-    
-    // Use the provided email configuration
-    const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
-    const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
-    const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
-    const emailPassword = Deno.env.get("EMAIL_PASSWORD") || "vlh4pefmnx$gtcdsOzwj";
-    
-    console.log(`Connecting to SMTP server: ${emailHost}:${emailPort}`);
-    
-    try {
-      // Fix: Use connect instead of connectTLS for non-secure SMTP connection
-      await client.connect({
-        hostname: emailHost,
-        port: emailPort,
-        username: emailUsername,
-        password: emailPassword,
-      });
-      
-      console.log("Successfully connected to SMTP server");
-    } catch (smtpError) {
-      console.error("SMTP connection error:", smtpError);
-      throw new Error(`Failed to connect to SMTP server: ${smtpError.message}`);
-    }
-
     // Get priority label in Arabic
     const priorityLabels = {
       urgent: 'عاجلة',
@@ -73,27 +48,48 @@ const handler = async (req: Request): Promise<Response> => {
     };
     const priorityLabel = priorityLabels[priority as keyof typeof priorityLabels] || 'عادية';
 
-    // Create the email message with enhanced styling and priority information
-    const emailHtml = `
-      <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
-        <h1 style="color: #15437f;">تم إنشاء تذكرة دعم فني جديدة</h1>
-        <p>تم إنشاء تذكرة دعم فني جديدة في النظام. إليك التفاصيل:</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; border-right: 4px solid #15437f;">
-          <p><strong>رقم التذكرة:</strong> ${ticket_id}</p>
-          <p><strong>الرقم الوظيفي:</strong> ${employee_id}</p>
-          <p><strong>الفرع:</strong> ${branch}</p>
-          <p><strong>الأهمية:</strong> <span style="background-color: ${priority === 'urgent' ? '#ffebee' : priority === 'medium' ? '#fff8e1' : '#e8f5e9'}; padding: 3px 8px; border-radius: 4px; color: ${priority === 'urgent' ? '#c62828' : priority === 'medium' ? '#ff8f00' : '#2e7d32'};">${priorityLabel}</span></p>
-          <p><strong>وصف المشكلة:</strong> ${truncatedDescription}</p>
-        </div>
-        <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login" style="color: #15437f; text-decoration: none; font-weight: bold;">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
-        <p style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #eee; color: #777; font-size: 12px;">
-          تم إرسال هذا البريد الإلكتروني تلقائياً من نظام دعم الوصل. يرجى عدم الرد على هذا البريد.
-        </p>
-      </div>
-    `;
-
-    // Send the email
     try {
+      // Configure SMTP client
+      const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
+      const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
+      const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
+      const emailPassword = Deno.env.get("EMAIL_PASSWORD") || "vlh4pefmnx$gtcdsOzwj";
+      
+      console.log(`Connecting to SMTP server: ${emailHost}:${emailPort}`);
+
+      // Create email HTML content
+      const emailHtml = `
+        <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
+          <h1 style="color: #15437f;">تم إنشاء تذكرة دعم فني جديدة</h1>
+          <p>تم إنشاء تذكرة دعم فني جديدة في النظام. إليك التفاصيل:</p>
+          <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; border-right: 4px solid #15437f;">
+            <p><strong>رقم التذكرة:</strong> ${ticket_id}</p>
+            <p><strong>الرقم الوظيفي:</strong> ${employee_id}</p>
+            <p><strong>الفرع:</strong> ${branch}</p>
+            <p><strong>الأهمية:</strong> <span style="background-color: ${priority === 'urgent' ? '#ffebee' : priority === 'medium' ? '#fff8e1' : '#e8f5e9'}; padding: 3px 8px; border-radius: 4px; color: ${priority === 'urgent' ? '#c62828' : priority === 'medium' ? '#ff8f00' : '#2e7d32'};">${priorityLabel}</span></p>
+            <p><strong>وصف المشكلة:</strong> ${truncatedDescription}</p>
+          </div>
+          <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login" style="color: #15437f; text-decoration: none; font-weight: bold;">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
+          <p style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #eee; color: #777; font-size: 12px;">
+            تم إرسال هذا البريد الإلكتروني تلقائياً من نظام دعم الوصل. يرجى عدم الرد على هذا البريد.
+          </p>
+        </div>
+      `;
+
+      // Initialize SMTP client
+      const client = new SmtpClient();
+
+      // Connect to SMTP server
+      await client.connect({
+        hostname: emailHost,
+        port: emailPort,
+        username: emailUsername,
+        password: emailPassword,
+      });
+      
+      console.log("Successfully connected to SMTP server");
+
+      // Send the email
       await client.send({
         from: emailUsername,
         to: admin_email,
@@ -103,25 +99,22 @@ const handler = async (req: Request): Promise<Response> => {
       });
       
       console.log("Email sent successfully to", admin_email);
-    } catch (sendError) {
-      console.error("Email sending error:", sendError);
-      throw new Error(`Failed to send email: ${sendError.message}`);
-    } finally {
-      try {
-        await client.close();
-        console.log("SMTP connection closed");
-      } catch (closeError) {
-        console.error("Error closing SMTP connection:", closeError);
-      }
-    }
+      
+      // Close the connection
+      await client.close();
+      console.log("SMTP connection closed");
 
-    return new Response(JSON.stringify({ success: true, message: "Email sent successfully" }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+      return new Response(JSON.stringify({ success: true, message: "Email sent successfully" }), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      });
+    } catch (emailError: any) {
+      console.error("Email error details:", emailError);
+      throw new Error(`Failed to send email: ${emailError.message}`);
+    }
   } catch (error: any) {
     console.error("Error in send-ticket-notification function:", error);
     return new Response(
