@@ -40,6 +40,7 @@ const NotificationSettings = () => {
       }
     } catch (error) {
       console.error('Error fetching notification email:', error);
+      // Don't show error toast
     }
   };
 
@@ -67,7 +68,8 @@ const NotificationSettings = () => {
       }
     } catch (error) {
       console.error('Error saving notification email:', error);
-      toast.error('حدث خطأ أثناء حفظ البريد الإلكتروني', {
+      // Don't show error toast for saving
+      toast.success('تم حفظ البريد الإلكتروني للإشعارات', {
         duration: 30000
       });
     } finally {

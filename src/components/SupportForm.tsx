@@ -1,3 +1,4 @@
+
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -164,7 +165,13 @@ const SupportForm = () => {
         throw new Error('Failed to save ticket');
       }
       
-      await sendTicketNotificationsToAllAdmins(newTicket);
+      // Try to send notifications, but don't show errors if it fails
+      try {
+        await sendTicketNotificationsToAllAdmins(newTicket);
+      } catch (error) {
+        // Silently catch any notification errors - don't display to user
+        console.error('Error sending notifications:', error);
+      }
       
       setTicketId(newTicketId);
       
@@ -384,4 +391,3 @@ const SupportForm = () => {
 };
 
 export default SupportForm;
-
