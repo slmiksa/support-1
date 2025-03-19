@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,7 +12,6 @@ import { Search, X, Flag, AlertTriangle, CircleCheck } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
-// Define ticket status color map with more vibrant colors
 const statusColorMap = {
   pending: 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200',
   open: 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200',
@@ -22,21 +20,18 @@ const statusColorMap = {
   closed: 'bg-slate-100 text-slate-800 border border-slate-200 hover:bg-slate-200',
 };
 
-// Define priority color map
 const priorityColorMap = {
   urgent: 'bg-red-100 text-red-800 border border-red-200 hover:bg-red-200',
   medium: 'bg-orange-100 text-orange-800 border border-orange-200 hover:bg-orange-200',
   normal: 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200',
 };
 
-// Define priority icons
 const priorityIconMap = {
   urgent: <Flag className="h-4 w-4 mr-1" />,
   medium: <AlertTriangle className="h-4 w-4 mr-1" />,
   normal: <CircleCheck className="h-4 w-4 mr-1" />,
 };
 
-// Define ticket status labels in Arabic
 const statusLabels = {
   pending: 'قيد الانتظار',
   open: 'مفتوحة',
@@ -45,7 +40,6 @@ const statusLabels = {
   closed: 'مغلقة',
 };
 
-// Define priority labels in Arabic
 const priorityLabels = {
   urgent: 'عاجلة',
   medium: 'متوسطة',
@@ -68,7 +62,6 @@ const AdminDashboard = () => {
   }, [isAuthenticated]);
 
   const setupRealtimeSubscription = () => {
-    // Subscribe to realtime updates for the tickets table
     const channel = supabase
       .channel('admin-dashboard-tickets')
       .on('postgres_changes', { 
@@ -76,10 +69,8 @@ const AdminDashboard = () => {
         schema: 'public', 
         table: 'tickets' 
       }, (payload) => {
-        // Handle new ticket
         const newTicket = payload.new;
         
-        // Show toast notification for new ticket with more details
         toast.success(
           <div className="rtl">
             <div className="font-bold">تذكرة جديدة</div>
@@ -89,7 +80,7 @@ const AdminDashboard = () => {
             <div>الموظف: {newTicket.employee_id}</div>
           </div>,
           {
-            duration: 10000, // Increase duration to 10 seconds to make sure admins notice it
+            duration: 30000,
             position: 'top-left',
             action: {
               label: 'عرض',
@@ -98,7 +89,6 @@ const AdminDashboard = () => {
           }
         );
         
-        // Play notification sound
         try {
           const audio = new Audio('/notification.mp3');
           audio.play().catch(e => console.log('Could not play notification sound:', e));
@@ -106,15 +96,12 @@ const AdminDashboard = () => {
           console.log('Error playing notification sound:', e);
         }
         
-        // Update tickets state with the new ticket
         setTickets(prevTickets => {
-          // Add the new ticket to the beginning of the array
           return [newTicket, ...prevTickets];
         });
       })
       .subscribe();
 
-    // Return cleanup function
     return () => {
       supabase.removeChannel(channel);
     };
@@ -144,12 +131,10 @@ const AdminDashboard = () => {
   const filterTickets = () => {
     let filtered = [...tickets];
     
-    // Apply status filter
     if (activeFilter !== 'all') {
       filtered = filtered.filter(ticket => ticket.status === activeFilter);
     }
     
-    // Apply search filter if there's a search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(ticket => 
@@ -168,7 +153,6 @@ const AdminDashboard = () => {
   };
 
   const getPriorityDisplay = (priority) => {
-    // Default to normal if not specified
     const actualPriority = priority || 'normal';
     return (
       <Badge className={`font-medium px-3 py-1 rounded-md text-sm flex items-center ${priorityColorMap[actualPriority] || 'bg-green-100'}`}>
@@ -187,7 +171,6 @@ const AdminDashboard = () => {
             <CardTitle className="text-right text-2xl font-bold text-white">إدارة تذاكر الدعم الفني</CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            {/* Search and filter section with better organization */}
             <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
               <div className="relative w-full md:w-1/3">
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -259,7 +242,6 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Loading state */}
             {loading ? (
               <div className="text-center py-12">
                 <div className="inline-block h-10 w-10 animate-spin rounded-full border-4 border-solid border-company border-r-transparent"></div>
@@ -268,7 +250,6 @@ const AdminDashboard = () => {
             ) : (
               <div className="rounded-md border-2 border-gray-200 overflow-hidden shadow-sm">
                 <Table>
-                  {/* Enhanced header styling */}
                   <TableHeader className="bg-gray-50">
                     <TableRow className="border-b-2 border-gray-200">
                       <TableHead className="text-right font-bold text-company py-4">رقم التذكرة</TableHead>

@@ -53,7 +53,7 @@ const SupportForm = () => {
     const fetchCustomFields = async () => {
       try {
         const fieldsData = await getAllSiteFields();
-        const activeFields = fieldsData.filter(field => field.is_active);
+        const activeFields = fieldsData.filter(field => field.is_active && field.field_name !== 'priority');
         setCustomFields(activeFields);
         
         const initialFormData: FormData = {
