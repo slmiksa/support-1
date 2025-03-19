@@ -163,6 +163,7 @@ export type Database = {
           extension_number: string | null
           id: string
           image_url: string | null
+          priority: string | null
           status: string
           ticket_id: string
           updated_at: string
@@ -177,6 +178,7 @@ export type Database = {
           extension_number?: string | null
           id?: string
           image_url?: string | null
+          priority?: string | null
           status?: string
           ticket_id: string
           updated_at?: string
@@ -191,6 +193,7 @@ export type Database = {
           extension_number?: string | null
           id?: string
           image_url?: string | null
+          priority?: string | null
           status?: string
           ticket_id?: string
           updated_at?: string

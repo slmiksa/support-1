@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -24,6 +23,18 @@ const statusOptions = [
   { value: 'closed', label: 'مغلقة' }
 ];
 
+const priorityLabels = {
+  'urgent': 'عاجلة',
+  'medium': 'متوسطة',
+  'normal': 'عادية'
+};
+
+const priorityColorMap = {
+  'urgent': 'bg-red-100 text-red-800',
+  'medium': 'bg-orange-100 text-orange-800',
+  'normal': 'bg-blue-100 text-blue-800'
+};
+
 const AdminTicketDetails = () => {
   const { ticketId } = useParams();
   const navigate = useNavigate();
@@ -43,7 +54,6 @@ const AdminTicketDetails = () => {
   const fetchTicketAndResponses = async () => {
     setLoading(true);
     try {
-      // Fetch ticket details
       const { data: ticketData, error: ticketError } = await supabase
         .from('tickets')
         .select('*')
@@ -56,7 +66,6 @@ const AdminTicketDetails = () => {
 
       setTicket(ticketData);
 
-      // Fetch ticket responses
       const { data: responsesData, error: responsesError } = await supabase
         .from('ticket_responses')
         .select('*')
@@ -85,7 +94,6 @@ const AdminTicketDetails = () => {
 
     setSendingResponse(true);
     try {
-      // Call the function to add a response
       const { data, error } = await supabase.rpc('add_ticket_response', {
         p_ticket_id: ticketId,
         p_response: responseText,
@@ -98,7 +106,7 @@ const AdminTicketDetails = () => {
 
       toast.success('تم إرسال الرد بنجاح');
       setResponseText('');
-      fetchTicketAndResponses(); // Refresh responses
+      fetchTicketAndResponses();
     } catch (error) {
       console.error('Error sending response:', error);
       toast.error('فشل في إرسال الرد');
@@ -112,7 +120,6 @@ const AdminTicketDetails = () => {
 
     setUpdatingStatus(true);
     try {
-      // Call the function to update ticket status
       const { data, error } = await supabase.rpc('update_ticket_status', {
         p_ticket_id: ticketId,
         p_status: newStatus
@@ -122,7 +129,6 @@ const AdminTicketDetails = () => {
         throw error;
       }
 
-      // Update local ticket state
       setTicket({ ...ticket, status: newStatus });
       toast.success('تم تحديث حالة التذكرة بنجاح');
     } catch (error) {
@@ -246,6 +252,14 @@ const AdminTicketDetails = () => {
                 <div>
                   <p className="text-right font-medium">الفرع:</p>
                   <p className="text-right">{ticket.branch}</p>
+                </div>
+                <div>
+                  <p className="text-right font-medium">الأهمية:</p>
+                  <p className="text-right">
+                    <span className={`px-2 py-1 text-xs rounded-full ${priorityColorMap[ticket.priority] || 'bg-blue-100 text-blue-800'}`}>
+                      {priorityLabels[ticket.priority] || 'عادية'}
+                    </span>
+                  </p>
                 </div>
                 {ticket.anydesk_number && (
                   <div>

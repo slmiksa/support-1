@@ -1,3 +1,4 @@
+
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -10,13 +11,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Branch } from '@/utils/ticketUtils';
 import { sendTicketNotificationsToAllAdmins } from '@/utils/notificationUtils';
 
+type PriorityType = 'urgent' | 'medium' | 'normal';
+
 interface FormData {
   employeeId: string;
   branch: string;
-  priority: string;
+  priority: PriorityType;
   description: string;
   imageFile: File | null;
-  [key: string]: string | File | null; // Dynamic fields
+  [key: string]: string | File | null | PriorityType; // Update to allow PriorityType
 }
 
 const SupportForm = () => {
@@ -88,7 +91,13 @@ const SupportForm = () => {
   };
 
   const handleSelectChange = (value: string, fieldName: string = 'branch') => {
-    setFormData(prev => ({ ...prev, [fieldName]: value }));
+    // For priority field, ensure we only accept valid priority types
+    if (fieldName === 'priority') {
+      const priorityValue = value as PriorityType;
+      setFormData(prev => ({ ...prev, [fieldName]: priorityValue }));
+    } else {
+      setFormData(prev => ({ ...prev, [fieldName]: value }));
+    }
   };
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {

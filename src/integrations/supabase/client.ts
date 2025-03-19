@@ -21,3 +21,7 @@ export interface SiteSettings {
   footer_text: string;
   created_at?: string;
 }
+
+// We need to make sure the priority type is properly typed in our utils
+export type PriorityType = 'urgent' | 'medium' | 'normal';
+

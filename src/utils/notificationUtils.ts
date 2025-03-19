@@ -14,6 +14,7 @@ export const sendTicketNotification = async (
       ticket_id: ticket.ticket_id,
       employee_id: ticket.employee_id,
       branch: ticket.branch,
+      priority: ticket.priority,
       description: ticket.description,
       admin_email: adminEmail
     };
