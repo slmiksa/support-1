@@ -13,6 +13,7 @@ import { Image, Palette, Type, HeadphonesIcon } from 'lucide-react';
 
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
+  page_title: 'شركة الوصل الوطنية', // القيمة الافتراضية لعنوان الصفحة
   logo_url: '',
   primary_color: '#15437f', 
   secondary_color: '#093467', 
@@ -88,6 +89,11 @@ const SiteCustomizationManager = () => {
       if (error) throw error;
       
       toast.success('تم حفظ إعدادات الموقع بنجاح');
+      
+      // تحديث عنوان الصفحة مباشرة إذا تم تغييره
+      if (settings.page_title) {
+        document.title = settings.page_title;
+      }
       
       toast.info('قم بتحديث الصفحة لرؤية التغييرات على الموقع');
     } catch (error) {
@@ -191,6 +197,21 @@ const SiteCustomizationManager = () => {
                   placeholder="اسم الشركة"
                   className="text-right"
                 />
+              </div>
+
+              {/* إضافة حقل عنوان الصفحة (Page Title) */}
+              <div className="space-y-2">
+                <Label htmlFor="page_title" className="text-right block">عنوان الصفحة (Page Title)</Label>
+                <Input
+                  id="page_title"
+                  value={settings.page_title}
+                  onChange={(e) => setSettings({ ...settings, page_title: e.target.value })}
+                  placeholder="عنوان الصفحة"
+                  className="text-right"
+                />
+                <p className="text-xs text-gray-500 text-right">
+                  هذا العنوان سيظهر في شريط المتصفح (Browser Tab) وفي نتائج البحث
+                </p>
               </div>
 
               <div className="space-y-2">

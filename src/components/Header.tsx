@@ -7,6 +7,7 @@ import logoSvg from '../assets/logo.svg';
 
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
+  page_title: 'شركة الوصل الوطنية',
   logo_url: '',
   primary_color: '#15437f',
   secondary_color: '#093467',
@@ -42,6 +43,11 @@ const Header = () => {
 
       if (data) {
         setSettings(data as SiteSettings);
+        
+        // تحديث عنوان الصفحة إذا كان موجودًا
+        if (data.page_title) {
+          document.title = data.page_title;
+        }
       }
       setSettingsInitialized(true);
     } catch (error) {
