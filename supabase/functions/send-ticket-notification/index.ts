@@ -13,6 +13,7 @@ interface TicketNotificationRequest {
   employee_id: string;
   branch: string;
   description: string;
+  priority?: string;
   admin_email: string;
 }
 
@@ -23,9 +24,10 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { ticket_id, employee_id, branch, description, admin_email }: TicketNotificationRequest = await req.json();
+    const { ticket_id, employee_id, branch, description, priority, admin_email }: TicketNotificationRequest = await req.json();
 
     console.log(`Sending notification for ticket ${ticket_id} to ${admin_email}`);
+    console.log(`Ticket priority: ${priority || 'normal'}`);
 
     // Validate inputs
     if (!ticket_id || !employee_id || !branch || !description || !admin_email) {
@@ -40,11 +42,11 @@ const handler = async (req: Request): Promise<Response> => {
     // SMTP client configuration - using your provided credentials
     const client = new SmtpClient();
     
-    // Using the provided email configuration
-    const emailHost = "ex.alwaslsaudi.com";
-    const emailPort = 587;
-    const emailUsername = "help@alwaslsaudi.com";
-    const emailPassword = "vlh4pefmnx$gtcdsOzwj";
+    // Using the provided email configuration (retrieving from environment variables for security)
+    const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
+    const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
+    const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
+    const emailPassword = Deno.env.get("EMAIL_PASSWORD") || "vlh4pefmnx$gtcdsOzwj";
     
     console.log(`Connecting to SMTP server: ${emailHost}:${emailPort}`);
     
@@ -62,19 +64,30 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error(`Failed to connect to SMTP server: ${smtpError.message}`);
     }
 
-    // Create the email message
+    // Get priority label in Arabic
+    const priorityLabels = {
+      urgent: 'عاجلة',
+      medium: 'متوسطة',
+      normal: 'عادية'
+    };
+    const priorityLabel = priorityLabels[priority as keyof typeof priorityLabels] || 'عادية';
+
+    // Create the email message with enhanced styling and priority information
     const emailHtml = `
       <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
-        <h1>تم إنشاء تذكرة دعم فني جديدة</h1>
+        <h1 style="color: #15437f;">تم إنشاء تذكرة دعم فني جديدة</h1>
         <p>تم إنشاء تذكرة دعم فني جديدة في النظام. إليك التفاصيل:</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; border-right: 4px solid #15437f;">
           <p><strong>رقم التذكرة:</strong> ${ticket_id}</p>
           <p><strong>الرقم الوظيفي:</strong> ${employee_id}</p>
           <p><strong>الفرع:</strong> ${branch}</p>
+          <p><strong>الأهمية:</strong> <span style="background-color: ${priority === 'urgent' ? '#ffebee' : priority === 'medium' ? '#fff8e1' : '#e8f5e9'}; padding: 3px 8px; border-radius: 4px; color: ${priority === 'urgent' ? '#c62828' : priority === 'medium' ? '#ff8f00' : '#2e7d32'};">${priorityLabel}</span></p>
           <p><strong>وصف المشكلة:</strong> ${truncatedDescription}</p>
         </div>
-        <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
-        <p>شكراً لك،<br>نظام دعم WSL</p>
+        <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login" style="color: #15437f; text-decoration: none; font-weight: bold;">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
+        <p style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #eee; color: #777; font-size: 12px;">
+          تم إرسال هذا البريد الإلكتروني تلقائياً من نظام دعم الوصل. يرجى عدم الرد على هذا البريد.
+        </p>
       </div>
     `;
 
@@ -83,7 +96,7 @@ const handler = async (req: Request): Promise<Response> => {
       await client.send({
         from: emailUsername,
         to: admin_email,
-        subject: `تذكرة جديدة: ${ticket_id}`,
+        subject: `تذكرة جديدة: ${ticket_id} - ${priorityLabel}`,
         content: "تم إنشاء تذكرة دعم فني جديدة",
         html: emailHtml,
       });

@@ -79,16 +79,17 @@ const AdminDashboard = () => {
         // Handle new ticket
         const newTicket = payload.new;
         
-        // Show toast notification for new ticket
+        // Show toast notification for new ticket with more details
         toast.success(
           <div className="rtl">
             <div className="font-bold">تذكرة جديدة</div>
             <div>تم استلام تذكرة جديدة: {newTicket.ticket_id}</div>
             <div>الفرع: {newTicket.branch}</div>
             <div>الأهمية: {priorityLabels[newTicket.priority] || 'عادية'}</div>
+            <div>الموظف: {newTicket.employee_id}</div>
           </div>,
           {
-            duration: 5000,
+            duration: 10000, // Increase duration to 10 seconds to make sure admins notice it
             position: 'top-left',
             action: {
               label: 'عرض',
@@ -96,6 +97,14 @@ const AdminDashboard = () => {
             },
           }
         );
+        
+        // Play notification sound
+        try {
+          const audio = new Audio('/notification.mp3');
+          audio.play().catch(e => console.log('Could not play notification sound:', e));
+        } catch (e) {
+          console.log('Error playing notification sound:', e);
+        }
         
         // Update tickets state with the new ticket
         setTickets(prevTickets => {
