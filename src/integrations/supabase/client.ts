@@ -16,6 +16,7 @@ export interface SiteSettings {
   site_name: string;
   page_title?: string; // إضافة حقل عنوان الصفحة
   logo_url?: string | null;
+  favicon_url?: string | null; // إضافة حقل أيقونة المتصفح
   primary_color: string;
   secondary_color: string;
   text_color: string;

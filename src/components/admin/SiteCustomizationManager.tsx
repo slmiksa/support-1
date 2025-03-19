@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -15,6 +14,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
   page_title: 'شركة الوصل الوطنية', // القيمة الافتراضية لعنوان الصفحة
   logo_url: '',
+  favicon_url: '', // القيمة الافتراضية لأيقونة المتصفح
   primary_color: '#15437f', 
   secondary_color: '#093467', 
   text_color: '#ffffff', 
@@ -27,6 +27,7 @@ const SiteCustomizationManager = () => {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const { hasPermission } = useAdminAuth();
   
@@ -95,6 +96,11 @@ const SiteCustomizationManager = () => {
         document.title = settings.page_title;
       }
       
+      // تحديث أيقونة المتصفح مباشرة إذا تم تغييرها
+      if (settings.favicon_url) {
+        updateFavicon(settings.favicon_url);
+      }
+      
       toast.info('قم بتحديث الصفحة لرؤية التغييرات على الموقع');
     } catch (error) {
       console.error('Error saving site settings:', error);
@@ -145,6 +151,65 @@ const SiteCustomizationManager = () => {
       toast.error('حدث خطأ أثناء رفع الشعار');
     } finally {
       setUploading(false);
+    }
+  };
+  
+  // إضافة دالة لتحديث أيقونة المتصفح
+  const updateFavicon = (faviconUrl: string) => {
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = faviconUrl;
+  };
+  
+  // إضافة دالة لتحميل أيقونة المتصفح
+  const handleFaviconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!hasPermission('manage_admins')) {
+      toast.error('ليس لديك صلاحية لتعديل إعدادات الموقع');
+      return;
+    }
+
+    const file = event.target.files?.[0];
+    if (!file) return;
+    
+    if (!file.type.startsWith('image/')) {
+      toast.error('يرجى تحميل ملف صورة فقط');
+      return;
+    }
+    
+    setUploadingFavicon(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `favicon_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `favicons/${fileName}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('public')
+        .upload(filePath, file);
+        
+      if (uploadError) throw uploadError;
+      
+      const { data } = supabase.storage
+        .from('public')
+        .getPublicUrl(filePath);
+        
+      setSettings({
+        ...settings,
+        favicon_url: data.publicUrl
+      });
+      
+      // تحديث الأيقونة مباشرة
+      updateFavicon(data.publicUrl);
+      
+      toast.success('تم رفع أيقونة المتصفح بنجاح');
+    } catch (error) {
+      console.error('Error uploading favicon:', error);
+      toast.error('حدث خطأ أثناء رفع أيقونة المتصفح');
+    } finally {
+      setUploadingFavicon(false);
     }
   };
 
@@ -273,6 +338,56 @@ const SiteCustomizationManager = () => {
                 <p className="text-xs text-gray-500 text-right">
                   يمكنك إضافة رابط مباشر للشعار بدلاً من رفع ملف
                 </p>
+              </div>
+              
+              {/* إضافة قسم أيقونة المتصفح (Favicon) */}
+              <div className="mt-8 pt-6 border-t">
+                <h3 className="text-right font-semibold mb-4">أيقونة المتصفح (Favicon)</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="favicon" className="text-right block mb-2">أيقونة المتصفح</Label>
+                  
+                  {settings.favicon_url && (
+                    <div className="mb-4 p-4 border rounded-lg bg-gray-50 flex justify-center">
+                      <img 
+                        src={settings.favicon_url} 
+                        alt="أيقونة المتصفح" 
+                        className="h-8 w-8 object-contain"
+                      />
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center justify-end gap-2">
+                    <Input
+                      id="favicon"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFaviconUpload}
+                      disabled={uploadingFavicon}
+                      className="text-right"
+                    />
+                    <Label htmlFor="favicon" className="text-xs text-gray-500 block">
+                      {uploadingFavicon ? 'جاري الرفع...' : 'اختر ملف'}
+                    </Label>
+                  </div>
+                  
+                  <p className="text-xs text-gray-500 text-right mt-1">
+                    يفضل استخدام صورة مربعة بحجم 32×32 أو 64×64 بتنسيق PNG أو ICO
+                  </p>
+                </div>
+                
+                <div className="space-y-2 mt-4">
+                  <Label htmlFor="favicon_url" className="text-right block">رابط أيقونة المتصفح (اختياري)</Label>
+                  <Input
+                    id="favicon_url"
+                    value={settings.favicon_url || ''}
+                    onChange={(e) => setSettings({ ...settings, favicon_url: e.target.value })}
+                    placeholder="أدخل رابط أيقونة المتصفح"
+                    className="text-right"
+                  />
+                  <p className="text-xs text-gray-500 text-right">
+                    يمكنك إضافة رابط مباشر للأيقونة بدلاً من رفع ملف
+                  </p>
+                </div>
               </div>
             </div>
           </TabsContent>

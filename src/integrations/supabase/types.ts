@@ -93,6 +93,7 @@ export type Database = {
           footer_text: string
           id: string
           logo_url: string | null
+          page_title: string | null
           primary_color: string
           secondary_color: string
           site_name: string
@@ -105,6 +106,7 @@ export type Database = {
           footer_text?: string
           id?: string
           logo_url?: string | null
+          page_title?: string | null
           primary_color?: string
           secondary_color?: string
           site_name?: string
@@ -117,6 +119,7 @@ export type Database = {
           footer_text?: string
           id?: string
           logo_url?: string | null
+          page_title?: string | null
           primary_color?: string
           secondary_color?: string
           site_name?: string

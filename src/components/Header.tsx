@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
   page_title: 'شركة الوصل الوطنية',
   logo_url: '',
+  favicon_url: '',
   primary_color: '#15437f',
   secondary_color: '#093467',
   text_color: '#ffffff',
@@ -48,6 +49,11 @@ const Header = () => {
         if (data.page_title) {
           document.title = data.page_title;
         }
+        
+        // تحديث أيقونة المتصفح إذا كانت موجودة
+        if (data.favicon_url) {
+          updateFavicon(data.favicon_url);
+        }
       }
       setSettingsInitialized(true);
     } catch (error) {
@@ -56,6 +62,17 @@ const Header = () => {
     } finally {
       setLoading(false);
     }
+  };
+  
+  // دالة لتحديث أيقونة المتصفح
+  const updateFavicon = (faviconUrl: string) => {
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = faviconUrl;
   };
 
   // Use default logo if no logo_url is set
