@@ -279,6 +279,7 @@ const SupportForm = () => {
                     name="employeeId"
                     type="text"
                     required
+                    numbersOnly
                     placeholder="أدخل الرقم الوظيفي"
                     className="text-right"
                     value={formData.employeeId}

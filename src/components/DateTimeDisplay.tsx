@@ -12,15 +12,15 @@ const DateTimeDisplay = () => {
     return () => clearInterval(intervalId);
   }, []);
 
-  // Format time
-  const formattedTime = currentDateTime.toLocaleTimeString('ar-SA', {
+  // Format time in English (en-US)
+  const formattedTime = currentDateTime.toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true
   });
 
-  // Format date to Arabic locale
-  const formattedDate = currentDateTime.toLocaleDateString('ar-SA', {
+  // Format date to English locale
+  const formattedDate = currentDateTime.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -29,9 +29,9 @@ const DateTimeDisplay = () => {
 
   return (
     <div className="text-[#222222] text-center">
-      <span className="ml-2 font-medium">الوقت:</span>
+      <span className="ml-2 font-medium">Time:</span>
       <span className="font-medium">{formattedTime}</span>
-      <span className="mx-4 font-medium">التاريخ:</span>
+      <span className="mx-4 font-medium">Date:</span>
       <span className="font-medium">{formattedDate}</span>
     </div>
   );
