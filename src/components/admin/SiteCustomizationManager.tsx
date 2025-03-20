@@ -91,12 +91,10 @@ const SiteCustomizationManager = () => {
       
       toast.success('تم حفظ إعدادات الموقع بنجاح');
       
-      // تحديث عنوان الصفحة مباشرة إذا تم تغييره
       if (settings.page_title) {
         document.title = settings.page_title;
       }
       
-      // تحديث أيقونة المتصفح مباشرة إذا تم تغييرها
       if (settings.favicon_url) {
         updateFavicon(settings.favicon_url);
       }
@@ -130,6 +128,8 @@ const SiteCustomizationManager = () => {
       const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `logos/${fileName}`;
       
+      await ensureStorageBucketExists('public');
+      
       const { error: uploadError } = await supabase.storage
         .from('public')
         .upload(filePath, file);
@@ -154,7 +154,24 @@ const SiteCustomizationManager = () => {
     }
   };
   
-  // إضافة دالة لتحديث أيقونة المتصفح
+  const ensureStorageBucketExists = async (bucketName: string) => {
+    try {
+      const { data, error } = await supabase.storage.getBucket(bucketName);
+      
+      if (error && error.message.includes('The resource was not found')) {
+        const { error: createError } = await supabase.storage.createBucket(bucketName, {
+          public: true
+        });
+        
+        if (createError) throw createError;
+        
+        console.log(`Created storage bucket: ${bucketName}`);
+      }
+    } catch (error) {
+      console.error('Error ensuring storage bucket exists:', error);
+    }
+  };
+  
   const updateFavicon = (faviconUrl: string) => {
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
@@ -165,7 +182,6 @@ const SiteCustomizationManager = () => {
     link.href = faviconUrl;
   };
   
-  // إضافة دالة لتحميل أيقونة المتصفح
   const handleFaviconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!hasPermission('manage_admins')) {
       toast.error('ليس لديك صلاحية لتعديل إعدادات الموقع');
@@ -186,11 +202,16 @@ const SiteCustomizationManager = () => {
       const fileName = `favicon_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `favicons/${fileName}`;
       
+      await ensureStorageBucketExists('public');
+      
       const { error: uploadError } = await supabase.storage
         .from('public')
         .upload(filePath, file);
         
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+        throw uploadError;
+      }
       
       const { data } = supabase.storage
         .from('public')
@@ -201,7 +222,6 @@ const SiteCustomizationManager = () => {
         favicon_url: data.publicUrl
       });
       
-      // تحديث الأيقونة مباشرة
       updateFavicon(data.publicUrl);
       
       toast.success('تم رفع أيقونة المتصفح بنجاح');
@@ -264,7 +284,6 @@ const SiteCustomizationManager = () => {
                 />
               </div>
 
-              {/* إضافة حقل عنوان الصفحة (Page Title) */}
               <div className="space-y-2">
                 <Label htmlFor="page_title" className="text-right block">عنوان الصفحة (Page Title)</Label>
                 <Input
@@ -340,7 +359,6 @@ const SiteCustomizationManager = () => {
                 </p>
               </div>
               
-              {/* إضافة قسم أيقونة المتصفح (Favicon) */}
               <div className="mt-8 pt-6 border-t">
                 <h3 className="text-right font-semibold mb-4">أيقونة المتصفح (Favicon)</h3>
                 <div className="space-y-2">
