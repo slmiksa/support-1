@@ -12,9 +12,9 @@ import { Image, Palette, Type, HeadphonesIcon } from 'lucide-react';
 
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
-  page_title: 'شركة الوصل الوطنية', // القيمة الافتراضية لعنوان الصفحة
+  page_title: 'شركة الوصل الوطنية',
   logo_url: '',
-  favicon_url: '', // القيمة الافتراضية لأيقونة المتصفح
+  favicon_url: '',
   primary_color: '#15437f', 
   secondary_color: '#093467', 
   text_color: '#ffffff', 
@@ -125,21 +125,25 @@ const SiteCustomizationManager = () => {
     setUploading(true);
     try {
       const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const fileName = `logo_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `logos/${fileName}`;
-      
-      await ensureStorageBucketExists('public');
-      
-      const { error: uploadError } = await supabase.storage
-        .from('public')
-        .upload(filePath, file);
-        
-      if (uploadError) throw uploadError;
       
       const { data } = supabase.storage
         .from('public')
         .getPublicUrl(filePath);
+      
+      const { error: uploadError } = await supabase.storage
+        .from('public')
+        .upload(filePath, file, { 
+          cacheControl: '3600', 
+          upsert: true 
+        });
         
+      if (uploadError) {
+        console.error('Upload error details:', uploadError);
+        throw uploadError;
+      }
+      
       setSettings({
         ...settings,
         logo_url: data.publicUrl
@@ -151,24 +155,6 @@ const SiteCustomizationManager = () => {
       toast.error('حدث خطأ أثناء رفع الشعار');
     } finally {
       setUploading(false);
-    }
-  };
-  
-  const ensureStorageBucketExists = async (bucketName: string) => {
-    try {
-      const { data, error } = await supabase.storage.getBucket(bucketName);
-      
-      if (error && error.message.includes('The resource was not found')) {
-        const { error: createError } = await supabase.storage.createBucket(bucketName, {
-          public: true
-        });
-        
-        if (createError) throw createError;
-        
-        console.log(`Created storage bucket: ${bucketName}`);
-      }
-    } catch (error) {
-      console.error('Error ensuring storage bucket exists:', error);
     }
   };
   
@@ -202,21 +188,22 @@ const SiteCustomizationManager = () => {
       const fileName = `favicon_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `favicons/${fileName}`;
       
-      await ensureStorageBucketExists('public');
+      const { data } = supabase.storage
+        .from('public')
+        .getPublicUrl(filePath);
       
       const { error: uploadError } = await supabase.storage
         .from('public')
-        .upload(filePath, file);
+        .upload(filePath, file, { 
+          cacheControl: '3600', 
+          upsert: true 
+        });
         
       if (uploadError) {
         console.error('Upload error details:', uploadError);
         throw uploadError;
       }
       
-      const { data } = supabase.storage
-        .from('public')
-        .getPublicUrl(filePath);
-        
       setSettings({
         ...settings,
         favicon_url: data.publicUrl
