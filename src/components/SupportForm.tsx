@@ -1,4 +1,3 @@
-
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -18,6 +17,7 @@ interface FormData {
   priority: PriorityType;
   description: string;
   imageFile: File | null;
+  supportEmail: string;
   [key: string]: string | File | null | PriorityType;
 }
 
@@ -28,7 +28,8 @@ const SupportForm = () => {
     branch: '',
     priority: 'normal',
     description: '',
-    imageFile: null
+    imageFile: null,
+    supportEmail: 'help@alwaslsaudi.com'
   });
   
   const [ticketId, setTicketId] = useState<string | null>(null);
@@ -62,7 +63,8 @@ const SupportForm = () => {
           branch: '',
           priority: 'normal',
           description: '',
-          imageFile: null
+          imageFile: null,
+          supportEmail: 'help@alwaslsaudi.com'
         };
         
         activeFields.forEach(field => {
@@ -150,7 +152,8 @@ const SupportForm = () => {
         description: formData.description,
         image_url: imagePreview || undefined,
         status: 'pending',
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        support_email: formData.supportEmail
       };
       
       customFields.forEach(field => {
@@ -165,11 +168,9 @@ const SupportForm = () => {
         throw new Error('Failed to save ticket');
       }
       
-      // Try to send notifications, but don't show errors if it fails
       try {
         await sendTicketNotificationsToAllAdmins(newTicket);
       } catch (error) {
-        // Silently catch any notification errors - don't display to user
         console.error('Error sending notifications:', error);
       }
       
@@ -180,7 +181,8 @@ const SupportForm = () => {
         branch: '',
         priority: 'normal',
         description: '',
-        imageFile: null
+        imageFile: null,
+        supportEmail: 'help@alwaslsaudi.com'
       };
       
       customFields.forEach(field => {
@@ -254,7 +256,12 @@ const SupportForm = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-4">
-                {/* حقل الأهمية - تم نقله ليكون أول حقل */}
+                <input 
+                  type="hidden" 
+                  name="supportEmail" 
+                  value={formData.supportEmail} 
+                />
+                
                 <div className="grid gap-2">
                   <Label htmlFor="priority" className="text-right">الأهمية</Label>
                   <Select
@@ -310,7 +317,6 @@ const SupportForm = () => {
                   </Select>
                 </div>
                 
-                {/* Custom fields */}
                 {customFields.map(field => (
                   <div key={field.id} className="grid gap-2">
                     <Label htmlFor={field.field_name} className="text-right">
@@ -394,3 +400,4 @@ const SupportForm = () => {
 };
 
 export default SupportForm;
+

@@ -18,6 +18,7 @@ interface TicketNotificationRequest {
   description: string;
   priority?: string;
   admin_email: string;
+  support_email?: string; // Add optional support_email field
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -27,10 +28,19 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { ticket_id, employee_id, branch, description, priority, admin_email }: TicketNotificationRequest = await req.json();
+    const { 
+      ticket_id, 
+      employee_id, 
+      branch, 
+      description, 
+      priority, 
+      admin_email, 
+      support_email = 'help@alwaslsaudi.com' // Default value if not provided
+    }: TicketNotificationRequest = await req.json();
 
     console.log(`Sending notification for ticket ${ticket_id} to ${admin_email}`);
     console.log(`Ticket priority: ${priority || 'normal'}`);
+    console.log(`Using support email: ${support_email}`);
 
     // Validate inputs
     if (!ticket_id || !employee_id || !branch || !description || !admin_email) {
@@ -72,9 +82,9 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       console.log("Attempting to send email with Resend API...");
       
-      // Using help@alwaslsaudi.com as the sender email address
+      // Use the support_email value for the sender address
       const emailResponse = await resend.emails.send({
-        from: "نظام دعم الوصل <help@alwaslsaudi.com>",
+        from: `نظام دعم الوصل <${support_email}>`,
         to: [admin_email],
         subject: `تذكرة جديدة: ${ticket_id} - ${priorityLabel}`,
         html: emailHtml,
