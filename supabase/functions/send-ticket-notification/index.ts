@@ -1,7 +1,8 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-// Using a different SMTP client library that's compatible with Deno Deploy
-import { SmtpClient } from "https://deno.land/x/smtp@v0.7.0/mod.ts";
+import { Resend } from "npm:resend@2.0.0";
+
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -48,15 +49,6 @@ const handler = async (req: Request): Promise<Response> => {
     };
     const priorityLabel = priorityLabels[priority as keyof typeof priorityLabels] || 'عادية';
 
-    // Configure SMTP client
-    const emailHost = Deno.env.get("EMAIL_HOST") || "ex.alwaslsaudi.com";
-    const emailPort = parseInt(Deno.env.get("EMAIL_PORT") || "587");
-    const emailUsername = Deno.env.get("EMAIL_USERNAME") || "help@alwaslsaudi.com";
-    const emailPassword = Deno.env.get("EMAIL_PASSWORD") || "";
-    
-    console.log(`Email configuration: Host=${emailHost}, Port=${emailPort}, User=${emailUsername}`);
-    console.log(`Attempting to send email to ${admin_email}`);
-
     // Create email HTML content
     const emailHtml = `
       <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
@@ -77,54 +69,16 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     try {
-      // Initialize SMTP client with more detailed error handling
-      const client = new SmtpClient();
+      console.log("Attempting to send email with Resend API...");
       
-      console.log("Establishing secure SMTP connection...");
+      const emailResponse = await resend.emails.send({
+        from: "نظام دعم الوصل <help@alwaslsaudi.com>",
+        to: [admin_email],
+        subject: `تذكرة جديدة: ${ticket_id} - ${priorityLabel}`,
+        html: emailHtml,
+      });
       
-      // Connect to SMTP server with explicit TLS
-      try {
-        await client.connectTLS({
-          hostname: emailHost,
-          port: emailPort,
-          username: emailUsername,
-          password: emailPassword,
-        });
-        
-        console.log("Successfully connected to SMTP server");
-      } catch (connectError: any) {
-        console.error("SMTP connection error:", connectError);
-        console.error("Connection error stack:", connectError.stack);
-        throw new Error(`Failed to connect to SMTP server: ${connectError.message}`);
-      }
-      
-      console.log("Sending email...");
-      
-      // Send the email with detailed error handling
-      try {
-        const sendResult = await client.send({
-          from: emailUsername,
-          to: admin_email,
-          subject: `تذكرة جديدة: ${ticket_id} - ${priorityLabel}`,
-          content: "تم إنشاء تذكرة دعم فني جديدة",
-          html: emailHtml,
-        });
-        
-        console.log("Email sent successfully:", sendResult);
-      } catch (sendError: any) {
-        console.error("Email sending error:", sendError);
-        console.error("Sending error stack:", sendError.stack);
-        await client.close();
-        throw new Error(`Failed to send email: ${sendError.message}`);
-      }
-      
-      // Close the connection
-      try {
-        await client.close();
-        console.log("SMTP connection closed");
-      } catch (closeError: any) {
-        console.error("Error closing SMTP connection:", closeError);
-      }
+      console.log("Email sent successfully:", emailResponse);
 
       return new Response(JSON.stringify({ success: true, message: "Email sent successfully" }), {
         status: 200,
