@@ -72,7 +72,7 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       console.log("Attempting to send email with Resend API...");
       
-      // Now using the verified domain email address
+      // Using help@alwaslsaudi.com as the sender email address
       const emailResponse = await resend.emails.send({
         from: "نظام دعم الوصل <help@alwaslsaudi.com>",
         to: [admin_email],
