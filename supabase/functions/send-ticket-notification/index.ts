@@ -1,9 +1,8 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-// Use the environment variable for Resend API key
-const resend = new Resend("re_QmNSU9qG_C7SL9XxrffwFK4pR3bUTP2qK");
+// Update the Resend API key
+const resend = new Resend("re_RqWw6zr2_Amr7mwGUQaxaeiK1dNdTnv2N");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
