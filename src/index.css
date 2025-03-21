@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
     
-    --primary: 211 70% 29%;
+    --primary: 43 65% 53%;
     --primary-foreground: 210 40% 98%;
     
     --secondary: 210 40% 96.1%;
@@ -31,16 +30,16 @@
     
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 211 70% 29%;
+    --ring: 43 65% 53%;
     
     --radius: 0.5rem;
     
     --font-sans: 'Tajawal', system-ui, sans-serif;
 
     /* Company colors */
-    --company: 217 72% 26%; /* Darker blue for header */
-    --company-dark: 218 76% 18%; /* Even darker blue for navigation */
-    --accent-gold: 43 74% 49%; /* Gold accent */
+    --company: 43 65% 53%; /* Golden for header */
+    --company-dark: 43 74% 40%; /* Darker gold for navigation */
+    --accent-gold: 43 65% 53%; /* Gold accent */
     
     /* Global text color to match nav links */
     --global-text: 0 0% 13%; /* #222222 */
@@ -56,7 +55,7 @@
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 211 70% 29%;
+    --primary: 43 65% 53%;
     --primary-foreground: 210 40% 98%;
     
     --secondary: 217.2 32.6% 17.5%;
@@ -73,7 +72,7 @@
     
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 43 65% 53%;
   }
 }
 
@@ -131,19 +130,19 @@
   }
 
   .bg-company {
-    @apply bg-[#15437F];
+    @apply bg-[#D4AF37];
   }
 
   .bg-company-dark {
-    @apply bg-[#0c325f];
+    @apply bg-[#B08C1A];
   }
 
   .text-company {
-    @apply text-[#15437F];
+    @apply text-[#D4AF37];
   }
 
   .text-company-dark {
-    @apply text-[#0c325f];
+    @apply text-[#B08C1A];
   }
 
   .bg-accent-gold {
@@ -214,6 +213,5 @@
 
 /* Custom background with subtle pattern */
 :root {
-  --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2315437f' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
-

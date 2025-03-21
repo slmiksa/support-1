@@ -85,10 +85,10 @@ const handler = async (req: Request): Promise<Response> => {
     };
     const priorityColor = priorityColors[priority as keyof typeof priorityColors] || '#2e7d32';
 
-    // Create email HTML content with enhanced professional design
+    // Create email HTML content with enhanced professional design - updated with gold brand colors
     const emailHtml = `
       <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; color: #333333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-        <div style="background-color: #15437f; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+        <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
           <h1 style="color: #ffffff; margin: 0; font-size: 24px;">تذكرة دعم فني جديدة</h1>
         </div>
         
@@ -124,12 +124,12 @@ const handler = async (req: Request): Promise<Response> => {
             </tr>
           </table>
           
-          <div style="background-color: #f5f7fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-right: 5px solid #15437f;">
-            <h3 style="margin-top: 0; color: #15437f; margin-bottom: 15px;">وصف المشكلة:</h3>
+          <div style="background-color: #f5f7fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-right: 5px solid #D4AF37;">
+            <h3 style="margin-top: 0; color: #D4AF37; margin-bottom: 15px;">وصف المشكلة:</h3>
             <p style="margin: 0; line-height: 1.6;">${description}</p>
           </div>
           
-          <div style="background-color: #fffde7; padding: 15px; border-radius: 8px; border-right: 4px solid #fbc02d;">
+          <div style="background-color: #fffde7; padding: 15px; border-radius: 8px; border-right: 4px solid #D4AF37;">
             <p style="margin: 0; font-size: 15px; color: #5d4037;">
               <strong>تذكير:</strong> يرجى الاطلاع على هذه التذكرة والرد عليها في أقرب وقت ممكن لضمان تقديم الدعم المناسب.
             </p>

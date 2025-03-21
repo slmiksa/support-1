@@ -10,8 +10,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
   page_title: 'شركة الوصل الوطنية',
   logo_url: '',
   favicon_url: '',
-  primary_color: '#15437f',
-  secondary_color: '#093467',
+  primary_color: '#D4AF37',
+  secondary_color: '#B08C1A',
   text_color: '#ffffff',
   footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.',
 };
