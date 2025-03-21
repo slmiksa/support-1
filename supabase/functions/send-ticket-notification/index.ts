@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -59,22 +60,86 @@ const handler = async (req: Request): Promise<Response> => {
     };
     const priorityLabel = priorityLabels[priority as keyof typeof priorityLabels] || 'عادية';
 
-    // Create email HTML content
+    // Format the current date and time in Arabic format
+    const now = new Date();
+    const dateOptions: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      weekday: 'long' 
+    };
+    const timeOptions: Intl.DateTimeFormatOptions = { 
+      hour: '2-digit', 
+      minute: '2-digit',
+      hour12: true 
+    };
+    
+    const formattedDate = new Intl.DateTimeFormat('ar-SA', dateOptions).format(now);
+    const formattedTime = new Intl.DateTimeFormat('ar-SA', timeOptions).format(now);
+
+    // Priority color mapping
+    const priorityColors = {
+      urgent: '#c62828',
+      medium: '#ff8f00',
+      normal: '#2e7d32'
+    };
+    const priorityColor = priorityColors[priority as keyof typeof priorityColors] || '#2e7d32';
+
+    // Create email HTML content with enhanced professional design
     const emailHtml = `
-      <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif;">
-        <h1 style="color: #15437f;">تم إنشاء تذكرة دعم فني جديدة</h1>
-        <p>تم إنشاء تذكرة دعم فني جديدة في النظام. إليك التفاصيل:</p>
-        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 5px; margin: 20px 0; border-right: 4px solid #15437f;">
-          <p><strong>رقم التذكرة:</strong> ${ticket_id}</p>
-          <p><strong>الرقم الوظيفي:</strong> ${employee_id}</p>
-          <p><strong>الفرع:</strong> ${branch}</p>
-          <p><strong>الأهمية:</strong> <span style="background-color: ${priority === 'urgent' ? '#ffebee' : priority === 'medium' ? '#fff8e1' : '#e8f5e9'}; padding: 3px 8px; border-radius: 4px; color: ${priority === 'urgent' ? '#c62828' : priority === 'medium' ? '#ff8f00' : '#2e7d32'};">${priorityLabel}</span></p>
-          <p><strong>وصف المشكلة:</strong> ${truncatedDescription}</p>
+      <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; color: #333333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
+        <div style="background-color: #15437f; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">تذكرة دعم فني جديدة</h1>
         </div>
-        <p>يرجى الدخول إلى <a href="https://wsl-support.netlify.app/admin/login" style="color: #15437f; text-decoration: none; font-weight: bold;">لوحة التحكم</a> للاطلاع على التذكرة والرد عليها.</p>
-        <p style="margin-top: 30px; padding-top: 10px; border-top: 1px solid #eee; color: #777; font-size: 12px;">
-          تم إرسال هذا البريد الإلكتروني تلقائياً من نظام دعم الوصل. يرجى عدم الرد على هذا البريد.
-        </p>
+        
+        <div style="background-color: #ffffff; padding: 25px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          <p style="font-size: 16px; margin-bottom: 25px; color: #555555;">تم إنشاء تذكرة دعم فني جديدة في نظام دعم الوصل. فيما يلي تفاصيل التذكرة:</p>
+          
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold; width: 30%;">رقم التذكرة:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${ticket_id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الرقم الوظيفي:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${employee_id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الفرع:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${branch}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الأهمية:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">
+                <span style="background-color: ${priority === 'urgent' ? '#ffebee' : priority === 'medium' ? '#fff8e1' : '#e8f5e9'}; padding: 5px 10px; border-radius: 4px; color: ${priorityColor}; font-weight: bold;">${priorityLabel}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">تاريخ الإنشاء:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${formattedDate}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">وقت الإنشاء:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${formattedTime}</td>
+            </tr>
+          </table>
+          
+          <div style="background-color: #f5f7fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; border-right: 5px solid #15437f;">
+            <h3 style="margin-top: 0; color: #15437f; margin-bottom: 15px;">وصف المشكلة:</h3>
+            <p style="margin: 0; line-height: 1.6;">${description}</p>
+          </div>
+          
+          <div style="background-color: #fffde7; padding: 15px; border-radius: 8px; border-right: 4px solid #fbc02d;">
+            <p style="margin: 0; font-size: 15px; color: #5d4037;">
+              <strong>تذكير:</strong> يرجى الاطلاع على هذه التذكرة والرد عليها في أقرب وقت ممكن لضمان تقديم الدعم المناسب.
+            </p>
+          </div>
+        </div>
+        
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; color: #777; font-size: 12px; text-align: center;">
+          <p style="margin: 0 0 10px 0;">تم إرسال هذا البريد الإلكتروني تلقائياً من نظام دعم الوصل. يرجى عدم الرد على هذا البريد.</p>
+          <p style="margin: 0; color: #999;">© ${now.getFullYear()} نظام دعم الوصل. جميع الحقوق محفوظة.</p>
+        </div>
       </div>
     `;
 
