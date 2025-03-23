@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from '@/components/ui/separator';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 const statusOptions = [
   { value: 'open', label: 'مفتوحة' },
@@ -44,6 +46,10 @@ const AdminTicketDetails = () => {
   const [responseText, setResponseText] = useState('');
   const [sendingResponse, setSendingResponse] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const { hasPermission } = useAdminAuth();
+
+  const canChangeTicketStatus = hasPermission('manage_tickets');
+  const canRespondToTickets = hasPermission('respond_to_tickets');
 
   useEffect(() => {
     if (ticketId) {
@@ -92,6 +98,11 @@ const AdminTicketDetails = () => {
       return;
     }
 
+    if (!canRespondToTickets) {
+      toast.error('ليس لديك صلاحية للرد على التذاكر');
+      return;
+    }
+
     setSendingResponse(true);
     try {
       const { data, error } = await supabase.rpc('add_ticket_response', {
@@ -117,6 +128,11 @@ const AdminTicketDetails = () => {
 
   const handleStatusChange = async (newStatus) => {
     if (ticket.status === newStatus) return;
+    
+    if (!canChangeTicketStatus) {
+      toast.error('ليس لديك صلاحية لتغيير حالة التذكرة');
+      return;
+    }
 
     setUpdatingStatus(true);
     try {
@@ -230,7 +246,7 @@ const AdminTicketDetails = () => {
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center space-x-2">
-                <span className="text-sm text-gray-500">تاريخ الإنشاء: {new Date(ticket.created_at).toLocaleDateString('ar-SA')}</span>
+                <span className="text-sm text-gray-500">تاريخ الإنشاء: {new Date(ticket.created_at).toLocaleDateString('en-US')}</span>
               </div>
               <div className="flex items-center space-x-4 rtl:space-x-reverse">
                 <div className="flex items-center">
@@ -238,9 +254,9 @@ const AdminTicketDetails = () => {
                   <Select
                     value={ticket.status}
                     onValueChange={handleStatusChange}
-                    disabled={updatingStatus}
+                    disabled={updatingStatus || !canChangeTicketStatus}
                   >
-                    <SelectTrigger className="w-36 ml-2">
+                    <SelectTrigger className={`w-36 ml-2 ${!canChangeTicketStatus ? 'opacity-70 cursor-not-allowed' : ''}`}>
                       <SelectValue placeholder="اختر الحالة" />
                     </SelectTrigger>
                     <SelectContent>
@@ -353,26 +369,32 @@ const AdminTicketDetails = () => {
 
             <Separator className="my-4" />
 
-            <div className="space-y-4">
-              <p className="text-right font-medium">إضافة رد:</p>
-              <Textarea
-                value={responseText}
-                onChange={(e) => setResponseText(e.target.value)}
-                placeholder="اكتب رداً على هذه التذكرة..."
-                className="min-h-[100px] text-right"
-                dir="rtl"
-              />
-              <div className="flex justify-end">
-                <Button 
-                  onClick={handleSendResponse}
-                  disabled={sendingResponse || !responseText.trim()}
-                  className="flex items-center gap-2"
-                >
-                  <Send className="h-4 w-4" />
-                  إرسال الرد
-                </Button>
+            {canRespondToTickets ? (
+              <div className="space-y-4">
+                <p className="text-right font-medium">إضافة رد:</p>
+                <Textarea
+                  value={responseText}
+                  onChange={(e) => setResponseText(e.target.value)}
+                  placeholder="اكتب رداً على هذه التذكرة..."
+                  className="min-h-[100px] text-right"
+                  dir="rtl"
+                />
+                <div className="flex justify-end">
+                  <Button 
+                    onClick={handleSendResponse}
+                    disabled={sendingResponse || !responseText.trim() || !canRespondToTickets}
+                    className="flex items-center gap-2"
+                  >
+                    <Send className="h-4 w-4" />
+                    إرسال الرد
+                  </Button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="text-center py-4 text-gray-500 border rounded-md p-4">
+                ليس لديك صلاحية للرد على التذاكر
+              </div>
+            )}
           </CardContent>
         </Card>
       </main>
