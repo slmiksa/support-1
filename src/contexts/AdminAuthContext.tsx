@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,8 +16,8 @@ interface AdminAuthContextProps {
   currentAdmin: AdminUser | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
-  hasPermission: (permission: 'manage_tickets' | 'view_only' | 'manage_admins') => boolean;
-  adminData: AdminUser | null; // Add this property
+  hasPermission: (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets') => boolean;
+  adminData: AdminUser | null;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextProps>({
@@ -27,7 +26,7 @@ const AdminAuthContext = createContext<AdminAuthContextProps>({
   login: async () => false,
   logout: () => {},
   hasPermission: () => false,
-  adminData: null, // Initialize with null
+  adminData: null,
 });
 
 export const useAdminAuth = () => useContext(AdminAuthContext);
@@ -37,7 +36,6 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentAdmin, setCurrentAdmin] = useState<AdminUser | null>(null);
 
   useEffect(() => {
-    // Check if admin is logged in from local storage
     const checkAuth = () => {
       const adminAuth = localStorage.getItem('admin_auth');
       const adminData = localStorage.getItem('admin_data');
@@ -46,7 +44,6 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
         setIsAuthenticated(true);
         try {
           const parsedData = JSON.parse(adminData);
-          // Ensure role is one of the allowed AdminRole values
           if (
             parsedData.role === 'super_admin' ||
             parsedData.role === 'admin' ||
@@ -54,7 +51,6 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
           ) {
             setCurrentAdmin(parsedData as AdminUser);
           } else {
-            // Default to viewer if role is invalid
             setCurrentAdmin({
               ...parsedData,
               role: 'viewer' as AdminRole
@@ -76,7 +72,6 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      // Call the Supabase function to check admin credentials
       const { data, error } = await supabase.rpc('check_admin_credentials', {
         p_username: username,
         p_password: password
@@ -88,7 +83,6 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       if (data) {
-        // Fetch admin details
         const { data: adminData, error: adminError } = await supabase
           .from('admins')
           .select('id, username, role, employee_id, notification_email')
@@ -100,7 +94,6 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
           return false;
         }
 
-        // Ensure the role is a valid AdminRole type
         const validRole = ['super_admin', 'admin', 'viewer'].includes(adminData.role) 
           ? adminData.role as AdminRole 
           : 'viewer' as AdminRole;
@@ -134,7 +127,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     setCurrentAdmin(null);
   };
 
-  const hasPermission = (permission: 'manage_tickets' | 'view_only' | 'manage_admins'): boolean => {
+  const hasPermission = (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets'): boolean => {
     if (!currentAdmin) return false;
 
     switch (permission) {
@@ -144,6 +137,8 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
         return ['super_admin', 'admin', 'viewer'].includes(currentAdmin.role);
       case 'manage_admins':
         return currentAdmin.role === 'super_admin';
+      case 'respond_to_tickets':
+        return ['super_admin', 'admin'].includes(currentAdmin.role);
       default:
         return false;
     }
@@ -156,7 +151,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       login, 
       logout, 
       hasPermission,
-      adminData: currentAdmin // Add this property
+      adminData: currentAdmin
     }}>
       {children}
     </AdminAuthContext.Provider>

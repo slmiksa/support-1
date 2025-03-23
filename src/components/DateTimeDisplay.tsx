@@ -19,7 +19,7 @@ const DateTimeDisplay = () => {
     hour12: true
   });
 
-  // Format date to English locale
+  // Format date to English locale (Gregorian calendar)
   const formattedDate = currentDateTime.toLocaleDateString('en-US', {
     weekday: 'long',
     year: 'numeric',

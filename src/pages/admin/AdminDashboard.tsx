@@ -288,7 +288,7 @@ const AdminDashboard = () => {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-right py-4">
-                            {new Date(ticket.created_at).toLocaleDateString('ar-SA', {
+                            {new Date(ticket.created_at).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'numeric',
                               day: 'numeric'
