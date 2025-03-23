@@ -17,7 +17,6 @@ interface FormData {
   priority: PriorityType;
   description: string;
   imageFile: File | null;
-  supportEmail: string;
   [key: string]: string | File | null | PriorityType;
 }
 
@@ -28,8 +27,7 @@ const SupportForm = () => {
     branch: '',
     priority: 'normal',
     description: '',
-    imageFile: null,
-    supportEmail: 'help@alwaslsaudi.com'
+    imageFile: null
   });
   
   const [ticketId, setTicketId] = useState<string | null>(null);
@@ -63,8 +61,7 @@ const SupportForm = () => {
           branch: '',
           priority: 'normal',
           description: '',
-          imageFile: null,
-          supportEmail: 'help@alwaslsaudi.com'
+          imageFile: null
         };
         
         activeFields.forEach(field => {
@@ -153,7 +150,7 @@ const SupportForm = () => {
         image_url: imagePreview || undefined,
         status: 'pending',
         created_at: new Date().toISOString(),
-        support_email: formData.supportEmail
+        support_email: 'help@alwaslsaudi.com'
       };
       
       customFields.forEach(field => {
@@ -181,8 +178,7 @@ const SupportForm = () => {
         branch: '',
         priority: 'normal',
         description: '',
-        imageFile: null,
-        supportEmail: 'help@alwaslsaudi.com'
+        imageFile: null
       };
       
       customFields.forEach(field => {
@@ -256,12 +252,6 @@ const SupportForm = () => {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid gap-4">
-                <input 
-                  type="hidden" 
-                  name="supportEmail" 
-                  value={formData.supportEmail} 
-                />
-                
                 <div className="grid gap-2">
                   <Label htmlFor="priority" className="text-right">الأهمية</Label>
                   <Select
@@ -400,4 +390,3 @@ const SupportForm = () => {
 };
 
 export default SupportForm;
-

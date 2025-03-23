@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -18,7 +17,7 @@ interface TicketNotificationRequest {
   description: string;
   priority?: string;
   admin_email: string;
-  support_email?: string; // Add optional support_email field
+  support_email?: string; // Keep this as optional
 }
 
 const handler = async (req: Request): Promise<Response> => {
