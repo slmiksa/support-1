@@ -156,6 +156,18 @@ const AdminTicketDetails = () => {
     return statusColorMap[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const getFilteredCustomFields = (ticket) => {
+    if (!ticket || !ticket.custom_fields) return {};
+    
+    const customFields = { ...ticket.custom_fields };
+    
+    if (customFields.support_email) {
+      delete customFields.support_email;
+    }
+    
+    return customFields;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -273,6 +285,13 @@ const AdminTicketDetails = () => {
                     <p className="text-right">{ticket.extension_number}</p>
                   </div>
                 )}
+                
+                {Object.entries(getFilteredCustomFields(ticket)).map(([key, value]) => (
+                  <div key={key}>
+                    <p className="text-right font-medium">{key}:</p>
+                    <p className="text-right">{String(value)}</p>
+                  </div>
+                ))}
               </div>
 
               <div>

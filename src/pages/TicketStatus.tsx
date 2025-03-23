@@ -1,3 +1,4 @@
+
 import Header from '@/components/Header';
 import TicketTracker from '@/components/TicketTracker';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
@@ -86,6 +87,23 @@ const TicketStatus = () => {
     return statusColorMap[status] || 'bg-gray-100 text-gray-800 hover:bg-gray-100';
   };
 
+  // Filter out fields we don't want to display in the ticket details
+  const getFilteredCustomFields = (customFields: any) => {
+    if (!customFields || typeof customFields !== 'object') {
+      return {};
+    }
+    
+    // Create a copy of the custom fields object
+    const filteredFields = { ...customFields };
+    
+    // Remove the support_email field if it exists
+    if ('support_email' in filteredFields) {
+      delete filteredFields.support_email;
+    }
+    
+    return filteredFields;
+  };
+
   return (
     <div className="min-h-screen bg-background bg-pattern-light">
       <Header />
@@ -144,7 +162,7 @@ const TicketStatus = () => {
                   )}
                   
                   {ticket.custom_fields && typeof ticket.custom_fields === 'object' && 
-                    Object.entries(ticket.custom_fields).map(([key, value]) => (
+                    Object.entries(getFilteredCustomFields(ticket.custom_fields)).map(([key, value]) => (
                       <div className="space-y-2" key={key}>
                         <p className="text-right font-medium">{key}:</p>
                         <p className="text-right">{String(value)}</p>
