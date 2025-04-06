@@ -41,7 +41,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// Define system fields that can't be modified by admin UI
 const SYSTEM_FIELDS = ['priority', 'branch', 'description'];
 
 const SiteFieldsManager = () => {
@@ -68,23 +67,18 @@ const SiteFieldsManager = () => {
     try {
       const data = await getAllSiteFields();
       
-      // Process fields to handle duplicates and ensure system fields are shown
       const uniqueFieldMap = new Map<string, SiteField>();
       
-      // First add system fields to ensure they're properly managed
       data.filter(field => SYSTEM_FIELDS.includes(field.field_name))
           .forEach(field => uniqueFieldMap.set(field.field_name, field));
       
-      // Then add non-system fields
       data.filter(field => !SYSTEM_FIELDS.includes(field.field_name))
           .forEach(field => {
-            // Only add if not already in the map or if this one has a higher ID (more recent)
             if (!uniqueFieldMap.has(field.field_name) || field.id > uniqueFieldMap.get(field.field_name)!.id) {
               uniqueFieldMap.set(field.field_name, field);
             }
           });
       
-      // Sort fields by sort_order for initial load
       const sortedFields = Array.from(uniqueFieldMap.values()).sort((a, b) => 
         (a.sort_order || 0) - (b.sort_order || 0)
       );
@@ -101,7 +95,6 @@ const SiteFieldsManager = () => {
   const handleToggleRequired = async (field: SiteField) => {
     if (!canManageAdmins) return;
     
-    // Don't allow changing system fields like 'priority' or fields with special names
     if (isSystemField(field.field_name)) {
       toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name} (حقل نظام)`);
       return;
@@ -126,7 +119,6 @@ const SiteFieldsManager = () => {
   const handleToggleActive = async (field: SiteField) => {
     if (!canManageAdmins) return;
     
-    // Don't allow changing system fields like 'priority' or fields with special names
     if (isSystemField(field.field_name)) {
       toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name} (حقل نظام)`);
       return;
@@ -169,22 +161,18 @@ const SiteFieldsManager = () => {
     }
 
     try {
-      // Auto-generate field_name if empty
       let fieldName = newField.field_name || convertToFieldName(newField.display_name);
       
-      // Make sure field_name is unique
       const existingField = fields.find(f => f.field_name === fieldName);
       if (existingField) {
         fieldName = `${fieldName}_${Date.now()}`;
       }
       
-      // Check if fieldName is a system field
       if (SYSTEM_FIELDS.includes(fieldName)) {
         toast.error('هذا الاسم محجوز للنظام، يرجى اختيار اسم آخر');
         return;
       }
       
-      // Validate field name - ensure it's a valid identifier
       if (!/^[a-z][a-z0-9_]*$/.test(fieldName)) {
         fieldName = `field_${Date.now()}`;
       }
@@ -218,7 +206,6 @@ const SiteFieldsManager = () => {
   const handleDeleteField = async () => {
     if (!canManageAdmins || !fieldToDelete) return;
     
-    // Don't allow deleting system fields like 'priority'
     if (isSystemField(fieldToDelete.field_name)) {
       toast.error(`لا يمكن حذف حقل ${fieldToDelete.display_name} (حقل نظام)`);
       setDeleteDialogOpen(false);
@@ -255,19 +242,16 @@ const SiteFieldsManager = () => {
     
     const field = fields[index];
     
-    // Don't allow reordering system fields
     if (isSystemField(field.field_name)) {
       toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name} (حقل نظام)`);
       return;
     }
     
-    // Call the backend function to update the order
     try {
       console.log(`Moving field ${field.display_name} up`);
       const success = await updateFieldOrder(field.id, 'up');
       
       if (success) {
-        // Instead of just swapping in the UI, refetch to ensure we have the latest order
         await fetchFields();
         toast.success('تم تحريك الحقل للأعلى');
       } else {
@@ -284,19 +268,16 @@ const SiteFieldsManager = () => {
     
     const field = fields[index];
     
-    // Don't allow reordering system fields
     if (isSystemField(field.field_name)) {
       toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name} (حقل نظام)`);
       return;
     }
     
-    // Call the backend function to update the order
     try {
       console.log(`Moving field ${field.display_name} down`);
       const success = await updateFieldOrder(field.id, 'down');
       
       if (success) {
-        // Instead of just swapping in the UI, refetch to ensure we have the latest order
         await fetchFields();
         toast.success('تم تحريك الحقل للأسفل');
       } else {
@@ -309,7 +290,6 @@ const SiteFieldsManager = () => {
   };
 
   const isSystemField = (fieldName: string): boolean => {
-    // Check if the field is a system field
     return SYSTEM_FIELDS.includes(fieldName);
   };
 

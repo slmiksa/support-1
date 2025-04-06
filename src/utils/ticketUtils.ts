@@ -617,24 +617,41 @@ export const updateFieldOrder = async (
     // Find the adjacent field based on direction
     const { data: adjacentFields, error: adjacentError } = await supabase
       .from('site_fields')
-      .select('*')
-      .order('sort_order', { ascending: direction === 'up' ? false : true })
-      .gt('sort_order', direction === 'up' ? 0 : currentSortOrder)
-      .lt('sort_order', direction === 'up' ? currentSortOrder : Number.MAX_SAFE_INTEGER)
-      .limit(1);
+      .select('*');
       
     if (adjacentError) {
-      console.error('Error finding adjacent field:', adjacentError);
+      console.error('Error finding adjacent fields:', adjacentError);
       throw adjacentError;
     }
     
     if (!adjacentFields || adjacentFields.length === 0) {
-      console.log('No adjacent field found in that direction');
-      // No adjacent field found in that direction
+      console.log('No fields found');
+      return false;
+    }
+
+    // Filter and sort fields to find the one we need to swap with
+    let adjacentField;
+    if (direction === 'up') {
+      // For up, we need fields with sort_order less than current
+      const fieldsAbove = adjacentFields
+        .filter(f => (f.sort_order || 0) < currentSortOrder)
+        .sort((a, b) => (b.sort_order || 0) - (a.sort_order || 0));
+      
+      adjacentField = fieldsAbove[0];
+    } else {
+      // For down, we need fields with sort_order greater than current
+      const fieldsBelow = adjacentFields
+        .filter(f => (f.sort_order || 0) > currentSortOrder)
+        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      
+      adjacentField = fieldsBelow[0];
+    }
+    
+    if (!adjacentField) {
+      console.log(`No adjacent field found in the ${direction} direction`);
       return false;
     }
     
-    const adjacentField = adjacentFields[0];
     const adjacentSortOrder = adjacentField.sort_order || 0;
     
     console.log(`Swapping field ${currentField.display_name} (order: ${currentSortOrder}) with ${adjacentField.display_name} (order: ${adjacentSortOrder})`);
