@@ -1,3 +1,4 @@
+
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -53,9 +54,30 @@ const SupportForm = () => {
     const fetchCustomFields = async () => {
       try {
         const fieldsData = await getAllSiteFields();
-        const activeFields = fieldsData.filter(field => field.is_active && field.field_name !== 'priority');
+        
+        // Filter out system fields that are managed separately and only include active fields
+        // Make sure to exclude duplicates by checking field_name
+        const reservedFieldNames = ['priority', 'employeeId', 'branch', 'description'];
+        const processedFieldNames = new Set<string>();
+        
+        const activeFields = fieldsData
+          .filter(field => {
+            // Skip inactive fields, system fields, and already processed fields
+            if (!field.is_active || 
+                reservedFieldNames.includes(field.field_name) || 
+                processedFieldNames.has(field.field_name)) {
+              return false;
+            }
+            
+            // Mark this field name as processed
+            processedFieldNames.add(field.field_name);
+            return true;
+          })
+          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+        
         setCustomFields(activeFields);
         
+        // Setup initial form data
         const initialFormData: FormData = {
           employeeId: '',
           branch: '',
@@ -64,6 +86,7 @@ const SupportForm = () => {
           imageFile: null
         };
         
+        // Add custom fields to form data
         activeFields.forEach(field => {
           initialFormData[field.field_name] = '';
         });
@@ -116,6 +139,7 @@ const SupportForm = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
+    // Validate required fields
     if (!formData.employeeId || !formData.branch || !formData.description || !formData.priority) {
       toast.error('يرجى تعبئة جميع الحقول المطلوبة', {
         closeButton: true,
@@ -125,6 +149,7 @@ const SupportForm = () => {
       return;
     }
     
+    // Validate custom required fields
     for (const field of customFields) {
       if (field.is_required && !formData[field.field_name]) {
         toast.error(`الحقل "${field.display_name}" مطلوب`, {
@@ -153,6 +178,7 @@ const SupportForm = () => {
         support_email: 'help@alwaslsaudi.com'
       };
       
+      // Add custom fields to the ticket
       customFields.forEach(field => {
         if (formData[field.field_name]) {
           (newTicket as any)[field.field_name] = formData[field.field_name];
@@ -173,6 +199,7 @@ const SupportForm = () => {
       
       setTicketId(newTicketId);
       
+      // Reset form data
       const resetFormData: FormData = {
         employeeId: '',
         branch: '',
@@ -276,7 +303,6 @@ const SupportForm = () => {
                     name="employeeId"
                     type="text"
                     required
-                    numbersOnly
                     placeholder="أدخل الرقم الوظيفي"
                     className="text-right"
                     value={formData.employeeId}
@@ -307,6 +333,7 @@ const SupportForm = () => {
                   </Select>
                 </div>
                 
+                {/* Custom fields section */}
                 {customFields.map(field => (
                   <div key={field.id} className="grid gap-2">
                     <Label htmlFor={field.field_name} className="text-right">

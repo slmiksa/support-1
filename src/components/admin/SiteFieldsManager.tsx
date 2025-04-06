@@ -63,54 +63,70 @@ const SiteFieldsManager = () => {
 
   const fetchFields = async () => {
     setLoading(true);
-    const data = await getAllSiteFields();
-    
-    // Sort fields by sort_order for initial load
-    const sortedFields = [...data].sort((a, b) => 
-      (a.sort_order || 0) - (b.sort_order || 0)
-    );
-    
-    setFields(sortedFields);
-    setLoading(false);
+    try {
+      const data = await getAllSiteFields();
+      
+      // Sort fields by sort_order for initial load
+      const sortedFields = [...data].sort((a, b) => 
+        (a.sort_order || 0) - (b.sort_order || 0)
+      );
+      
+      setFields(sortedFields);
+    } catch (error) {
+      console.error('Error fetching fields:', error);
+      toast.error('حدث خطأ أثناء تحميل الحقول');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleToggleRequired = async (field: SiteField) => {
     if (!canManageAdmins) return;
     
-    // Don't allow changing system fields like 'priority'
-    if (field.field_name === 'priority') {
-      toast.error('لا يمكن تغيير إعدادات حقل الأهمية');
+    // Don't allow changing system fields like 'priority' or fields with special names
+    if (isSystemField(field.field_name)) {
+      toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name}`);
       return;
     }
     
-    const newValue = !field.is_required;
-    const success = await updateSiteField(field.id, { is_required: newValue });
-    
-    if (success) {
-      setFields(fields.map(f => f.id === field.id ? { ...f, is_required: newValue } : f));
-      toast.success(`تم تحديث حالة الحقل ${field.display_name}`);
-    } else {
-      toast.error('فشل في تحديث الحقل');
+    try {
+      const newValue = !field.is_required;
+      const success = await updateSiteField(field.id, { is_required: newValue });
+      
+      if (success) {
+        setFields(fields.map(f => f.id === field.id ? { ...f, is_required: newValue } : f));
+        toast.success(`تم تحديث حالة الحقل ${field.display_name}`);
+      } else {
+        toast.error('فشل في تحديث الحقل');
+      }
+    } catch (error) {
+      console.error('Error toggling required status:', error);
+      toast.error('حدث خطأ أثناء تحديث الحقل');
     }
   };
 
   const handleToggleActive = async (field: SiteField) => {
     if (!canManageAdmins) return;
     
-    // Don't allow changing system fields like 'priority'
-    if (field.field_name === 'priority') {
-      toast.error('لا يمكن تغيير إعدادات حقل الأهمية');
+    // Don't allow changing system fields like 'priority' or fields with special names
+    if (isSystemField(field.field_name)) {
+      toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name}`);
       return;
     }
     
-    const newValue = !field.is_active;
-    const success = await updateSiteField(field.id, { is_active: newValue });
-    
-    if (success) {
-      setFields(fields.map(f => f.id === field.id ? { ...f, is_active: newValue } : f));
-      toast.success(`تم تحديث حالة الحقل ${field.display_name}`);
-    } else {
-      toast.error('فشل في تحديث الحقل');
+    try {
+      const newValue = !field.is_active;
+      const success = await updateSiteField(field.id, { is_active: newValue });
+      
+      if (success) {
+        setFields(fields.map(f => f.id === field.id ? { ...f, is_active: newValue } : f));
+        toast.success(`تم تحديث حالة الحقل ${field.display_name}`);
+      } else {
+        toast.error('فشل في تحديث الحقل');
+      }
+    } catch (error) {
+      console.error('Error toggling active status:', error);
+      toast.error('حدث خطأ أثناء تحديث الحقل');
     }
   };
 
@@ -123,7 +139,8 @@ const SiteFieldsManager = () => {
     return displayName
       .toLowerCase()
       .replace(/\s+/g, '_')
-      .replace(/[^\w\s]/gi, '');
+      .replace(/[^\w\s]/gi, '')
+      .trim();
   };
 
   const handleAddField = async () => {
@@ -135,7 +152,18 @@ const SiteFieldsManager = () => {
 
     try {
       // Auto-generate field_name if empty
-      const fieldName = newField.field_name || convertToFieldName(newField.display_name);
+      let fieldName = newField.field_name || convertToFieldName(newField.display_name);
+      
+      // Make sure field_name is unique
+      const existingField = fields.find(f => f.field_name === fieldName);
+      if (existingField) {
+        fieldName = `${fieldName}_${Date.now()}`;
+      }
+      
+      // Validate field name - ensure it's a valid identifier
+      if (!/^[a-z][a-z0-9_]*$/.test(fieldName)) {
+        fieldName = `field_${Date.now()}`;
+      }
       
       const fieldData = {
         ...newField,
@@ -167,8 +195,8 @@ const SiteFieldsManager = () => {
     if (!canManageAdmins || !fieldToDelete) return;
     
     // Don't allow deleting system fields like 'priority'
-    if (fieldToDelete.field_name === 'priority') {
-      toast.error('لا يمكن حذف حقل الأهمية');
+    if (isSystemField(fieldToDelete.field_name)) {
+      toast.error(`لا يمكن حذف حقل ${fieldToDelete.display_name}`);
       setDeleteDialogOpen(false);
       setFieldToDelete(null);
       return;
@@ -205,21 +233,26 @@ const SiteFieldsManager = () => {
     const field = fields[index];
     
     // Don't allow reordering system fields
-    if (field.field_name === 'priority') {
-      toast.error('لا يمكن تغيير ترتيب حقل الأهمية');
+    if (isSystemField(field.field_name)) {
+      toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name}`);
       return;
     }
     
     // Call the backend function to update the order
-    const success = await updateFieldOrder(field.id, 'up');
-    
-    if (success) {
-      const newFields = [...fields];
-      [newFields[index-1], newFields[index]] = [newFields[index], newFields[index-1]];
-      setFields(newFields);
-      toast.success('تم تحريك الحقل للأعلى');
-    } else {
-      toast.error('فشل في تحريك الحقل');
+    try {
+      const success = await updateFieldOrder(field.id, 'up');
+      
+      if (success) {
+        const newFields = [...fields];
+        [newFields[index-1], newFields[index]] = [newFields[index], newFields[index-1]];
+        setFields(newFields);
+        toast.success('تم تحريك الحقل للأعلى');
+      } else {
+        toast.error('فشل في تحريك الحقل');
+      }
+    } catch (error) {
+      console.error('Error moving field up:', error);
+      toast.error('حدث خطأ أثناء تحريك الحقل');
     }
   };
 
@@ -229,27 +262,33 @@ const SiteFieldsManager = () => {
     const field = fields[index];
     
     // Don't allow reordering system fields
-    if (field.field_name === 'priority') {
-      toast.error('لا يمكن تغيير ترتيب حقل الأهمية');
+    if (isSystemField(field.field_name)) {
+      toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name}`);
       return;
     }
     
     // Call the backend function to update the order
-    const success = await updateFieldOrder(field.id, 'down');
-    
-    if (success) {
-      const newFields = [...fields];
-      [newFields[index], newFields[index+1]] = [newFields[index+1], newFields[index]];
-      setFields(newFields);
-      toast.success('تم تحريك الحقل للأسفل');
-    } else {
-      toast.error('فشل في تحريك الحقل');
+    try {
+      const success = await updateFieldOrder(field.id, 'down');
+      
+      if (success) {
+        const newFields = [...fields];
+        [newFields[index], newFields[index+1]] = [newFields[index+1], newFields[index]];
+        setFields(newFields);
+        toast.success('تم تحريك الحقل للأسفل');
+      } else {
+        toast.error('فشل في تحريك الحقل');
+      }
+    } catch (error) {
+      console.error('Error moving field down:', error);
+      toast.error('حدث خطأ أثناء تحريك الحقل');
     }
   };
 
   const isSystemField = (fieldName: string): boolean => {
     // List of system fields that cannot be modified
-    return ['priority'].includes(fieldName);
+    const systemFields = ['priority', 'employeeId', 'branch', 'description'];
+    return systemFields.includes(fieldName);
   };
 
   return (
@@ -277,7 +316,7 @@ const SiteFieldsManager = () => {
                     className="text-right"
                     value={newField.display_name}
                     onChange={handleInputChange}
-                    placeholder="مثال: الرقم الوظيفي"
+                    placeholder="مثال: رقم التواصل"
                   />
                 </div>
                 <div className="grid gap-2">
@@ -370,6 +409,9 @@ const SiteFieldsManager = () => {
                         {isSystemField(field.field_name) && (
                           <span className="mr-2 text-sm text-muted-foreground">(حقل نظام)</span>
                         )}
+                        <div className="text-xs text-muted-foreground mt-1 opacity-70">
+                          {field.field_name}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Switch
