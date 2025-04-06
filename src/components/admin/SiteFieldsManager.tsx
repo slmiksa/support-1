@@ -42,6 +42,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+// System fields that should be protected and managed differently
+const SYSTEM_FIELDS = ['priority', 'employeeId', 'branch', 'description'];
+
 const SiteFieldsManager = () => {
   const [fields, setFields] = useState<SiteField[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,8 +69,24 @@ const SiteFieldsManager = () => {
     try {
       const data = await getAllSiteFields();
       
+      // Process fields to handle duplicates
+      const uniqueFieldMap = new Map<string, SiteField>();
+      
+      // First add system fields to ensure they're properly managed
+      data.filter(field => SYSTEM_FIELDS.includes(field.field_name))
+          .forEach(field => uniqueFieldMap.set(field.field_name, field));
+      
+      // Then add non-system fields
+      data.filter(field => !SYSTEM_FIELDS.includes(field.field_name))
+          .forEach(field => {
+            // Only add if not already in the map or if this one has a higher ID (more recent)
+            if (!uniqueFieldMap.has(field.field_name) || field.id > uniqueFieldMap.get(field.field_name)!.id) {
+              uniqueFieldMap.set(field.field_name, field);
+            }
+          });
+      
       // Sort fields by sort_order for initial load
-      const sortedFields = [...data].sort((a, b) => 
+      const sortedFields = Array.from(uniqueFieldMap.values()).sort((a, b) => 
         (a.sort_order || 0) - (b.sort_order || 0)
       );
       
@@ -85,7 +104,7 @@ const SiteFieldsManager = () => {
     
     // Don't allow changing system fields like 'priority' or fields with special names
     if (isSystemField(field.field_name)) {
-      toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name}`);
+      toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name} (حقل نظام)`);
       return;
     }
     
@@ -110,7 +129,7 @@ const SiteFieldsManager = () => {
     
     // Don't allow changing system fields like 'priority' or fields with special names
     if (isSystemField(field.field_name)) {
-      toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name}`);
+      toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name} (حقل نظام)`);
       return;
     }
     
@@ -160,6 +179,12 @@ const SiteFieldsManager = () => {
         fieldName = `${fieldName}_${Date.now()}`;
       }
       
+      // Check if fieldName is a system field
+      if (SYSTEM_FIELDS.includes(fieldName)) {
+        toast.error('هذا الاسم محجوز للنظام، يرجى اختيار اسم آخر');
+        return;
+      }
+      
       // Validate field name - ensure it's a valid identifier
       if (!/^[a-z][a-z0-9_]*$/.test(fieldName)) {
         fieldName = `field_${Date.now()}`;
@@ -196,7 +221,7 @@ const SiteFieldsManager = () => {
     
     // Don't allow deleting system fields like 'priority'
     if (isSystemField(fieldToDelete.field_name)) {
-      toast.error(`لا يمكن حذف حقل ${fieldToDelete.display_name}`);
+      toast.error(`لا يمكن حذف حقل ${fieldToDelete.display_name} (حقل نظام)`);
       setDeleteDialogOpen(false);
       setFieldToDelete(null);
       return;
@@ -234,7 +259,7 @@ const SiteFieldsManager = () => {
     
     // Don't allow reordering system fields
     if (isSystemField(field.field_name)) {
-      toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name}`);
+      toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name} (حقل نظام)`);
       return;
     }
     
@@ -263,7 +288,7 @@ const SiteFieldsManager = () => {
     
     // Don't allow reordering system fields
     if (isSystemField(field.field_name)) {
-      toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name}`);
+      toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name} (حقل نظام)`);
       return;
     }
     
@@ -286,9 +311,8 @@ const SiteFieldsManager = () => {
   };
 
   const isSystemField = (fieldName: string): boolean => {
-    // List of system fields that cannot be modified
-    const systemFields = ['priority', 'employeeId', 'branch', 'description'];
-    return systemFields.includes(fieldName);
+    // Check if the field is a system field
+    return SYSTEM_FIELDS.includes(fieldName);
   };
 
   return (
