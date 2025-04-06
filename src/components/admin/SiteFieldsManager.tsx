@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   getAllSiteFields, 
@@ -251,7 +250,6 @@ const SiteFieldsManager = () => {
     setDeleteDialogOpen(true);
   };
 
-  // Functions for reordering fields
   const moveFieldUp = async (index: number) => {
     if (index === 0) return; // Already at the top
     
@@ -265,12 +263,12 @@ const SiteFieldsManager = () => {
     
     // Call the backend function to update the order
     try {
+      console.log(`Moving field ${field.display_name} up`);
       const success = await updateFieldOrder(field.id, 'up');
       
       if (success) {
-        const newFields = [...fields];
-        [newFields[index-1], newFields[index]] = [newFields[index], newFields[index-1]];
-        setFields(newFields);
+        // Instead of just swapping in the UI, refetch to ensure we have the latest order
+        await fetchFields();
         toast.success('تم تحريك الحقل للأعلى');
       } else {
         toast.error('فشل في تحريك الحقل');
@@ -294,12 +292,12 @@ const SiteFieldsManager = () => {
     
     // Call the backend function to update the order
     try {
+      console.log(`Moving field ${field.display_name} down`);
       const success = await updateFieldOrder(field.id, 'down');
       
       if (success) {
-        const newFields = [...fields];
-        [newFields[index], newFields[index+1]] = [newFields[index+1], newFields[index]];
-        setFields(newFields);
+        // Instead of just swapping in the UI, refetch to ensure we have the latest order
+        await fetchFields();
         toast.success('تم تحريك الحقل للأسفل');
       } else {
         toast.error('فشل في تحريك الحقل');

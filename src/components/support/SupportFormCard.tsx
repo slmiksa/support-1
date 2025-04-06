@@ -37,6 +37,11 @@ const SupportFormCard = ({
   resetImage,
   onSubmit
 }: SupportFormCardProps) => {
+  // Sort fields based on sort_order if not already sorted
+  const sortedCustomFields = [...customFields].sort((a, b) => 
+    (a.sort_order ?? 0) - (b.sort_order ?? 0)
+  );
+  
   return (
     <Card className="border-company/20 glass">
       <CardHeader>
@@ -59,7 +64,7 @@ const SupportFormCard = ({
               onChange={(value) => handleSelectChange(value, 'branch')} 
             />
             
-            {customFields.map(field => (
+            {sortedCustomFields.map(field => (
               <CustomFieldInput
                 key={field.id}
                 field={field}

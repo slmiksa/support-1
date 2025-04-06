@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -609,6 +608,7 @@ export const updateFieldOrder = async (
       .single();
       
     if (currentError || !currentField) {
+      console.error('Error finding current field:', currentError);
       throw new Error('Field not found');
     }
     
@@ -623,13 +623,21 @@ export const updateFieldOrder = async (
       .lt('sort_order', direction === 'up' ? currentSortOrder : Number.MAX_SAFE_INTEGER)
       .limit(1);
       
-    if (adjacentError || !adjacentFields || adjacentFields.length === 0) {
+    if (adjacentError) {
+      console.error('Error finding adjacent field:', adjacentError);
+      throw adjacentError;
+    }
+    
+    if (!adjacentFields || adjacentFields.length === 0) {
+      console.log('No adjacent field found in that direction');
       // No adjacent field found in that direction
       return false;
     }
     
     const adjacentField = adjacentFields[0];
     const adjacentSortOrder = adjacentField.sort_order || 0;
+    
+    console.log(`Swapping field ${currentField.display_name} (order: ${currentSortOrder}) with ${adjacentField.display_name} (order: ${adjacentSortOrder})`);
     
     // Swap the sort orders
     const { error: updateCurrentError } = await supabase
@@ -638,6 +646,7 @@ export const updateFieldOrder = async (
       .eq('id', id);
       
     if (updateCurrentError) {
+      console.error('Error updating current field order:', updateCurrentError);
       throw updateCurrentError;
     }
     
@@ -647,6 +656,7 @@ export const updateFieldOrder = async (
       .eq('id', adjacentField.id);
       
     if (updateAdjacentError) {
+      console.error('Error updating adjacent field order:', updateAdjacentError);
       throw updateAdjacentError;
     }
     

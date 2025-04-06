@@ -1,3 +1,4 @@
+
 import { useState, useEffect, ChangeEvent } from 'react';
 import { toast } from 'sonner';
 import { getAllBranches, getAllSiteFields, SiteField, Branch } from '@/utils/ticketUtils';
@@ -55,9 +56,11 @@ export const useFormData = () => {
             }
           });
         
+        // Ensure fields are sorted by sort_order
         const activeCustomFields = Array.from(fieldMap.values())
-          .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
         
+        console.log('Sorted custom fields in form:', activeCustomFields);
         setCustomFields(activeCustomFields);
         
         const initialFormData: FormData = {
