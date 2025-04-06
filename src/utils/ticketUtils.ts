@@ -76,7 +76,7 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
       throw error;
     }
 
-    // Add field_type to match SiteField interface
+    // Add field_type to match SiteField interface if it doesn't exist
     const fieldsWithType = data?.map(field => ({
       ...field,
       field_type: field.field_type || 'text'
@@ -115,6 +115,7 @@ export const generateTicketId = (): string => {
 
 export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean; data: any; error: any }> => {
   try {
+    console.log('Saving ticket:', ticket);
     const { data, error } = await supabase
       .from('tickets')
       .insert([ticket]);
@@ -251,7 +252,11 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
       return null;
     }
 
-    return data;
+    // Ensure the returned data has the support_email field
+    return data ? {
+      ...data,
+      support_email: data.support_email || 'help@alwaslsaudi.com'
+    } as SupportTicket : null;
   } catch (error) {
     console.error('Error in findTicketById:', error);
     return null;
@@ -294,7 +299,11 @@ export const getTicketsByDateRange = async (startDate: string, endDate: string):
       return [];
     }
 
-    return data || [];
+    // Ensure each ticket has the support_email field
+    return (data || []).map(ticket => ({
+      ...ticket,
+      support_email: ticket.support_email || 'help@alwaslsaudi.com'
+    })) as SupportTicket[];
   } catch (error) {
     console.error('Error in getTicketsByDateRange:', error);
     return [];
@@ -357,6 +366,7 @@ export const updateSiteField = async (
     is_required?: boolean;
     is_active?: boolean;
     sort_order?: number;
+    field_type?: string;
   }
 ): Promise<boolean> => {
   try {
@@ -428,14 +438,8 @@ export const updateFieldOrder = async (
   fieldUpdates: { id: string; sort_order: number }[]
 ): Promise<boolean> => {
   try {
-    // Use transaction to update all fields at once
-    const updates = fieldUpdates.map(field => ({
-      id: field.id,
-      sort_order: field.sort_order
-    }));
-
     // Update each field one by one
-    for (const update of updates) {
+    for (const update of fieldUpdates) {
       const { error } = await supabase
         .from('site_fields')
         .update({ sort_order: update.sort_order })

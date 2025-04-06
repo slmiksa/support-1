@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { getAllBranches, createBranch, deleteBranch, Branch } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -46,7 +45,9 @@ const BranchesManager = () => {
     }
   };
 
-  const handleDeleteBranch = async (branchId: string) => {
+  const handleDeleteBranch = async (id: string | number) => {
+    const branchId = String(id);
+    
     if (confirm('هل أنت متأكد من حذف هذا الفرع؟')) {
       const success = await deleteBranch(branchId);
       if (success) {

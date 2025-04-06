@@ -1,66 +1,32 @@
-
-import { useState, useEffect } from 'react';
-import { 
-  getAllSiteFields, 
-  updateSiteField, 
-  createSiteField, 
-  deleteSiteField, 
-  SiteField,
-  updateFieldOrder
-} from '@/utils/ticketUtils';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Switch } from '@/components/ui/switch';
+import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'sonner';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter,
-  DialogTrigger 
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
+import {
+  getAllSiteFields,
+  updateSiteField,
+  createSiteField,
+  deleteSiteField,
+  updateFieldOrder,
+  SiteField,
+  updateSystemFieldName
+} from '@/utils/ticketUtils';
+import { SYSTEM_FIELDS, SYSTEM_FIELD_LABELS } from '@/components/support/constants';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, ArrowUp, ArrowDown, Info, Edit } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-const SYSTEM_FIELDS = ['priority', 'branch', 'description'];
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Switch } from '@/components/ui/switch';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { ReloadIcon, PlusIcon, PencilIcon, TrashIcon, ArrowUp, ArrowDown } from 'lucide-react';
 
 const SiteFieldsManager = () => {
   const [fields, setFields] = useState<SiteField[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [fieldToDelete, setFieldToDelete] = useState<SiteField | null>(null);
-  const [fieldToEdit, setFieldToEdit] = useState<SiteField | null>(null);
-  const [newField, setNewField] = useState({
-    display_name: '',
-    field_name: '',
-    is_required: false,
-    is_active: true
-  });
-  const [editedDisplayName, setEditedDisplayName] = useState('');
-  const { hasPermission } = useAdminAuth();
-  const canManageAdmins = hasPermission('manage_admins');
+  const [fieldName, setFieldName] = useState('');
+  const [displayName, setDisplayName] = useState('');
+  const [isRequired, setIsRequired] = useState(false);
+  const [isSystemField, setIsSystemField] = useState(false);
+  const [editingSystemField, setEditingSystemField] = useState('');
+  const [newDisplayName, setNewDisplayName] = useState('');
 
   useEffect(() => {
     fetchFields();
@@ -69,466 +35,413 @@ const SiteFieldsManager = () => {
   const fetchFields = async () => {
     setLoading(true);
     try {
-      const data = await getAllSiteFields();
-      
-      const uniqueFieldMap = new Map<string, SiteField>();
-      
-      data.filter(field => SYSTEM_FIELDS.includes(field.field_name))
-          .forEach(field => uniqueFieldMap.set(field.field_name, field));
-      
-      data.filter(field => !SYSTEM_FIELDS.includes(field.field_name))
-          .forEach(field => {
-            if (!uniqueFieldMap.has(field.field_name) || field.id > uniqueFieldMap.get(field.field_name)!.id) {
-              uniqueFieldMap.set(field.field_name, field);
-            }
-          });
-      
-      const sortedFields = Array.from(uniqueFieldMap.values()).sort((a, b) => 
-        (a.sort_order || 0) - (b.sort_order || 0)
-      );
-      
-      setFields(sortedFields);
+      const fieldsData = await getAllSiteFields();
+      setFields(fieldsData);
     } catch (error) {
-      console.error('Error fetching fields:', error);
-      toast.error('حدث خطأ أثناء تحميل الحقول');
+      console.error('Error fetching site fields:', error);
+      toast.error('Failed to load site fields');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToggleRequired = async (field: SiteField) => {
-    if (!canManageAdmins) return;
-    
+  const handleToggleRequired = async (id: string | number) => {
+    const fieldId = String(id);
     try {
-      const newValue = !field.is_required;
-      const success = await updateSiteField(field.id, { is_required: newValue });
-      
-      if (success) {
-        setFields(fields.map(f => f.id === field.id ? { ...f, is_required: newValue } : f));
-        toast.success(`تم تحديث حالة الحقل ${field.display_name}`);
-      } else {
-        toast.error('فشل في تحديث الحقل');
-      }
-    } catch (error) {
-      console.error('Error toggling required status:', error);
-      toast.error('حدث خطأ أثناء تحديث الحقل');
-    }
-  };
-
-  const handleToggleActive = async (field: SiteField) => {
-    if (!canManageAdmins) return;
-    
-    try {
-      const newValue = !field.is_active;
-      const success = await updateSiteField(field.id, { is_active: newValue });
-      
-      if (success) {
-        setFields(fields.map(f => f.id === field.id ? { ...f, is_active: newValue } : f));
-        toast.success(`تم تحديث حالة الحقل ${field.display_name}`);
-      } else {
-        toast.error('فشل في تحديث الحقل');
-      }
-    } catch (error) {
-      console.error('Error toggling active status:', error);
-      toast.error('حدث خطأ أثناء تحديث الحقل');
-    }
-  };
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewField(prev => ({ ...prev, [name]: value }));
-  };
-
-  const convertToFieldName = (displayName: string) => {
-    return displayName
-      .toLowerCase()
-      .replace(/\s+/g, '_')
-      .replace(/[^\w\s]/gi, '')
-      .trim();
-  };
-
-  const handleAddField = async () => {
-    if (!canManageAdmins) return;
-    if (!newField.display_name) {
-      toast.error('يرجى إدخال اسم الحقل');
-      return;
-    }
-
-    try {
-      let fieldName = newField.field_name || convertToFieldName(newField.display_name);
-      
-      const existingField = fields.find(f => f.field_name === fieldName);
-      if (existingField) {
-        fieldName = `${fieldName}_${Date.now()}`;
-      }
-      
-      if (SYSTEM_FIELDS.includes(fieldName)) {
-        toast.error('هذا الاسم محجوز للنظام، يرجى اختيار اسم آخر');
+      const fieldToUpdate = fields.find(field => field.id === fieldId);
+      if (!fieldToUpdate) {
+        console.error('Field not found:', fieldId);
+        toast.error('Field not found');
         return;
       }
-      
-      if (!/^[a-z][a-z0-9_]*$/.test(fieldName)) {
-        fieldName = `field_${Date.now()}`;
-      }
-      
-      const fieldData = {
-        ...newField,
-        field_name: fieldName
-      };
-      
-      const result = await createSiteField(fieldData);
-      
-      if (result) {
-        toast.success(`تم إضافة الحقل ${newField.display_name} بنجاح`);
-        setFields([...fields, result]);
-        setNewField({
-          display_name: '',
-          field_name: '',
-          is_required: false,
-          is_active: true
-        });
-        setIsAddDialogOpen(false);
-      } else {
-        toast.error('فشل في إضافة الحقل');
-      }
+
+      await updateSiteField(fieldId, { is_required: !fieldToUpdate.is_required });
+      setFields(prevFields =>
+        prevFields.map(field =>
+          field.id === fieldId ? { ...field, is_required: !field.is_required } : field
+        )
+      );
+      toast.success('Required status updated');
     } catch (error) {
-      console.error('Error adding field:', error);
-      toast.error('حدث خطأ أثناء إضافة الحقل');
+      console.error('Error toggling required status:', error);
+      toast.error('Failed to update required status');
     }
   };
 
-  const handleDeleteField = async () => {
-    if (!canManageAdmins || !fieldToDelete) return;
-    
-    if (isSystemField(fieldToDelete.field_name)) {
-      toast.warning(`حقل النظام "${fieldToDelete.display_name}" لا يمكن حذفه ولكن يمكنك تغيير إعداداته`);
-      setDeleteDialogOpen(false);
-      setFieldToDelete(null);
+  const handleToggleActive = async (id: string | number) => {
+    const fieldId = String(id);
+    try {
+      const fieldToUpdate = fields.find(field => field.id === fieldId);
+      if (!fieldToUpdate) {
+        console.error('Field not found:', fieldId);
+        toast.error('Field not found');
+        return;
+      }
+
+      await updateSiteField(fieldId, { is_active: !fieldToUpdate.is_active });
+      setFields(prevFields =>
+        prevFields.map(field =>
+          field.id === fieldId ? { ...field, is_active: !field.is_active } : field
+        )
+      );
+      toast.success('Active status updated');
+    } catch (error) {
+      console.error('Error toggling active status:', error);
+      toast.error('Failed to update active status');
+    }
+  };
+
+  const handleRenameField = async (id: string | number) => {
+    const fieldId = String(id);
+    try {
+      const fieldToUpdate = fields.find(field => field.id === fieldId);
+      if (!fieldToUpdate) {
+        console.error('Field not found:', fieldId);
+        toast.error('Field not found');
+        return;
+      }
+
+      const newDisplayName = prompt('Enter new display name:', fieldToUpdate.display_name);
+      if (newDisplayName && newDisplayName !== fieldToUpdate.display_name) {
+        await updateSiteField(fieldId, { display_name: newDisplayName });
+        setFields(prevFields =>
+          prevFields.map(field =>
+            field.id === fieldId ? { ...field, display_name: newDisplayName } : field
+          )
+        );
+        toast.success('Display name updated');
+      }
+    } catch (error) {
+      console.error('Error renaming field:', error);
+      toast.error('Failed to update display name');
+    }
+  };
+
+  const handleDeleteField = async (id: string | number) => {
+    const fieldId = String(id);
+    if (window.confirm('Are you sure you want to delete this field?')) {
+      try {
+        await deleteSiteField(fieldId);
+        setFields(prevFields => prevFields.filter(field => field.id !== fieldId));
+        toast.success('Field deleted successfully');
+      } catch (error) {
+        console.error('Error deleting field:', error);
+        toast.error('Failed to delete field');
+      }
+    }
+  };
+
+  const handleCreateField = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!fieldName || !displayName) {
+      toast.error('Please fill in all fields');
       return;
     }
-    
+
+    const newField = {
+      field_name: fieldName,
+      display_name: displayName,
+      is_required: isRequired,
+      is_active: true,
+      field_type: 'text' // Add the required field_type
+    };
+
     try {
-      const success = await deleteSiteField(fieldToDelete.id);
-      
-      if (success) {
-        setFields(fields.filter(f => f.id !== fieldToDelete.id));
-        toast.success(`تم حذف الحقل ${fieldToDelete.display_name} بنجاح`);
+      const result = await createSiteField(newField);
+
+      if (result.success && result.data) {
+        setFields([...fields, result.data[0] as SiteField]);
+        setFieldName('');
+        setDisplayName('');
+        setIsRequired(false);
+        toast.success('Field created successfully');
       } else {
-        toast.error('فشل في حذف الحقل');
+        toast.error('Failed to create field');
       }
     } catch (error) {
-      console.error('Error deleting field:', error);
-      toast.error('حدث خطأ أثناء حذف الحقل');
-    } finally {
-      setDeleteDialogOpen(false);
-      setFieldToDelete(null);
+      console.error('Error creating field:', error);
+      toast.error('Failed to create field');
     }
   };
 
-  const openDeleteDialog = (field: SiteField) => {
-    if (!canManageAdmins) return;
-    setFieldToDelete(field);
-    setDeleteDialogOpen(true);
-  };
-
-  const moveFieldUp = async (index: number) => {
-    if (index === 0) return; // Already at the top
-    
-    const field = fields[index];
-    
-    try {
-      console.log(`Moving field ${field.display_name} up`);
-      const success = await updateFieldOrder(field.id, 'up');
-      
-      if (success) {
-        await fetchFields();
-        toast.success('تم تحريك الحقل للأعلى');
-      } else {
-        toast.error('فشل في تحريك الحقل');
-      }
-    } catch (error) {
-      console.error('Error moving field up:', error);
-      toast.error('حدث خطأ أثناء تحريك الحقل');
-    }
-  };
-
-  const moveFieldDown = async (index: number) => {
-    if (index === fields.length - 1) return; // Already at the bottom
-    
-    const field = fields[index];
-    
-    try {
-      console.log(`Moving field ${field.display_name} down`);
-      const success = await updateFieldOrder(field.id, 'down');
-      
-      if (success) {
-        await fetchFields();
-        toast.success('تم تحريك الحقل للأسفل');
-      } else {
-        toast.error('فشل في تحريك الحقل');
-      }
-    } catch (error) {
-      console.error('Error moving field down:', error);
-      toast.error('حدث خطأ أثناء تحريك الحقل');
-    }
-  };
-
-  const isSystemField = (fieldName: string): boolean => {
-    return SYSTEM_FIELDS.includes(fieldName);
-  };
-
-  const openEditDialog = (field: SiteField) => {
-    if (!canManageAdmins) return;
-    setFieldToEdit(field);
-    setEditedDisplayName(field.display_name);
-    setIsEditDialogOpen(true);
-  };
-
-  const handleEditField = async () => {
-    if (!canManageAdmins || !fieldToEdit) return;
-    
-    if (!editedDisplayName.trim()) {
-      toast.error('اسم الحقل لا يمكن أن يكون فارغًا');
+  const onDragEnd = async (result: DropResult) => {
+    if (!result.destination) {
       return;
     }
-    
+
+    const items = Array.from(fields);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    // Optimistically update the state
+    setFields(items);
+
+    // Prepare updates for the database
+    const updates = items.map((field, index) => ({
+      id: String(field.id),
+      sort_order: index + 1
+    }));
+
     try {
-      const success = await updateSiteField(fieldToEdit.id, { display_name: editedDisplayName });
-      
-      if (success) {
-        setFields(fields.map(f => f.id === fieldToEdit.id ? { ...f, display_name: editedDisplayName } : f));
-        toast.success(`تم تعديل اسم الحقل بنجاح`);
-        setIsEditDialogOpen(false);
-        setFieldToEdit(null);
-      } else {
-        toast.error('فشل في تعديل الحقل');
+      const success = await updateFieldOrder(updates);
+      if (!success) {
+        toast.error('Failed to update field order in database. Please refresh.');
+        // Revert to the original order in case of failure
+        fetchFields();
+        return;
       }
+      toast.success('Field order updated successfully');
     } catch (error) {
-      console.error('Error editing field:', error);
-      toast.error('حدث خطأ أثناء تعديل الحقل');
+      console.error('Error updating field order:', error);
+      toast.error('Failed to update field order. Please refresh.');
+      // Revert to the original order in case of failure
+      fetchFields();
+    }
+  };
+
+  const moveUp = async (index: number, id: string | number) => {
+    const fieldId = String(id);
+    if (index > 0) {
+      const newFields = [...fields];
+      const temp = newFields[index];
+      newFields[index] = newFields[index - 1];
+      newFields[index - 1] = temp;
+
+      // Optimistically update the state
+      setFields(newFields);
+
+      // Prepare updates for the database
+      const updates = newFields.map((field, i) => ({
+        id: String(field.id),
+        sort_order: i + 1
+      }));
+
+      try {
+        const success = await updateFieldOrder(updates);
+        if (!success) {
+          toast.error('Failed to update field order in database. Please refresh.');
+          // Revert to the original order in case of failure
+          fetchFields();
+          return;
+        }
+        toast.success('Field order updated successfully');
+      } catch (error) {
+        console.error('Error updating field order:', error);
+        toast.error('Failed to update field order. Please refresh.');
+        // Revert to the original order in case of failure
+        fetchFields();
+      }
+    }
+  };
+
+  const moveDown = async (index: number, id: string | number) => {
+    const fieldId = String(id);
+    if (index < fields.length - 1) {
+      const newFields = [...fields];
+      const temp = newFields[index];
+      newFields[index] = newFields[index + 1];
+      newFields[index + 1] = temp;
+
+      // Optimistically update the state
+      setFields(newFields);
+
+      // Prepare updates for the database
+      const updates = newFields.map((field, i) => ({
+        id: String(field.id),
+        sort_order: i + 1
+      }));
+
+      try {
+        const success = await updateFieldOrder(updates);
+        if (!success) {
+          toast.error('Failed to update field order in database. Please refresh.');
+          // Revert to the original order in case of failure
+          fetchFields();
+          return;
+        }
+        toast.success('Field order updated successfully');
+      } catch (error) {
+        console.error('Error updating field order:', error);
+        toast.error('Failed to update field order. Please refresh.');
+        // Revert to the original order in case of failure
+        fetchFields();
+      }
+    }
+  };
+
+  const updateSystemField = async (fieldName: string, displayName: string, customField: boolean = false) => {
+    try {
+      await updateSystemFieldName(fieldName, fieldName, displayName);
+
+      // Update local state
+      setFields(prevFields =>
+        prevFields.map(field =>
+          field.field_name === fieldName ? { ...field, display_name: displayName } : field
+        )
+      );
+
+      // Update SYSTEM_FIELD_LABELS in constants.ts (if needed)
+      // This depends on how you're using SYSTEM_FIELD_LABELS in your application
+      // If it's directly imported and used, you might need to refresh the page
+      // or use a more dynamic approach to update it.
+
+      toast.success('System field updated successfully');
+    } catch (error) {
+      console.error('Error updating system field:', error);
+      toast.error('Failed to update system field');
     }
   };
 
   return (
-    <Card>
-      <CardHeader className="pb-3 flex flex-row items-center justify-between">
-        <CardTitle className="text-right text-xl font-bold text-company">إدارة حقول الموقع</CardTitle>
-        {canManageAdmins && (
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex items-center gap-1">
-                <Plus size={16} />
-                <span>إضافة حقل</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle className="text-right">إضافة حقل جديد</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="display_name" className="text-right">اسم الحقل</Label>
-                  <Input
-                    id="display_name"
-                    name="display_name"
-                    className="text-right"
-                    value={newField.display_name}
-                    onChange={handleInputChange}
-                    placeholder="مثال: رقم التواصل"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="field_name" className="text-right">
-                    اسم الحقل البرمجي (اختياري)
-                  </Label>
-                  <Input
-                    id="field_name"
-                    name="field_name"
-                    className="text-right"
-                    value={newField.field_name}
-                    onChange={handleInputChange}
-                    placeholder="سيتم إنشاؤه تلقائيًا إذا تركته فارغًا"
-                  />
-                  <p className="text-sm text-muted-foreground text-right">
-                    إذا تركت هذا الحقل فارغًا، سيتم إنشاؤه تلقائيًا من اسم الحقل
-                  </p>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleAddField} className="w-full">إضافة الحقل</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <div className="text-center py-10">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-            <p className="mt-2">جاري تحميل البيانات...</p>
-          </div>
-        ) : (
-          <div className="rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  {canManageAdmins && <TableHead className="text-center w-16">ترتيب</TableHead>}
-                  <TableHead className="text-right">اسم الحقل</TableHead>
-                  <TableHead className="text-right">مطلوب</TableHead>
-                  <TableHead className="text-right">نشط</TableHead>
-                  {canManageAdmins && <TableHead className="text-center w-32">إجراءات</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {fields.length > 0 ? (
-                  fields.map((field, index) => (
-                    <TableRow key={field.id} className={isSystemField(field.field_name) ? "bg-muted/30" : ""}>
-                      {canManageAdmins && (
-                        <TableCell className="flex items-center justify-center space-x-1">
-                          {isSystemField(field.field_name) ? (
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="flex items-center">
-                                    <Info size={16} className="text-amber-500 mr-1" />
+    <div className="container mx-auto p-4">
+      <Card className="border-company/20 glass">
+        <CardHeader>
+          <CardTitle className="text-2xl">Manage Site Fields</CardTitle>
+          <CardDescription>Customize the fields available in the support form.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={fetchFields} disabled={loading} className="mb-4">
+            {loading ? (
+              <>
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              <>
+                <ReloadIcon className="mr-2 h-4 w-4" />
+                Refresh Fields
+              </>
+            )}
+          </Button>
+
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="fields">
+              {(provided) => (
+                <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                  {fields.map((field, index) => (
+                    <Draggable key={field.id} draggableId={String(field.id)} index={index}>
+                      {(provided) => (
+                        <li
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          className="bg-white rounded-md shadow-sm p-4 flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="font-semibold">{field.display_name}</div>
+                            <div className="text-sm text-gray-500">{field.field_name}</div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {!SYSTEM_FIELDS.includes(field.field_name) ? (
+                              <>
+                                <Button size="icon" onClick={() => moveUp(index, field.id)}>
+                                  <ArrowUp className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" onClick={() => moveDown(index, field.id)}>
+                                  <ArrowDown className="h-4 w-4" />
+                                </Button>
+                                <Switch
+                                  id={`active-${field.id}`}
+                                  checked={field.is_active}
+                                  onCheckedChange={() => handleToggleActive(field.id)}
+                                />
+                                <Label htmlFor={`active-${field.id}`} className="text-sm">
+                                  Active
+                                </Label>
+                                <Switch
+                                  id={`required-${field.id}`}
+                                  checked={field.is_required}
+                                  onCheckedChange={() => handleToggleRequired(field.id)}
+                                />
+                                <Label htmlFor={`required-${field.id}`} className="text-sm">
+                                  Required
+                                </Label>
+                                <Button size="icon" onClick={() => handleRenameField(field.id)}>
+                                  <PencilIcon className="h-4 w-4" />
+                                </Button>
+                                <Button size="icon" variant="destructive" onClick={() => handleDeleteField(field.id)}>
+                                  <TrashIcon className="h-4 w-4" />
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                {editingSystemField === field.field_name ? (
+                                  <div className="flex items-center space-x-2">
+                                    <Input
+                                      type="text"
+                                      value={newDisplayName}
+                                      onChange={(e) => setNewDisplayName(e.target.value)}
+                                      placeholder="New Display Name"
+                                    />
+                                    <Button
+                                      size="sm"
+                                      onClick={() => {
+                                        updateSystemField(field.field_name, newDisplayName);
+                                        setEditingSystemField('');
+                                      }}
+                                    >
+                                      Save
+                                    </Button>
+                                    <Button size="sm" variant="ghost" onClick={() => setEditingSystemField('')}>
+                                      Cancel
+                                    </Button>
                                   </div>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>حقل نظام يمكن تعديله بحذر</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          ) : null}
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => moveFieldUp(index)}
-                            disabled={index === 0}
-                          >
-                            <ArrowUp size={16} />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8"
-                            onClick={() => moveFieldDown(index)}
-                            disabled={index === fields.length - 1}
-                          >
-                            <ArrowDown size={16} />
-                          </Button>
-                        </TableCell>
+                                ) : (
+                                  <Button size="icon" onClick={() => {
+                                    setEditingSystemField(field.field_name);
+                                    setNewDisplayName(field.display_name);
+                                  }}>
+                                    <PencilIcon className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </li>
                       )}
-                      <TableCell className="font-medium text-right">
-                        {field.display_name}
-                        {isSystemField(field.field_name) && (
-                          <span className="mr-2 text-sm text-muted-foreground">(حقل نظام)</span>
-                        )}
-                        <div className="text-xs text-muted-foreground mt-1 opacity-70">
-                          {field.field_name}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Switch
-                          checked={field.is_required}
-                          onCheckedChange={() => handleToggleRequired(field)}
-                          disabled={!canManageAdmins}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Switch
-                          checked={field.is_active}
-                          onCheckedChange={() => handleToggleActive(field)}
-                          disabled={!canManageAdmins}
-                        />
-                      </TableCell>
-                      {canManageAdmins && (
-                        <TableCell className="text-center flex space-x-2 justify-center">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-company hover:text-company/90 hover:bg-company/10"
-                            onClick={() => openEditDialog(field)}
-                          >
-                            <Edit size={16} />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-                            onClick={() => openDeleteDialog(field)}
-                            disabled={isSystemField(field.field_name)}
-                          >
-                            <Trash2 size={16} />
-                          </Button>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={canManageAdmins ? 5 : 3} className="text-center h-24">
-                      <p>لا توجد حقول مسجلة</p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-right">تأكيد حذف الحقل</AlertDialogTitle>
-            <AlertDialogDescription className="text-right">
-              هل أنت متأكد من رغبتك في حذف الحقل "{fieldToDelete?.display_name}"؟ 
-              {isSystemField(fieldToDelete?.field_name || '') ? 
-                " لا ينصح بحذف حقول النظام لأنها قد تؤثر على عمل التطبيق." : 
-                " هذا الإجراء لا يمكن التراجع عنه."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-row-reverse justify-start gap-2">
-            <AlertDialogCancel className="mb-0">إلغاء</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteField}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              حذف
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="text-right">تعديل اسم الحقل</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="edit_display_name" className="text-right">اسم الحقل</Label>
-              <Input
-                id="edit_display_name"
-                className="text-right"
-                value={editedDisplayName}
-                onChange={(e) => setEditedDisplayName(e.target.value)}
-                placeholder="أدخل اسم الحقل الجديد"
-              />
-              {isSystemField(fieldToEdit?.field_name || '') && (
-                <p className="text-xs text-amber-500 text-right mt-1">
-                  تنبيه: هذا حقل نظام. تغيير اسمه قد يؤثر على عرض النماذج.
-                </p>
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </ul>
               )}
+            </Droppable>
+          </DragDropContext>
+
+          <form onSubmit={handleCreateField} className="mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="fieldName">Field Name</Label>
+                <Input
+                  type="text"
+                  id="fieldName"
+                  value={fieldName}
+                  onChange={(e) => setFieldName(e.target.value)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="displayName">Display Name</Label>
+                <Input
+                  type="text"
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center">
+                <Label htmlFor="isRequired" className="mr-2">
+                  Required
+                </Label>
+                <Switch id="isRequired" checked={isRequired} onCheckedChange={setIsRequired} />
+              </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleEditField} className="w-full">حفظ التغييرات</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Card>
+            <Button type="submit" className="mt-4">
+              <PlusIcon className="mr-2 h-4 w-4" />
+              Create Field
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

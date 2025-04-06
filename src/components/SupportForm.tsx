@@ -56,6 +56,15 @@ const SupportForm = () => {
     try {
       const newTicketId = generateTicketId();
       
+      // Create a custom_fields object to store the custom field values
+      const customFieldsData: Record<string, any> = {};
+      
+      customFields.forEach(field => {
+        if (formData[field.field_name]) {
+          customFieldsData[field.field_name] = formData[field.field_name];
+        }
+      });
+      
       const newTicket: SupportTicket = {
         ticket_id: newTicketId,
         branch: formData.branch,
@@ -65,14 +74,11 @@ const SupportForm = () => {
         status: 'pending',
         created_at: new Date().toISOString(),
         support_email: 'help@alwaslsaudi.com',
-        employee_id: '' // Keep this for backward compatibility if needed
+        employee_id: formData['field_1743981608110'] || '', // Use the employee ID from custom field if available
+        custom_fields: customFieldsData,
+        // Add required system fields directly
+        anydesk_number: formData.anydesk_number as string
       };
-      
-      customFields.forEach(field => {
-        if (formData[field.field_name]) {
-          (newTicket as any)[field.field_name] = formData[field.field_name];
-        }
-      });
       
       const result = await saveTicket(newTicket);
       
