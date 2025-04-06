@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { 
   getAllSiteFields, 
@@ -98,11 +99,6 @@ const SiteFieldsManager = () => {
   const handleToggleRequired = async (field: SiteField) => {
     if (!canManageAdmins) return;
     
-    if (isSystemField(field.field_name)) {
-      toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name} (حقل نظام)`);
-      return;
-    }
-    
     try {
       const newValue = !field.is_required;
       const success = await updateSiteField(field.id, { is_required: newValue });
@@ -115,17 +111,12 @@ const SiteFieldsManager = () => {
       }
     } catch (error) {
       console.error('Error toggling required status:', error);
-      toast.error('حدث خطأ أثناء تحديث ال��قل');
+      toast.error('حدث خطأ أثناء تحديث الحقل');
     }
   };
 
   const handleToggleActive = async (field: SiteField) => {
     if (!canManageAdmins) return;
-    
-    if (isSystemField(field.field_name)) {
-      toast.error(`لا يمكن تغيير إعدادات حقل ${field.display_name} (حقل نظام)`);
-      return;
-    }
     
     try {
       const newValue = !field.is_active;
@@ -210,7 +201,7 @@ const SiteFieldsManager = () => {
     if (!canManageAdmins || !fieldToDelete) return;
     
     if (isSystemField(fieldToDelete.field_name)) {
-      toast.error(`لا يمكن حذف حقل ${fieldToDelete.display_name} (حقل نظام)`);
+      toast.warning(`حقل النظام "${fieldToDelete.display_name}" لا يمكن حذفه ولكن يمكنك تغيير إعداداته`);
       setDeleteDialogOpen(false);
       setFieldToDelete(null);
       return;
@@ -245,11 +236,6 @@ const SiteFieldsManager = () => {
     
     const field = fields[index];
     
-    if (isSystemField(field.field_name)) {
-      toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name} (حقل نظام)`);
-      return;
-    }
-    
     try {
       console.log(`Moving field ${field.display_name} up`);
       const success = await updateFieldOrder(field.id, 'up');
@@ -270,11 +256,6 @@ const SiteFieldsManager = () => {
     if (index === fields.length - 1) return; // Already at the bottom
     
     const field = fields[index];
-    
-    if (isSystemField(field.field_name)) {
-      toast.error(`لا يمكن تغيير ترتيب حقل ${field.display_name} (حقل نظام)`);
-      return;
-    }
     
     try {
       console.log(`Moving field ${field.display_name} down`);
@@ -305,13 +286,6 @@ const SiteFieldsManager = () => {
 
   const handleEditField = async () => {
     if (!canManageAdmins || !fieldToEdit) return;
-    
-    if (isSystemField(fieldToEdit.field_name)) {
-      toast.error(`لا يمكن تعديل حقل ${fieldToEdit.display_name} (حقل نظام)`);
-      setIsEditDialogOpen(false);
-      setFieldToEdit(null);
-      return;
-    }
     
     if (!editedDisplayName.trim()) {
       toast.error('اسم الحقل لا يمكن أن يكون فارغًا');
@@ -420,32 +394,29 @@ const SiteFieldsManager = () => {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>حقل نظام لا يمكن تعديله</p>
+                                  <p>حقل نظام يمكن تعديله بحذر</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                          ) : (
-                            <>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8"
-                                onClick={() => moveFieldUp(index)}
-                                disabled={index === 0}
-                              >
-                                <ArrowUp size={16} />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="icon" 
-                                className="h-8 w-8"
-                                onClick={() => moveFieldDown(index)}
-                                disabled={index === fields.length - 1}
-                              >
-                                <ArrowDown size={16} />
-                              </Button>
-                            </>
-                          )}
+                          ) : null}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => moveFieldUp(index)}
+                            disabled={index === 0}
+                          >
+                            <ArrowUp size={16} />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8"
+                            onClick={() => moveFieldDown(index)}
+                            disabled={index === fields.length - 1}
+                          >
+                            <ArrowDown size={16} />
+                          </Button>
                         </TableCell>
                       )}
                       <TableCell className="font-medium text-right">
@@ -461,14 +432,14 @@ const SiteFieldsManager = () => {
                         <Switch
                           checked={field.is_required}
                           onCheckedChange={() => handleToggleRequired(field)}
-                          disabled={!canManageAdmins || isSystemField(field.field_name)}
+                          disabled={!canManageAdmins}
                         />
                       </TableCell>
                       <TableCell>
                         <Switch
                           checked={field.is_active}
                           onCheckedChange={() => handleToggleActive(field)}
-                          disabled={!canManageAdmins || isSystemField(field.field_name)}
+                          disabled={!canManageAdmins}
                         />
                       </TableCell>
                       {canManageAdmins && (
@@ -478,7 +449,6 @@ const SiteFieldsManager = () => {
                             size="icon" 
                             className="text-company hover:text-company/90 hover:bg-company/10"
                             onClick={() => openEditDialog(field)}
-                            disabled={isSystemField(field.field_name)}
                           >
                             <Edit size={16} />
                           </Button>
@@ -514,7 +484,9 @@ const SiteFieldsManager = () => {
             <AlertDialogTitle className="text-right">تأكيد حذف الحقل</AlertDialogTitle>
             <AlertDialogDescription className="text-right">
               هل أنت متأكد من رغبتك في حذف الحقل "{fieldToDelete?.display_name}"؟ 
-              هذا الإجراء لا يمكن التراجع عنه.
+              {isSystemField(fieldToDelete?.field_name || '') ? 
+                " لا ينصح بحذف حقول النظام لأنها قد تؤثر على عمل التطبيق." : 
+                " هذا الإجراء لا يمكن التراجع عنه."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row-reverse justify-start gap-2">
@@ -544,6 +516,11 @@ const SiteFieldsManager = () => {
                 onChange={(e) => setEditedDisplayName(e.target.value)}
                 placeholder="أدخل اسم الحقل الجديد"
               />
+              {isSystemField(fieldToEdit?.field_name || '') && (
+                <p className="text-xs text-amber-500 text-right mt-1">
+                  تنبيه: هذا حقل نظام. تغيير اسمه قد يؤثر على عرض النماذج.
+                </p>
+              )}
             </div>
           </div>
           <DialogFooter>
