@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus, Trash2, ArrowUp, ArrowDown, Info } from 'lucide-react';
+import { Plus, Trash2, ArrowUp, ArrowDown, Info, Edit } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,14 +47,17 @@ const SiteFieldsManager = () => {
   const [fields, setFields] = useState<SiteField[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fieldToDelete, setFieldToDelete] = useState<SiteField | null>(null);
+  const [fieldToEdit, setFieldToEdit] = useState<SiteField | null>(null);
   const [newField, setNewField] = useState({
     display_name: '',
     field_name: '',
     is_required: false,
     is_active: true
   });
+  const [editedDisplayName, setEditedDisplayName] = useState('');
   const { hasPermission } = useAdminAuth();
   const canManageAdmins = hasPermission('manage_admins');
 
@@ -112,7 +115,7 @@ const SiteFieldsManager = () => {
       }
     } catch (error) {
       console.error('Error toggling required status:', error);
-      toast.error('حدث خطأ أثناء تحديث الحقل');
+      toast.error('حدث خطأ أثناء تحديث ال��قل');
     }
   };
 
@@ -293,6 +296,45 @@ const SiteFieldsManager = () => {
     return SYSTEM_FIELDS.includes(fieldName);
   };
 
+  const openEditDialog = (field: SiteField) => {
+    if (!canManageAdmins) return;
+    setFieldToEdit(field);
+    setEditedDisplayName(field.display_name);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditField = async () => {
+    if (!canManageAdmins || !fieldToEdit) return;
+    
+    if (isSystemField(fieldToEdit.field_name)) {
+      toast.error(`لا يمكن تعديل حقل ${fieldToEdit.display_name} (حقل نظام)`);
+      setIsEditDialogOpen(false);
+      setFieldToEdit(null);
+      return;
+    }
+    
+    if (!editedDisplayName.trim()) {
+      toast.error('اسم الحقل لا يمكن أن يكون فارغًا');
+      return;
+    }
+    
+    try {
+      const success = await updateSiteField(fieldToEdit.id, { display_name: editedDisplayName });
+      
+      if (success) {
+        setFields(fields.map(f => f.id === fieldToEdit.id ? { ...f, display_name: editedDisplayName } : f));
+        toast.success(`تم تعديل اسم الحقل بنجاح`);
+        setIsEditDialogOpen(false);
+        setFieldToEdit(null);
+      } else {
+        toast.error('فشل في تعديل الحقل');
+      }
+    } catch (error) {
+      console.error('Error editing field:', error);
+      toast.error('حدث خطأ أثناء تعديل الحقل');
+    }
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3 flex flex-row items-center justify-between">
@@ -360,7 +402,7 @@ const SiteFieldsManager = () => {
                   <TableHead className="text-right">اسم الحقل</TableHead>
                   <TableHead className="text-right">مطلوب</TableHead>
                   <TableHead className="text-right">نشط</TableHead>
-                  {canManageAdmins && <TableHead className="text-center w-20">حذف</TableHead>}
+                  {canManageAdmins && <TableHead className="text-center w-32">إجراءات</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -430,7 +472,16 @@ const SiteFieldsManager = () => {
                         />
                       </TableCell>
                       {canManageAdmins && (
-                        <TableCell className="text-center">
+                        <TableCell className="text-center flex space-x-2 justify-center">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-company hover:text-company/90 hover:bg-company/10"
+                            onClick={() => openEditDialog(field)}
+                            disabled={isSystemField(field.field_name)}
+                          >
+                            <Edit size={16} />
+                          </Button>
                           <Button 
                             variant="ghost" 
                             size="icon" 
@@ -477,6 +528,29 @@ const SiteFieldsManager = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-right">تعديل اسم الحقل</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit_display_name" className="text-right">اسم الحقل</Label>
+              <Input
+                id="edit_display_name"
+                className="text-right"
+                value={editedDisplayName}
+                onChange={(e) => setEditedDisplayName(e.target.value)}
+                placeholder="أدخل اسم الحقل الجديد"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={handleEditField} className="w-full">حفظ التغييرات</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
