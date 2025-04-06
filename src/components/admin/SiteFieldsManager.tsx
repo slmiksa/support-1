@@ -1,3 +1,4 @@
+
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'sonner';
 import {
@@ -16,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { ReloadIcon, PlusIcon, PencilIcon, TrashIcon, ArrowUp, ArrowDown } from 'lucide-react';
+import { RefreshCw, Plus, Pencil, Trash, ArrowUp, ArrowDown } from 'lucide-react';
 
 const SiteFieldsManager = () => {
   const [fields, setFields] = useState<SiteField[]>([]);
@@ -303,12 +304,12 @@ const SiteFieldsManager = () => {
           <Button onClick={fetchFields} disabled={loading} className="mb-4">
             {loading ? (
               <>
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                 Loading...
               </>
             ) : (
               <>
-                <ReloadIcon className="mr-2 h-4 w-4" />
+                <RefreshCw className="mr-2 h-4 w-4" />
                 Refresh Fields
               </>
             )}
@@ -357,10 +358,10 @@ const SiteFieldsManager = () => {
                                   Required
                                 </Label>
                                 <Button size="icon" onClick={() => handleRenameField(field.id)}>
-                                  <PencilIcon className="h-4 w-4" />
+                                  <Pencil className="h-4 w-4" />
                                 </Button>
                                 <Button size="icon" variant="destructive" onClick={() => handleDeleteField(field.id)}>
-                                  <TrashIcon className="h-4 w-4" />
+                                  <Trash className="h-4 w-4" />
                                 </Button>
                               </>
                             ) : (
@@ -391,7 +392,7 @@ const SiteFieldsManager = () => {
                                     setEditingSystemField(field.field_name);
                                     setNewDisplayName(field.display_name);
                                   }}>
-                                    <PencilIcon className="h-4 w-4" />
+                                    <Pencil className="h-4 w-4" />
                                   </Button>
                                 )}
                               </>
@@ -435,7 +436,7 @@ const SiteFieldsManager = () => {
               </div>
             </div>
             <Button type="submit" className="mt-4">
-              <PlusIcon className="mr-2 h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" />
               Create Field
             </Button>
           </form>

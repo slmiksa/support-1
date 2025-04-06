@@ -70,11 +70,10 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        image_url: imagePreview || undefined,
+        image_url: typeof imagePreview === 'string' ? imagePreview : undefined,
         status: 'pending',
         created_at: new Date().toISOString(),
-        support_email: 'help@alwaslsaudi.com',
-        employee_id: formData['field_1743981608110'] || '', // Use the employee ID from custom field if available
+        employee_id: formData['field_1743981608110'] || '',
         custom_fields: customFieldsData,
         // Add required system fields directly
         anydesk_number: formData.anydesk_number as string

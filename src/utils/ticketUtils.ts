@@ -36,7 +36,6 @@ export interface SupportTicket {
   status: string;
   created_at: string;
   updated_at?: string;
-  support_email: string;
   employee_id: string;
   assigned_to?: string;
   anydesk_number?: string;
@@ -82,7 +81,7 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
       field_type: field.field_type || 'text'
     })) || [];
 
-    return fieldsWithType;
+    return fieldsWithType as SiteField[];
   } catch (error) {
     console.error('Error in getAllSiteFields:', error);
     return [];
@@ -252,10 +251,10 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
       return null;
     }
 
-    // Ensure the returned data has the support_email field
+    // Convert the database record to SupportTicket interface
     return data ? {
       ...data,
-      support_email: data.support_email || 'help@alwaslsaudi.com'
+      support_email: 'help@alwaslsaudi.com'
     } as SupportTicket : null;
   } catch (error) {
     console.error('Error in findTicketById:', error);
@@ -299,10 +298,10 @@ export const getTicketsByDateRange = async (startDate: string, endDate: string):
       return [];
     }
 
-    // Ensure each ticket has the support_email field
+    // Convert database records to SupportTicket interface
     return (data || []).map(ticket => ({
       ...ticket,
-      support_email: ticket.support_email || 'help@alwaslsaudi.com'
+      support_email: 'help@alwaslsaudi.com'
     })) as SupportTicket[];
   } catch (error) {
     console.error('Error in getTicketsByDateRange:', error);
