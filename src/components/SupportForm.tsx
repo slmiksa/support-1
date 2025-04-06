@@ -31,7 +31,7 @@ const SupportForm = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    if (!formData.employeeId || !formData.branch || !formData.description || !formData.priority) {
+    if (!formData.branch || !formData.description || !formData.priority) {
       toast.error('يرجى تعبئة جميع الحقول المطلوبة', {
         closeButton: true,
         position: 'top-center',
@@ -58,14 +58,14 @@ const SupportForm = () => {
       
       const newTicket: SupportTicket = {
         ticket_id: newTicketId,
-        employee_id: formData.employeeId,
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
         image_url: imagePreview || undefined,
         status: 'pending',
         created_at: new Date().toISOString(),
-        support_email: 'help@alwaslsaudi.com'
+        support_email: 'help@alwaslsaudi.com',
+        employee_id: '' // Keep this for backward compatibility if needed
       };
       
       customFields.forEach(field => {

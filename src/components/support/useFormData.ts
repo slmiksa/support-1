@@ -1,4 +1,3 @@
-
 import { useState, useEffect, ChangeEvent } from 'react';
 import { toast } from 'sonner';
 import { getAllBranches, getAllSiteFields, SiteField, Branch } from '@/utils/ticketUtils';
@@ -6,7 +5,6 @@ import { PriorityType } from '@/integrations/supabase/client';
 import { SYSTEM_FIELDS } from './constants';
 
 export interface FormData {
-  employeeId: string;
   branch: string;
   priority: PriorityType;
   description: string;
@@ -16,7 +14,6 @@ export interface FormData {
 
 export const useFormData = () => {
   const [formData, setFormData] = useState<FormData>({
-    employeeId: '',
     branch: '',
     priority: 'normal',
     description: '',
@@ -48,35 +45,28 @@ export const useFormData = () => {
       try {
         const fieldsData = await getAllSiteFields();
         
-        // Process fields to prevent duplicates
         const fieldMap = new Map<string, SiteField>();
         
-        // First collect all active custom fields (non-system fields)
         fieldsData
           .filter(field => field.is_active && !SYSTEM_FIELDS.includes(field.field_name))
           .forEach(field => {
-            // Only add if this field is not already in the map or has a higher ID (more recent)
             if (!fieldMap.has(field.field_name) || field.id > fieldMap.get(field.field_name)!.id) {
               fieldMap.set(field.field_name, field);
             }
           });
         
-        // Sort fields by sort_order
         const activeCustomFields = Array.from(fieldMap.values())
           .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
         
         setCustomFields(activeCustomFields);
         
-        // Initialize form data with all fields
         const initialFormData: FormData = {
-          employeeId: '',
           branch: '',
           priority: 'normal',
           description: '',
           imageFile: null
         };
         
-        // Add custom fields to the form data
         activeCustomFields.forEach(field => {
           initialFormData[field.field_name] = '';
         });
@@ -133,7 +123,6 @@ export const useFormData = () => {
 
   const resetForm = () => {
     const resetFormData: FormData = {
-      employeeId: '',
       branch: '',
       priority: 'normal',
       description: '',

@@ -1,4 +1,3 @@
-
 import { ChangeEvent } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -104,29 +103,6 @@ export const BranchSelect = ({ value, branches, onChange }: BranchSelectProps) =
           )}
         </SelectContent>
       </Select>
-    </div>
-  );
-};
-
-interface EmployeeIdInputProps {
-  value: string;
-  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
-}
-
-export const EmployeeIdInput = ({ value, onChange }: EmployeeIdInputProps) => {
-  return (
-    <div className="grid gap-2">
-      <Label htmlFor="employeeId" className="text-right">الرقم الوظيفي</Label>
-      <Input
-        id="employeeId"
-        name="employeeId"
-        type="text"
-        required
-        placeholder="أدخل الرقم الوظيفي"
-        className="text-right"
-        value={value}
-        onChange={onChange}
-      />
     </div>
   );
 };

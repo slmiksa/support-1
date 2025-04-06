@@ -1,12 +1,10 @@
 
 import { FormEvent } from 'react';
-import { toast } from 'sonner';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormData } from './useFormData';
 import { SiteField } from '@/utils/ticketUtils';
 import { 
   PrioritySelect, 
-  EmployeeIdInput, 
   BranchSelect, 
   CustomFieldInput, 
   DescriptionInput, 
@@ -53,11 +51,6 @@ const SupportFormCard = ({
             <PrioritySelect 
               value={formData.priority} 
               onChange={(value) => handleSelectChange(value, 'priority')} 
-            />
-            
-            <EmployeeIdInput 
-              value={formData.employeeId} 
-              onChange={handleChange} 
             />
             
             <BranchSelect 
