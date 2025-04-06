@@ -1,3 +1,4 @@
+
 import { useState, FormEvent, ChangeEvent, useEffect } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket, getAllBranches, getAllSiteFields, SiteField } from '../utils/ticketUtils';
@@ -20,6 +21,7 @@ interface FormData {
   [key: string]: string | File | null | PriorityType;
 }
 
+// Define system fields that are always part of the form
 const SYSTEM_FIELDS = ['priority', 'employeeId', 'branch', 'description'];
 
 const SupportForm = () => {
@@ -56,27 +58,26 @@ const SupportForm = () => {
       try {
         const fieldsData = await getAllSiteFields();
         
-        const processedFieldNames = new Set<string>();
-        
-        SYSTEM_FIELDS.forEach(field => processedFieldNames.add(field));
-        
+        // Process fields to prevent duplicates
         const fieldMap = new Map<string, SiteField>();
         
+        // First collect all active custom fields (non-system fields)
         fieldsData
-          .filter(field => field.is_active)
+          .filter(field => field.is_active && !SYSTEM_FIELDS.includes(field.field_name))
           .forEach(field => {
-            if (!SYSTEM_FIELDS.includes(field.field_name)) {
-              if (!fieldMap.has(field.field_name) || field.id > fieldMap.get(field.field_name)!.id) {
-                fieldMap.set(field.field_name, field);
-              }
+            // Only add if this field is not already in the map or has a higher ID (more recent)
+            if (!fieldMap.has(field.field_name) || field.id > fieldMap.get(field.field_name)!.id) {
+              fieldMap.set(field.field_name, field);
             }
           });
         
-        const activeFields = Array.from(fieldMap.values())
+        // Sort fields by sort_order
+        const activeCustomFields = Array.from(fieldMap.values())
           .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
         
-        setCustomFields(activeFields);
+        setCustomFields(activeCustomFields);
         
+        // Initialize form data with all fields
         const initialFormData: FormData = {
           employeeId: '',
           branch: '',
@@ -85,7 +86,8 @@ const SupportForm = () => {
           imageFile: null
         };
         
-        activeFields.forEach(field => {
+        // Add custom fields to the form data
+        activeCustomFields.forEach(field => {
           initialFormData[field.field_name] = '';
         });
         

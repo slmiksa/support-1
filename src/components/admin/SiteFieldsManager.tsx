@@ -42,8 +42,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-// System fields that should be protected and managed differently
-const SYSTEM_FIELDS = ['priority', 'employeeId', 'branch', 'description'];
+// Define system fields that can't be modified by admin UI
+const SYSTEM_FIELDS = ['priority', 'branch', 'description'];
 
 const SiteFieldsManager = () => {
   const [fields, setFields] = useState<SiteField[]>([]);
@@ -69,7 +69,7 @@ const SiteFieldsManager = () => {
     try {
       const data = await getAllSiteFields();
       
-      // Process fields to handle duplicates
+      // Process fields to handle duplicates and ensure system fields are shown
       const uniqueFieldMap = new Map<string, SiteField>();
       
       // First add system fields to ensure they're properly managed
