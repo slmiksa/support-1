@@ -8,7 +8,7 @@ export interface SiteField {
   is_required: boolean;
   is_active: boolean;
   sort_order?: number;
-  field_type?: string; // Add field_type as optional to fix the TypeScript error
+  field_type?: string; // Added field_type as optional to fix TypeScript error
 }
 
 export interface Branch {
