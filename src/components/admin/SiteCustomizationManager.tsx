@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -63,7 +62,8 @@ const SiteCustomizationManager = () => {
           throw error;
         }
       } else if (data) {
-        const settingsData = data as SiteSettings;
+        // Cast to unknown first to avoid type errors
+        const settingsData = data as unknown as SiteSettings;
         setSettings(settingsData);
         
         // Parse help fields if they exist
@@ -91,7 +91,7 @@ const SiteCustomizationManager = () => {
     try {
       const { error } = await supabase
         .from('site_settings')
-        .insert([DEFAULT_SETTINGS]);
+        .insert([DEFAULT_SETTINGS as any]);
         
       if (error) throw error;
       
@@ -110,7 +110,7 @@ const SiteCustomizationManager = () => {
 
     setLoading(true);
     try {
-      // Prepare settings with help fields
+      // Convert helpFields to JSON compatible format
       const updatedSettings = {
         ...settings,
         support_help_fields: helpFields
@@ -118,7 +118,7 @@ const SiteCustomizationManager = () => {
       
       const { error } = await supabase
         .from('site_settings')
-        .upsert([updatedSettings]);
+        .upsert([updatedSettings as any]);
         
       if (error) throw error;
       
@@ -557,7 +557,7 @@ const SiteCustomizationManager = () => {
               </div>
               
               <div className="text-right text-sm text-gray-600 mb-4">
-                <p>يمكنك إضافة عدة حقول معلومات مساعدة ستظهر في الصفحة الرئيسية عند الضغط على أيقونة المساعدة</p>
+                <p>يمكنك إض��فة عدة حقول معلومات مساعدة ستظهر في الصفحة الرئيسية عند الضغط على أيقونة المساعدة</p>
               </div>
               
               {helpFields.length === 0 ? (

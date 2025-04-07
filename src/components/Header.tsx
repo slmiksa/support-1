@@ -43,7 +43,8 @@ const Header = () => {
       }
 
       if (data) {
-        setSettings(data as SiteSettings);
+        // Cast to unknown first to avoid type errors
+        setSettings(data as unknown as SiteSettings);
         
         // تحديث عنوان الصفحة إذا كان موجودًا
         if (data.page_title) {
@@ -157,4 +158,3 @@ const Header = () => {
 };
 
 export default Header;
-

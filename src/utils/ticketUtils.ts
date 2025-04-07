@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
 export interface SiteField {
   id: number | string;
@@ -31,7 +32,7 @@ export interface SupportTicket {
   branch: string;
   priority: string;
   description: string;
-  image_url?: string;
+  image_url?: string | null;
   status: string;
   created_at: string;
   updated_at?: string;
