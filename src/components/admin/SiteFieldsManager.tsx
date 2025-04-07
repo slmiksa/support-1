@@ -40,7 +40,7 @@ const SiteFieldsManager = () => {
       setFields(fieldsData);
     } catch (error) {
       console.error('Error fetching site fields:', error);
-      toast.error('Failed to load site fields');
+      toast.error('فشل في تحميل حقول الموقع');
     } finally {
       setLoading(false);
     }
@@ -52,7 +52,7 @@ const SiteFieldsManager = () => {
       const fieldToUpdate = fields.find(field => field.id === fieldId);
       if (!fieldToUpdate) {
         console.error('Field not found:', fieldId);
-        toast.error('Field not found');
+        toast.error('لم يتم العثور على الحقل');
         return;
       }
 
@@ -62,10 +62,10 @@ const SiteFieldsManager = () => {
           field.id === fieldId ? { ...field, is_required: !field.is_required } : field
         )
       );
-      toast.success('Required status updated');
+      toast.success('تم تحديث حالة الإلزامية');
     } catch (error) {
       console.error('Error toggling required status:', error);
-      toast.error('Failed to update required status');
+      toast.error('فشل في تحديث حالة الإلزامية');
     }
   };
 
@@ -75,7 +75,7 @@ const SiteFieldsManager = () => {
       const fieldToUpdate = fields.find(field => field.id === fieldId);
       if (!fieldToUpdate) {
         console.error('Field not found:', fieldId);
-        toast.error('Field not found');
+        toast.error('لم يتم العثور على الحقل');
         return;
       }
 
@@ -85,10 +85,10 @@ const SiteFieldsManager = () => {
           field.id === fieldId ? { ...field, is_active: !field.is_active } : field
         )
       );
-      toast.success('Active status updated');
+      toast.success('تم تحديث حالة التفعيل');
     } catch (error) {
       console.error('Error toggling active status:', error);
-      toast.error('Failed to update active status');
+      toast.error('فشل في تحديث حالة التفعيل');
     }
   };
 
@@ -98,11 +98,11 @@ const SiteFieldsManager = () => {
       const fieldToUpdate = fields.find(field => field.id === fieldId);
       if (!fieldToUpdate) {
         console.error('Field not found:', fieldId);
-        toast.error('Field not found');
+        toast.error('لم يتم العثور على الحقل');
         return;
       }
 
-      const newDisplayName = prompt('Enter new display name:', fieldToUpdate.display_name);
+      const newDisplayName = prompt('أدخل الاسم المعروض الجديد:', fieldToUpdate.display_name);
       if (newDisplayName && newDisplayName !== fieldToUpdate.display_name) {
         await updateSiteField(fieldId, { display_name: newDisplayName });
         setFields(prevFields =>
@@ -110,24 +110,24 @@ const SiteFieldsManager = () => {
             field.id === fieldId ? { ...field, display_name: newDisplayName } : field
           )
         );
-        toast.success('Display name updated');
+        toast.success('تم تحديث الاسم المعروض');
       }
     } catch (error) {
       console.error('Error renaming field:', error);
-      toast.error('Failed to update display name');
+      toast.error('فشل في تحديث الاسم المعروض');
     }
   };
 
   const handleDeleteField = async (id: string | number) => {
     const fieldId = String(id);
-    if (window.confirm('Are you sure you want to delete this field?')) {
+    if (window.confirm('هل أنت متأكد من رغبتك في حذف هذا الحقل؟')) {
       try {
         await deleteSiteField(fieldId);
         setFields(prevFields => prevFields.filter(field => field.id !== fieldId));
-        toast.success('Field deleted successfully');
+        toast.success('تم حذف الحقل بنجاح');
       } catch (error) {
         console.error('Error deleting field:', error);
-        toast.error('Failed to delete field');
+        toast.error('فشل في حذف الحقل');
       }
     }
   };
@@ -135,7 +135,7 @@ const SiteFieldsManager = () => {
   const handleCreateField = async (e: FormEvent) => {
     e.preventDefault();
     if (!fieldName || !displayName) {
-      toast.error('Please fill in all fields');
+      toast.error('يرجى تعبئة جميع الحقول');
       return;
     }
 
@@ -144,7 +144,7 @@ const SiteFieldsManager = () => {
       display_name: displayName,
       is_required: isRequired,
       is_active: true,
-      field_type: 'text' // Add the required field_type
+      field_type: 'text'
     };
 
     try {
@@ -155,13 +155,13 @@ const SiteFieldsManager = () => {
         setFieldName('');
         setDisplayName('');
         setIsRequired(false);
-        toast.success('Field created successfully');
+        toast.success('تم إنشاء الحقل بنجاح');
       } else {
-        toast.error('Failed to create field');
+        toast.error('فشل في إنشاء الحقل');
       }
     } catch (error) {
       console.error('Error creating field:', error);
-      toast.error('Failed to create field');
+      toast.error('فشل في إنشاء الحقل');
     }
   };
 
@@ -186,22 +186,21 @@ const SiteFieldsManager = () => {
     try {
       const success = await updateFieldOrder(updates);
       if (!success) {
-        toast.error('Failed to update field order in database. Please refresh.');
+        toast.error('فشل في تحديث ترتيب الحقول في قاعدة البيانات. يرجى التحديث.');
         // Revert to the original order in case of failure
         fetchFields();
         return;
       }
-      toast.success('Field order updated successfully');
+      toast.success('تم تحديث ترتيب الحقول بنجاح');
     } catch (error) {
       console.error('Error updating field order:', error);
-      toast.error('Failed to update field order. Please refresh.');
+      toast.error('فشل في تحديث ترتيب الحقول. يرجى التحديث.');
       // Revert to the original order in case of failure
       fetchFields();
     }
   };
 
   const moveUp = async (index: number, id: string | number) => {
-    const fieldId = String(id);
     if (index > 0) {
       const newFields = [...fields];
       const temp = newFields[index];
@@ -220,15 +219,15 @@ const SiteFieldsManager = () => {
       try {
         const success = await updateFieldOrder(updates);
         if (!success) {
-          toast.error('Failed to update field order in database. Please refresh.');
+          toast.error('فشل في تحديث ترتيب الحقول في قاعدة البيانات. يرجى التحديث.');
           // Revert to the original order in case of failure
           fetchFields();
           return;
         }
-        toast.success('Field order updated successfully');
+        toast.success('تم تحديث ترتيب الحقول بنجاح');
       } catch (error) {
         console.error('Error updating field order:', error);
-        toast.error('Failed to update field order. Please refresh.');
+        toast.error('فشل في تحديث ترتيب الحقول. يرجى التحديث.');
         // Revert to the original order in case of failure
         fetchFields();
       }
@@ -236,7 +235,6 @@ const SiteFieldsManager = () => {
   };
 
   const moveDown = async (index: number, id: string | number) => {
-    const fieldId = String(id);
     if (index < fields.length - 1) {
       const newFields = [...fields];
       const temp = newFields[index];
@@ -255,22 +253,22 @@ const SiteFieldsManager = () => {
       try {
         const success = await updateFieldOrder(updates);
         if (!success) {
-          toast.error('Failed to update field order in database. Please refresh.');
+          toast.error('فشل في تحديث ترتيب الحقول في قاعدة البيانات. يرجى التحديث.');
           // Revert to the original order in case of failure
           fetchFields();
           return;
         }
-        toast.success('Field order updated successfully');
+        toast.success('تم تحديث ترتيب الحقول بنجاح');
       } catch (error) {
         console.error('Error updating field order:', error);
-        toast.error('Failed to update field order. Please refresh.');
+        toast.error('فشل في تحديث ترتيب الحقول. يرجى التحديث.');
         // Revert to the original order in case of failure
         fetchFields();
       }
     }
   };
 
-  const updateSystemField = async (fieldName: string, displayName: string, customField: boolean = false) => {
+  const updateSystemField = async (fieldName: string, displayName: string) => {
     try {
       await updateSystemFieldName(fieldName, fieldName, displayName);
 
@@ -281,15 +279,10 @@ const SiteFieldsManager = () => {
         )
       );
 
-      // Update SYSTEM_FIELD_LABELS in constants.ts (if needed)
-      // This depends on how you're using SYSTEM_FIELD_LABELS in your application
-      // If it's directly imported and used, you might need to refresh the page
-      // or use a more dynamic approach to update it.
-
-      toast.success('System field updated successfully');
+      toast.success('تم تحديث الحقل النظامي بنجاح');
     } catch (error) {
       console.error('Error updating system field:', error);
-      toast.error('Failed to update system field');
+      toast.error('فشل في تحديث الحقل النظامي');
     }
   };
 
@@ -297,20 +290,20 @@ const SiteFieldsManager = () => {
     <div className="container mx-auto p-4">
       <Card className="border-company/20 glass">
         <CardHeader>
-          <CardTitle className="text-2xl">Manage Site Fields</CardTitle>
-          <CardDescription>Customize the fields available in the support form.</CardDescription>
+          <CardTitle className="text-2xl text-right">إدارة حقول الموقع</CardTitle>
+          <CardDescription className="text-right">تخصيص الحقول المتاحة في نموذج الدعم.</CardDescription>
         </CardHeader>
         <CardContent>
           <Button onClick={fetchFields} disabled={loading} className="mb-4">
             {loading ? (
               <>
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                Loading...
+                جاري التحميل...
               </>
             ) : (
               <>
                 <RefreshCw className="mr-2 h-4 w-4" />
-                Refresh Fields
+                تحديث الحقول
               </>
             )}
           </Button>
@@ -335,10 +328,10 @@ const SiteFieldsManager = () => {
                           <div className="flex items-center space-x-2">
                             {!SYSTEM_FIELDS.includes(field.field_name) ? (
                               <>
-                                <Button size="icon" onClick={() => moveUp(index, field.id)}>
+                                <Button size="icon" onClick={() => moveUp(index, field.id)} title="نقل لأعلى">
                                   <ArrowUp className="h-4 w-4" />
                                 </Button>
-                                <Button size="icon" onClick={() => moveDown(index, field.id)}>
+                                <Button size="icon" onClick={() => moveDown(index, field.id)} title="نقل لأسفل">
                                   <ArrowDown className="h-4 w-4" />
                                 </Button>
                                 <Switch
@@ -346,21 +339,21 @@ const SiteFieldsManager = () => {
                                   checked={field.is_active}
                                   onCheckedChange={() => handleToggleActive(field.id)}
                                 />
-                                <Label htmlFor={`active-${field.id}`} className="text-sm">
-                                  Active
+                                <Label htmlFor={`active-${field.id}`} className="text-sm ml-2">
+                                  مفعل
                                 </Label>
                                 <Switch
                                   id={`required-${field.id}`}
                                   checked={field.is_required}
                                   onCheckedChange={() => handleToggleRequired(field.id)}
                                 />
-                                <Label htmlFor={`required-${field.id}`} className="text-sm">
-                                  Required
+                                <Label htmlFor={`required-${field.id}`} className="text-sm ml-2">
+                                  مطلوب
                                 </Label>
-                                <Button size="icon" onClick={() => handleRenameField(field.id)}>
+                                <Button size="icon" onClick={() => handleRenameField(field.id)} title="تعديل">
                                   <Pencil className="h-4 w-4" />
                                 </Button>
-                                <Button size="icon" variant="destructive" onClick={() => handleDeleteField(field.id)}>
+                                <Button size="icon" variant="destructive" onClick={() => handleDeleteField(field.id)} title="حذف">
                                   <Trash className="h-4 w-4" />
                                 </Button>
                               </>
@@ -372,7 +365,8 @@ const SiteFieldsManager = () => {
                                       type="text"
                                       value={newDisplayName}
                                       onChange={(e) => setNewDisplayName(e.target.value)}
-                                      placeholder="New Display Name"
+                                      placeholder="الاسم المعروض الجديد"
+                                      className="text-right"
                                     />
                                     <Button
                                       size="sm"
@@ -381,17 +375,19 @@ const SiteFieldsManager = () => {
                                         setEditingSystemField('');
                                       }}
                                     >
-                                      Save
+                                      حفظ
                                     </Button>
                                     <Button size="sm" variant="ghost" onClick={() => setEditingSystemField('')}>
-                                      Cancel
+                                      إلغاء
                                     </Button>
                                   </div>
                                 ) : (
                                   <Button size="icon" onClick={() => {
                                     setEditingSystemField(field.field_name);
                                     setNewDisplayName(field.display_name);
-                                  }}>
+                                  }}
+                                  title="تعديل"
+                                  >
                                     <Pencil className="h-4 w-4" />
                                   </Button>
                                 )}
@@ -411,33 +407,37 @@ const SiteFieldsManager = () => {
           <form onSubmit={handleCreateField} className="mt-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="fieldName">Field Name</Label>
+                <Label htmlFor="fieldName" className="text-right block">اسم الحقل</Label>
                 <Input
                   type="text"
                   id="fieldName"
                   value={fieldName}
                   onChange={(e) => setFieldName(e.target.value)}
+                  className="text-right"
+                  placeholder="اسم الحقل البرمجي"
                 />
               </div>
               <div>
-                <Label htmlFor="displayName">Display Name</Label>
+                <Label htmlFor="displayName" className="text-right block">الاسم المعروض</Label>
                 <Input
                   type="text"
                   id="displayName"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
+                  className="text-right"
+                  placeholder="الاسم الذي سيظهر للمستخدم"
                 />
               </div>
-              <div className="flex items-center">
-                <Label htmlFor="isRequired" className="mr-2">
-                  Required
+              <div className="flex items-center justify-end">
+                <Label htmlFor="isRequired" className="ml-2">
+                  مطلوب
                 </Label>
                 <Switch id="isRequired" checked={isRequired} onCheckedChange={setIsRequired} />
               </div>
             </div>
             <Button type="submit" className="mt-4">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Field
+              <Plus className="ml-2 h-4 w-4" />
+              إنشاء حقل
             </Button>
           </form>
         </CardContent>
