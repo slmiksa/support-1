@@ -7,7 +7,7 @@ export interface SiteField {
   is_required: boolean;
   is_active: boolean;
   sort_order?: number;
-  field_type?: string; // Added field_type as optional property
+  field_type?: string; // Making sure field_type is properly defined
 }
 
 export interface Branch {
@@ -74,9 +74,10 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
       throw error;
     }
 
+    // Add a default field_type if it doesn't exist in the database
     const fieldsWithType = data?.map(field => ({
       ...field,
-      field_type: field.field_type || 'text'
+      field_type: field.field_type || 'text' // Provide a default value
     })) || [];
 
     return fieldsWithType as SiteField[];
