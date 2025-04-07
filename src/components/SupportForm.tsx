@@ -70,7 +70,7 @@ const SupportForm = () => {
         priority: formData.priority,
         description: formData.description,
         // Type assertion to handle the File | string type
-        image_url: typeof imagePreview === 'string' ? imagePreview : null,
+        image_url: imagePreview instanceof File ? null : imagePreview,
         status: 'pending',
         created_at: new Date().toISOString(),
         employee_id: formData['field_1743981608110'] || '',

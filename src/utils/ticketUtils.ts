@@ -8,7 +8,7 @@ export interface SiteField {
   is_required: boolean;
   is_active: boolean;
   sort_order?: number;
-  field_type?: string; // Adding field_type property
+  field_type: string; // Ensure this property exists with a default string type
 }
 
 export interface Branch {
