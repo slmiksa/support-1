@@ -115,12 +115,12 @@ interface DescriptionInputProps {
 export const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
   return (
     <div className="grid gap-2">
-      <Label htmlFor="description" className="text-right">محتوى الشكوى</Label>
+      <Label htmlFor="description" className="text-right">وصف المشكلة</Label>
       <Textarea
         id="description"
         name="description"
         required
-        placeholder="اكتب محتوى الشكوى هنا..."
+        placeholder="اكتب وصف المشكلة هنا..."
         className="min-h-[120px] text-right"
         value={value}
         onChange={onChange}
