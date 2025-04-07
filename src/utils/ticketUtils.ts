@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SiteField {
@@ -8,7 +7,7 @@ export interface SiteField {
   is_required: boolean;
   is_active: boolean;
   sort_order?: number;
-  field_type?: string; // Added field_type as optional to fix TypeScript error
+  field_type?: string; // Added field_type as optional field to fix TypeScript error
 }
 
 export interface Branch {
@@ -78,7 +77,7 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
     // Add field_type property with default value if it doesn't exist
     const fieldsWithType = data?.map(field => ({
       ...field,
-      field_type: field.field_type || 'text'
+      field_type: field.field_type || 'text' // Ensure field_type exists, default to 'text'
     })) || [];
 
     return fieldsWithType as SiteField[];
@@ -131,9 +130,6 @@ export const saveTicket = async (ticket: SupportTicket): Promise<{ success: bool
   }
 };
 
-// Added missing functions
-
-// Create a new branch
 export const createBranch = async (branchName: string): Promise<{ success: boolean; data: any; error: any }> => {
   try {
     const { data, error } = await supabase
@@ -153,7 +149,6 @@ export const createBranch = async (branchName: string): Promise<{ success: boole
   }
 };
 
-// Delete a branch
 export const deleteBranch = async (branchId: string): Promise<boolean> => {
   try {
     const { error } = await supabase
@@ -173,7 +168,6 @@ export const deleteBranch = async (branchId: string): Promise<boolean> => {
   }
 };
 
-// Get all admins
 export const getAllAdmins = async (): Promise<Admin[]> => {
   try {
     const { data, error } = await supabase
@@ -192,7 +186,6 @@ export const getAllAdmins = async (): Promise<Admin[]> => {
   }
 };
 
-// Create a new admin
 export const createAdmin = async (admin: {
   username: string;
   password: string;
@@ -217,7 +210,6 @@ export const createAdmin = async (admin: {
   }
 };
 
-// Delete an admin
 export const deleteAdmin = async (adminId: string): Promise<boolean> => {
   try {
     const { error } = await supabase
@@ -237,7 +229,6 @@ export const deleteAdmin = async (adminId: string): Promise<boolean> => {
   }
 };
 
-// Find a ticket by ID
 export const findTicketById = async (ticketId: string): Promise<SupportTicket | null> => {
   try {
     const { data, error } = await supabase
@@ -262,7 +253,6 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
   }
 };
 
-// Get ticket responses
 export const getTicketResponses = async (ticketId: string): Promise<any[]> => {
   try {
     const { data, error } = await supabase
@@ -283,7 +273,6 @@ export const getTicketResponses = async (ticketId: string): Promise<any[]> => {
   }
 };
 
-// Get tickets by date range
 export const getTicketsByDateRange = async (startDate: string, endDate: string): Promise<SupportTicket[]> => {
   try {
     const { data, error } = await supabase
@@ -309,7 +298,6 @@ export const getTicketsByDateRange = async (startDate: string, endDate: string):
   }
 };
 
-// Get ticket statistics
 export const getTicketStats = async (startDate: string, endDate: string): Promise<{
   total: number;
   byStatus: Record<string, number>;
@@ -356,7 +344,6 @@ export const getTicketStats = async (startDate: string, endDate: string): Promis
   }
 };
 
-// Site field management functions
 export const updateSiteField = async (
   fieldId: string,
   updates: {

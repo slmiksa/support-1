@@ -70,7 +70,7 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        // Convert image preview to string or undefined to match the expected type
+        // Ensure image_url is a string or undefined, not a File object
         image_url: typeof imagePreview === 'string' ? imagePreview : undefined,
         status: 'pending',
         created_at: new Date().toISOString(),
