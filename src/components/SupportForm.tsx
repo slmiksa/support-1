@@ -1,4 +1,3 @@
-
 import { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket } from '../utils/ticketUtils';
@@ -56,7 +55,6 @@ const SupportForm = () => {
     try {
       const newTicketId = generateTicketId();
       
-      // Create a custom_fields object to store the custom field values
       const customFieldsData: Record<string, any> = {};
       
       customFields.forEach(field => {
@@ -70,13 +68,11 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        // Ensure image_url is a string or undefined, not a File object
         image_url: typeof imagePreview === 'string' ? imagePreview : undefined,
         status: 'pending',
         created_at: new Date().toISOString(),
         employee_id: formData['field_1743981608110'] || '',
         custom_fields: customFieldsData,
-        // Add required system fields directly
         anydesk_number: formData.anydesk_number as string
       };
       

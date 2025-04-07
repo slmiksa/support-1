@@ -1,4 +1,3 @@
-
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'sonner';
 import {
@@ -135,7 +134,7 @@ const SiteFieldsManager = () => {
   const handleCreateField = async (e: FormEvent) => {
     e.preventDefault();
     if (!fieldName || !displayName) {
-      toast.error('يرجى تعبئة جميع الحقول');
+      toast.error('يرجى تعبئة جميع الحقول المطلوبة');
       return;
     }
 
@@ -174,10 +173,8 @@ const SiteFieldsManager = () => {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
-    // Optimistically update the state
     setFields(items);
 
-    // Prepare updates for the database
     const updates = items.map((field, index) => ({
       id: String(field.id),
       sort_order: index + 1
@@ -187,7 +184,6 @@ const SiteFieldsManager = () => {
       const success = await updateFieldOrder(updates);
       if (!success) {
         toast.error('فشل في تحديث ترتيب الحقول في قاعدة البيانات. يرجى التحديث.');
-        // Revert to the original order in case of failure
         fetchFields();
         return;
       }
@@ -195,7 +191,6 @@ const SiteFieldsManager = () => {
     } catch (error) {
       console.error('Error updating field order:', error);
       toast.error('فشل في تحديث ترتيب الحقول. يرجى التحديث.');
-      // Revert to the original order in case of failure
       fetchFields();
     }
   };
@@ -207,10 +202,8 @@ const SiteFieldsManager = () => {
       newFields[index] = newFields[index - 1];
       newFields[index - 1] = temp;
 
-      // Optimistically update the state
       setFields(newFields);
 
-      // Prepare updates for the database
       const updates = newFields.map((field, i) => ({
         id: String(field.id),
         sort_order: i + 1
@@ -220,7 +213,6 @@ const SiteFieldsManager = () => {
         const success = await updateFieldOrder(updates);
         if (!success) {
           toast.error('فشل في تحديث ترتيب الحقول في قاعدة البيانات. يرجى التحديث.');
-          // Revert to the original order in case of failure
           fetchFields();
           return;
         }
@@ -228,7 +220,6 @@ const SiteFieldsManager = () => {
       } catch (error) {
         console.error('Error updating field order:', error);
         toast.error('فشل في تحديث ترتيب الحقول. يرجى التحديث.');
-        // Revert to the original order in case of failure
         fetchFields();
       }
     }
@@ -241,10 +232,8 @@ const SiteFieldsManager = () => {
       newFields[index] = newFields[index + 1];
       newFields[index + 1] = temp;
 
-      // Optimistically update the state
       setFields(newFields);
 
-      // Prepare updates for the database
       const updates = newFields.map((field, i) => ({
         id: String(field.id),
         sort_order: i + 1
@@ -254,7 +243,6 @@ const SiteFieldsManager = () => {
         const success = await updateFieldOrder(updates);
         if (!success) {
           toast.error('فشل في تحديث ترتيب الحقول في قاعدة البيانات. يرجى التحديث.');
-          // Revert to the original order in case of failure
           fetchFields();
           return;
         }
@@ -262,7 +250,6 @@ const SiteFieldsManager = () => {
       } catch (error) {
         console.error('Error updating field order:', error);
         toast.error('فشل في تحديث ترتيب الحقول. يرجى التحديث.');
-        // Revert to the original order in case of failure
         fetchFields();
       }
     }
@@ -272,7 +259,6 @@ const SiteFieldsManager = () => {
     try {
       await updateSystemFieldName(fieldName, fieldName, displayName);
 
-      // Update local state
       setFields(prevFields =>
         prevFields.map(field =>
           field.field_name === fieldName ? { ...field, display_name: displayName } : field
