@@ -99,6 +99,8 @@ export type Database = {
           secondary_color: string
           site_name: string
           support_available: boolean | null
+          support_help_fields: Json | null
+          support_info: string | null
           support_message: string | null
           text_color: string
         }
@@ -113,6 +115,8 @@ export type Database = {
           secondary_color?: string
           site_name?: string
           support_available?: boolean | null
+          support_help_fields?: Json | null
+          support_info?: string | null
           support_message?: string | null
           text_color?: string
         }
@@ -127,6 +131,8 @@ export type Database = {
           secondary_color?: string
           site_name?: string
           support_available?: boolean | null
+          support_help_fields?: Json | null
+          support_info?: string | null
           support_message?: string | null
           text_color?: string
         }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -12,6 +11,13 @@ import { supabase, SiteSettings, HelpField } from '@/integrations/supabase/clien
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon, Plus, X } from 'lucide-react';
 import { v4 as uuidv4 } from '@supabase/supabase-js/dist/module/lib/helpers';
+
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
 
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
@@ -248,7 +254,7 @@ const SiteCustomizationManager = () => {
 
   const addHelpField = () => {
     const newField: HelpField = {
-      id: uuidv4(),
+      id: generateUUID(),
       title: '',
       content: ''
     };
