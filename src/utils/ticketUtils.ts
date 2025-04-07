@@ -105,9 +105,8 @@ export const getAllBranches = async (): Promise<Branch[]> => {
 };
 
 export const generateTicketId = (): string => {
-  const timestamp = Date.now().toString(36);
-  const randomId = Math.random().toString(36).substring(2, 5);
-  return `wsl-${timestamp}-${randomId}`.toUpperCase();
+  const randomId = Math.random().toString(36).substring(2, 10).toUpperCase();
+  return `WSL-${randomId}`;
 };
 
 export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean; data: any; error: any }> => {
