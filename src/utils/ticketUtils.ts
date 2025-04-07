@@ -7,7 +7,7 @@ export interface SiteField {
   is_required: boolean;
   is_active: boolean;
   sort_order?: number;
-  field_type?: string; // Added field_type as optional field
+  field_type?: string; // Added field_type as optional property
 }
 
 export interface Branch {
@@ -384,9 +384,13 @@ export const createSiteField = async (
   }
 ): Promise<{ success: boolean; data: any; error: any }> => {
   try {
+    // Remove field_type from the data we send to Supabase if it doesn't exist in the table
+    const { field_type, ...fieldWithoutType } = field;
+    
+    // Only include fields that exist in the table
     const { data, error } = await supabase
       .from('site_fields')
-      .insert([field])
+      .insert([fieldWithoutType])
       .select();
 
     if (error) {
