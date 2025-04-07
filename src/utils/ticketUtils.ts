@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SiteField {
@@ -75,10 +74,9 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
       throw error;
     }
 
-    // Add field_type property with default value if it doesn't exist
     const fieldsWithType = data?.map(field => ({
       ...field,
-      field_type: field.field_type || 'text' // Ensure field_type exists, default to 'text'
+      field_type: field.field_type || 'text'
     })) || [];
 
     return fieldsWithType as SiteField[];
@@ -109,7 +107,7 @@ export const getAllBranches = async (): Promise<Branch[]> => {
 export const generateTicketId = (): string => {
   const timestamp = Date.now().toString(36);
   const randomId = Math.random().toString(36).substring(2, 5);
-  return `${timestamp}-${randomId}`.toUpperCase();
+  return `wsl-${timestamp}-${randomId}`.toUpperCase();
 };
 
 export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean; data: any; error: any }> => {
@@ -243,7 +241,6 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
       return null;
     }
 
-    // Convert the database record to SupportTicket interface
     return data ? {
       ...data,
       support_email: 'help@alwaslsaudi.com'
@@ -288,7 +285,6 @@ export const getTicketsByDateRange = async (startDate: string, endDate: string):
       return [];
     }
 
-    // Convert database records to SupportTicket interface
     return (data || []).map(ticket => ({
       ...ticket,
       support_email: 'help@alwaslsaudi.com'
@@ -306,10 +302,8 @@ export const getTicketStats = async (startDate: string, endDate: string): Promis
   byStaff: Record<string, number>;
 }> => {
   try {
-    // First, get all tickets in the date range
     const tickets = await getTicketsByDateRange(startDate, endDate);
     
-    // Calculate statistics
     const stats = {
       total: tickets.length,
       byStatus: {} as Record<string, number>,
@@ -317,17 +311,13 @@ export const getTicketStats = async (startDate: string, endDate: string): Promis
       byStaff: {} as Record<string, number>
     };
     
-    // Count tickets by status, branch, and staff
     tickets.forEach(ticket => {
-      // By status
       const status = ticket.status || 'unknown';
       stats.byStatus[status] = (stats.byStatus[status] || 0) + 1;
       
-      // By branch
       const branch = ticket.branch || 'unknown';
       stats.byBranch[branch] = (stats.byBranch[branch] || 0) + 1;
       
-      // By assigned staff
       if (ticket.assigned_to) {
         stats.byStaff[ticket.assigned_to] = (stats.byStaff[ticket.assigned_to] || 0) + 1;
       }
@@ -385,10 +375,8 @@ export const createSiteField = async (
   }
 ): Promise<{ success: boolean; data: any; error: any }> => {
   try {
-    // Since field_type doesn't exist in the database table, we need to remove it before inserting
     const { field_type, ...fieldWithoutType } = field;
     
-    // Only include fields that exist in the table
     const { data, error } = await supabase
       .from('site_fields')
       .insert([fieldWithoutType])
@@ -429,7 +417,6 @@ export const updateFieldOrder = async (
   fieldUpdates: { id: string; sort_order: number }[]
 ): Promise<boolean> => {
   try {
-    // Update each field one by one
     for (const update of fieldUpdates) {
       const { error } = await supabase
         .from('site_fields')
