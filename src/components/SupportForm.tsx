@@ -64,13 +64,22 @@ const SupportForm = () => {
         }
       });
       
+      // Handle the imagePreview correctly based on its type
+      let imageUrlToSave: string | null = null;
+      
+      // Check if imagePreview is a string (already uploaded image URL)
+      if (typeof imagePreview === 'string') {
+        imageUrlToSave = imagePreview;
+      }
+      // If it's a File object, it will be handled separately during upload
+      // and for now we'll set it to null
+      
       const newTicket: SupportTicket = {
         ticket_id: newTicketId,
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        // Type assertion to handle the File | string type
-        image_url: imagePreview instanceof File ? null : imagePreview,
+        image_url: imageUrlToSave,
         status: 'pending',
         created_at: new Date().toISOString(),
         employee_id: formData['field_1743981608110'] || '',

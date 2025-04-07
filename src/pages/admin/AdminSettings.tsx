@@ -12,6 +12,7 @@ import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket } fr
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 
 const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('branches');
@@ -29,7 +30,42 @@ const AdminSettings = () => {
       });
       navigate('/admin/dashboard');
     }
+    
+    // Fetch and update favicon for admin panel
+    fetchAndUpdateFavicon();
   }, [hasPermission, navigate, toast]);
+  
+  // Function to fetch and update favicon in admin panel
+  const fetchAndUpdateFavicon = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('favicon_url')
+        .single();
+        
+      if (error) {
+        console.error('Error fetching favicon:', error);
+        return;
+      }
+      
+      if (data && data.favicon_url) {
+        updateFavicon(data.favicon_url);
+      }
+    } catch (error) {
+      console.error('Error in fetchAndUpdateFavicon:', error);
+    }
+  };
+  
+  // Function to update favicon
+  const updateFavicon = (faviconUrl: string) => {
+    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = faviconUrl;
+  };
 
   return (
     <div className="min-h-screen bg-background">
