@@ -24,8 +24,16 @@ export interface SiteSettings {
   support_available?: boolean;
   support_message?: string;
   support_info?: string;
+  support_help_fields?: HelpField[];
   created_at?: string;
 }
 
 // Define PriorityType as a literal union type
 export type PriorityType = 'urgent' | 'medium' | 'normal';
+
+// Define the HelpField type for the help information fields
+export interface HelpField {
+  id: string;
+  title: string;
+  content: string;
+}

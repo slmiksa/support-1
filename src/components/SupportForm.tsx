@@ -1,3 +1,4 @@
+
 import { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket } from '../utils/ticketUtils';
@@ -68,7 +69,7 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        image_url: typeof imagePreview === 'string' ? imagePreview : undefined,
+        image_url: typeof imagePreview === 'string' ? imagePreview : null,
         status: 'pending',
         created_at: new Date().toISOString(),
         employee_id: formData['field_1743981608110'] || '',

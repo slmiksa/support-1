@@ -434,3 +434,22 @@ export const updateFieldOrder = async (
     return false;
   }
 };
+
+export const formatCustomFieldsForDisplay = (ticket: SupportTicket, fields: any[]) => {
+  if (!ticket.custom_fields) return [];
+  
+  const formattedFields = [];
+  
+  for (const field of fields) {
+    const fieldName = field.field_name;
+    if (ticket.custom_fields[fieldName]) {
+      formattedFields.push({
+        display_name: field.display_name,
+        value: ticket.custom_fields[fieldName],
+        field_type: 'text' // default field type
+      });
+    }
+  }
+  
+  return formattedFields;
+};

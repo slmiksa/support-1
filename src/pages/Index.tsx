@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import SupportForm from '@/components/SupportForm';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
-import { supabase, SiteSettings } from '@/integrations/supabase/client';
+import { supabase, SiteSettings, HelpField } from '@/integrations/supabase/client';
 import { HeadphonesIcon, PhoneOffIcon, HelpCircleIcon } from 'lucide-react';
 import { 
   Popover,
@@ -16,6 +16,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 
 const Index = () => {
   const [supportStatus, setSupportStatus] = useState({
@@ -23,6 +29,7 @@ const Index = () => {
     message: 'الدعم الفني متواجد'
   });
   const [supportInfo, setSupportInfo] = useState<string | null>(null);
+  const [helpFields, setHelpFields] = useState<HelpField[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,17 +37,34 @@ const Index = () => {
       try {
         const { data, error } = await supabase
           .from('site_settings')
-          .select('support_available, support_message, support_info')
+          .select('*')
           .single();
           
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching site settings:', error);
+          setLoading(false);
+          return;
+        }
         
         if (data) {
           setSupportStatus({
-            available: data.support_available,
+            available: !!data.support_available,
             message: data.support_message || 'الدعم الفني متواجد'
           });
-          setSupportInfo(data.support_info);
+          setSupportInfo(data.support_info || null);
+          
+          // Parse help fields if they exist
+          if (data.support_help_fields) {
+            try {
+              const helpFieldsData = typeof data.support_help_fields === 'string' 
+                ? JSON.parse(data.support_help_fields) 
+                : data.support_help_fields;
+              setHelpFields(Array.isArray(helpFieldsData) ? helpFieldsData : []);
+            } catch (e) {
+              console.error('Error parsing help fields:', e);
+              setHelpFields([]);
+            }
+          }
         }
       } catch (error) {
         console.error('Error fetching support status:', error);
@@ -79,33 +103,48 @@ const Index = () => {
                   </span>
                 </div>
                 
-                {supportInfo && (
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <button 
-                              className="p-1.5 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors"
-                              aria-label="معلومات مهمة"
-                            >
-                              <HelpCircleIcon size={18} className="text-blue-600" />
-                            </button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-80 text-right" align="center">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button 
+                            className="p-1.5 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors"
+                            aria-label="معلومات مهمة"
+                          >
+                            <HelpCircleIcon size={18} className="text-blue-600" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 text-right" align="center">
+                          {helpFields.length > 0 ? (
+                            <Accordion type="single" collapsible className="w-full">
+                              {helpFields.map((field) => (
+                                <AccordionItem key={field.id} value={field.id}>
+                                  <AccordionTrigger className="text-right">
+                                    {field.title}
+                                  </AccordionTrigger>
+                                  <AccordionContent>
+                                    <div dangerouslySetInnerHTML={{ __html: field.content }} />
+                                  </AccordionContent>
+                                </AccordionItem>
+                              ))}
+                            </Accordion>
+                          ) : supportInfo ? (
                             <div 
                               className="text-sm"
                               dangerouslySetInnerHTML={{ __html: supportInfo }}
                             />
-                          </PopoverContent>
-                        </Popover>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>معلومات مهمة</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                )}
+                          ) : (
+                            <p>لا توجد معلومات متاحة حالياً</p>
+                          )}
+                        </PopoverContent>
+                      </Popover>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>معلومات مهمة</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>

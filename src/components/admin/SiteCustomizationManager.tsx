@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -7,9 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { supabase, SiteSettings } from '@/integrations/supabase/client';
+import { supabase, SiteSettings, HelpField } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon } from 'lucide-react';
+import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon, Plus, X } from 'lucide-react';
+import { v4 as uuidv4 } from '@supabase/supabase-js/dist/module/lib/helpers';
 
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
@@ -23,6 +25,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   support_available: true,
   support_message: 'الدعم الفني متواجد',
   support_info: '<p>رقم تحويلة الدعم الفني: 2014</p><p>موقع الإجازات: <a href="https://test.com" target="_blank">www.test.com</a></p>',
+  support_help_fields: [],
 };
 
 const SiteCustomizationManager = () => {
@@ -31,6 +34,7 @@ const SiteCustomizationManager = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [helpFields, setHelpFields] = useState<HelpField[]>([]);
   const { hasPermission } = useAdminAuth();
   
   useEffect(() => {
@@ -52,7 +56,21 @@ const SiteCustomizationManager = () => {
           throw error;
         }
       } else if (data) {
-        setSettings(data as SiteSettings);
+        const settingsData = data as SiteSettings;
+        setSettings(settingsData);
+        
+        // Parse help fields if they exist
+        if (data.support_help_fields) {
+          try {
+            const helpFieldsData = typeof data.support_help_fields === 'string' 
+              ? JSON.parse(data.support_help_fields) 
+              : data.support_help_fields;
+            setHelpFields(Array.isArray(helpFieldsData) ? helpFieldsData : []);
+          } catch (e) {
+            console.error('Error parsing help fields:', e);
+            setHelpFields([]);
+          }
+        }
       }
     } catch (error) {
       console.error('Error fetching site settings:', error);
@@ -85,9 +103,15 @@ const SiteCustomizationManager = () => {
 
     setLoading(true);
     try {
+      // Prepare settings with help fields
+      const updatedSettings = {
+        ...settings,
+        support_help_fields: helpFields
+      };
+      
       const { error } = await supabase
         .from('site_settings')
-        .upsert([settings]);
+        .upsert([updatedSettings]);
         
       if (error) throw error;
       
@@ -220,6 +244,25 @@ const SiteCustomizationManager = () => {
     } finally {
       setUploadingFavicon(false);
     }
+  };
+
+  const addHelpField = () => {
+    const newField: HelpField = {
+      id: uuidv4(),
+      title: '',
+      content: ''
+    };
+    setHelpFields([...helpFields, newField]);
+  };
+
+  const removeHelpField = (id: string) => {
+    setHelpFields(helpFields.filter(field => field.id !== id));
+  };
+
+  const updateHelpField = (id: string, fieldKey: keyof HelpField, value: string) => {
+    setHelpFields(helpFields.map(field => 
+      field.id === id ? { ...field, [fieldKey]: value } : field
+    ));
   };
 
   return (
@@ -493,38 +536,114 @@ const SiteCustomizationManager = () => {
           </TabsContent>
           
           <TabsContent value="helpInfo">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="support_info" className="text-right block">معلومات مساعدة</Label>
-                <Textarea
-                  id="support_info"
-                  value={settings.support_info || ''}
-                  onChange={(e) => setSettings({ ...settings, support_info: e.target.value })}
-                  placeholder="أدخل المعلومات المساعدة هنا... يمكنك استخدام HTML"
-                  className="text-right min-h-[200px]"
-                />
-                <p className="text-xs text-gray-500 text-right">
-                  يمكنك استخدام وسوم HTML البسيطة مثل &lt;p&gt; و &lt;a&gt; و &lt;br&gt; لتنسيق النص
-                </p>
+            <div className="space-y-4 mb-8">
+              <div className="flex justify-between items-center">
+                <Button
+                  onClick={addHelpField}
+                  className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+                >
+                  <Plus size={16} />
+                  <span>إضافة حقل معلومات</span>
+                </Button>
+                
+                <h3 className="text-right font-semibold text-lg">حقول المعلومات المساعدة</h3>
               </div>
               
-              <div className="p-4 border rounded-lg bg-gray-50">
+              <div className="text-right text-sm text-gray-600 mb-4">
+                <p>يمكنك إضافة عدة حقول معلومات مساعدة ستظهر في الصفحة الرئيسية عند الضغط على أيقونة المساعدة</p>
+              </div>
+              
+              {helpFields.length === 0 ? (
+                <div className="p-4 border rounded-lg bg-gray-50 text-center text-gray-500">
+                  لا توجد حقول معلومات مساعدة. اضغط على زر "إضافة حقل معلومات" لإضافة حقل جديد.
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {helpFields.map((field, index) => (
+                    <div key={field.id} className="border rounded-lg p-4 bg-gray-50 relative">
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="absolute top-2 left-2 h-8 w-8"
+                        onClick={() => removeHelpField(field.id)}
+                      >
+                        <X size={16} />
+                      </Button>
+                      
+                      <div className="mb-4">
+                        <h4 className="text-right font-medium mb-2">الحقل رقم {index + 1}</h4>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor={`field-title-${field.id}`} className="text-right block">
+                            عنوان الحقل
+                          </Label>
+                          <Input
+                            id={`field-title-${field.id}`}
+                            value={field.title}
+                            onChange={(e) => updateHelpField(field.id, 'title', e.target.value)}
+                            placeholder="مثال: رقم تحويلة الدعم الفني"
+                            className="text-right"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor={`field-content-${field.id}`} className="text-right block">
+                            محتوى الحقل
+                          </Label>
+                          <Textarea
+                            id={`field-content-${field.id}`}
+                            value={field.content}
+                            onChange={(e) => updateHelpField(field.id, 'content', e.target.value)}
+                            placeholder="مثال: 2014"
+                            className="text-right min-h-[100px]"
+                          />
+                          <p className="text-xs text-gray-500 text-right">
+                            يمكنك استخدام وسوم HTML مثل &lt;p&gt; و &lt;a&gt; لتنسيق النص
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="p-4 border rounded-lg bg-gray-50 mt-6">
                 <h3 className="text-right font-medium mb-3">معاينة المعلومات المساعدة</h3>
-                <div 
-                  className="p-4 border rounded bg-white text-right"
-                  dangerouslySetInnerHTML={{ __html: settings.support_info || '' }}
-                />
-                <p className="text-xs text-gray-500 text-right mt-2">
-                  هذه المعلومات ستظهر عند النقر على أيقونة المساعدة في الصفحة الرئيسية
-                </p>
+                {helpFields.length > 0 ? (
+                  <div className="border rounded-md p-4 bg-white">
+                    {helpFields.map((field) => (
+                      <div key={field.id} className="mb-3 last:mb-0 pb-3 last:pb-0 border-b last:border-b-0">
+                        <h4 className="font-medium text-right mb-1">{field.title || 'عنوان الحقل'}</h4>
+                        <div 
+                          className="text-sm text-right"
+                          dangerouslySetInnerHTML={{ __html: field.content || 'محتوى الحقل' }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center p-4 text-gray-500">
+                    أضف حقول معلومات لرؤية المعاينة هنا
+                  </div>
+                )}
               </div>
               
               <div className="p-4 border rounded-lg bg-gray-50">
-                <h3 className="text-right font-medium mb-3">أمثلة لمحتوى المعلومات</h3>
-                <div className="space-y-3 text-right text-sm text-gray-600">
-                  <p><code>&lt;p&gt;رقم تحويلة الدعم الفني: 2014&lt;/p&gt;</code></p>
-                  <p><code>&lt;p&gt;موقع الإجازات: &lt;a href="https://test.com" target="_blank"&gt;www.test.com&lt;/a&gt;&lt;/p&gt;</code></p>
-                  <p><code>&lt;p&gt;ساعات العمل: من الساعة 8 صباحاً وحتى 4 مساءً&lt;/p&gt;</code></p>
+                <h3 className="text-right font-medium mb-3">الطريقة القديمة: معلومات مساعدة (نص HTML)</h3>
+                <div className="space-y-2">
+                  <Label htmlFor="support_info" className="text-right block">معلومات مساعدة</Label>
+                  <Textarea
+                    id="support_info"
+                    value={settings.support_info || ''}
+                    onChange={(e) => setSettings({ ...settings, support_info: e.target.value })}
+                    placeholder="أدخل المعلومات المساعدة هنا... يمكنك استخدام HTML"
+                    className="text-right min-h-[150px]"
+                  />
+                  <p className="text-xs text-gray-500 text-right">
+                    ملاحظة: هذا النص سيظهر فقط إذا لم تكن هناك حقول معلومات مساعدة
+                  </p>
                 </div>
               </div>
             </div>
