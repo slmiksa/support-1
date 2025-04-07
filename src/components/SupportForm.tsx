@@ -1,4 +1,3 @@
-
 import { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket } from '../utils/ticketUtils';
@@ -69,7 +68,6 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        // Fix: Only use imagePreview if it's a string
         image_url: typeof imagePreview === 'string' ? imagePreview : undefined,
         status: 'pending',
         created_at: new Date().toISOString(),

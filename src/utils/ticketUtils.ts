@@ -74,7 +74,6 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
       throw error;
     }
 
-    // Add a default field_type if it doesn't exist in the database
     const fieldsWithType = data?.map(field => ({
       ...field,
       field_type: field.field_type || 'text' // Provide a default value

@@ -5,10 +5,11 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Image, Palette, Type, HeadphonesIcon } from 'lucide-react';
+import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon } from 'lucide-react';
 
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
@@ -21,6 +22,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
   footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.',
   support_available: true,
   support_message: 'الدعم الفني متواجد',
+  support_info: '<p>رقم تحويلة الدعم الفني: 2014</p><p>موقع الإجازات: <a href="https://test.com" target="_blank">www.test.com</a></p>',
 };
 
 const SiteCustomizationManager = () => {
@@ -239,7 +241,7 @@ const SiteCustomizationManager = () => {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-4 w-full mb-6">
+          <TabsList className="grid grid-cols-5 w-full mb-6">
             <TabsTrigger value="general" className="flex items-center gap-2">
               <Type size={16} />
               <span>الإعدادات العامة</span>
@@ -255,6 +257,10 @@ const SiteCustomizationManager = () => {
             <TabsTrigger value="support" className="flex items-center gap-2">
               <HeadphonesIcon size={16} />
               <span>الدعم الفني</span>
+            </TabsTrigger>
+            <TabsTrigger value="helpInfo" className="flex items-center gap-2">
+              <HelpCircleIcon size={16} />
+              <span>معلومات مساعدة</span>
             </TabsTrigger>
           </TabsList>
 
@@ -482,6 +488,44 @@ const SiteCustomizationManager = () => {
                 <p className="text-xs text-gray-500 text-right">
                   هذه الرسالة ستظهر للمستخدمين عند تفعيل الدعم الفني
                 </p>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="helpInfo">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="support_info" className="text-right block">معلومات مساعدة</Label>
+                <Textarea
+                  id="support_info"
+                  value={settings.support_info || ''}
+                  onChange={(e) => setSettings({ ...settings, support_info: e.target.value })}
+                  placeholder="أدخل المعلومات المساعدة هنا... يمكنك استخدام HTML"
+                  className="text-right min-h-[200px]"
+                />
+                <p className="text-xs text-gray-500 text-right">
+                  يمكنك استخدام وسوم HTML البسيطة مثل &lt;p&gt; و &lt;a&gt; و &lt;br&gt; لتنسيق النص
+                </p>
+              </div>
+              
+              <div className="p-4 border rounded-lg bg-gray-50">
+                <h3 className="text-right font-medium mb-3">معاينة المعلومات المساعدة</h3>
+                <div 
+                  className="p-4 border rounded bg-white text-right"
+                  dangerouslySetInnerHTML={{ __html: settings.support_info || '' }}
+                />
+                <p className="text-xs text-gray-500 text-right mt-2">
+                  هذه المعلومات ستظهر عند النقر على أيقونة المساعدة في الصفحة الرئيسية
+                </p>
+              </div>
+              
+              <div className="p-4 border rounded-lg bg-gray-50">
+                <h3 className="text-right font-medium mb-3">أمثلة لمحتوى المعلومات</h3>
+                <div className="space-y-3 text-right text-sm text-gray-600">
+                  <p><code>&lt;p&gt;رقم تحويلة الدعم الفني: 2014&lt;/p&gt;</code></p>
+                  <p><code>&lt;p&gt;موقع الإجازات: &lt;a href="https://test.com" target="_blank"&gt;www.test.com&lt;/a&gt;&lt;/p&gt;</code></p>
+                  <p><code>&lt;p&gt;ساعات العمل: من الساعة 8 صباحاً وحتى 4 مساءً&lt;/p&gt;</code></p>
+                </div>
               </div>
             </div>
           </TabsContent>

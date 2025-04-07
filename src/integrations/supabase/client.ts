@@ -23,6 +23,7 @@ export interface SiteSettings {
   footer_text: string;
   support_available?: boolean;
   support_message?: string;
+  support_info?: string;
   created_at?: string;
 }
 
