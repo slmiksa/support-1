@@ -1,4 +1,3 @@
-
 import { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket } from '../utils/ticketUtils';
@@ -71,8 +70,6 @@ const SupportForm = () => {
       if (typeof imagePreview === 'string') {
         imageUrlToSave = imagePreview;
       }
-      // If it's a File object, it will be handled separately during upload
-      // and for now we'll set it to null
       
       const newTicket: SupportTicket = {
         ticket_id: newTicketId,
@@ -82,9 +79,9 @@ const SupportForm = () => {
         image_url: imageUrlToSave,
         status: 'pending',
         created_at: new Date().toISOString(),
-        employee_id: formData['field_1743981608110'] || '',
+        employee_id: formData['field_1743981608110'] as string || '',
         custom_fields: customFieldsData,
-        anydesk_number: formData.anydesk_number as string
+        anydesk_number: formData.anydesk_number || ''  // Ensure it's a string
       };
       
       const result = await saveTicket(newTicket);

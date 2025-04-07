@@ -1,4 +1,3 @@
-
 import { useState, useEffect, ChangeEvent } from 'react';
 import { toast } from 'sonner';
 import { getAllBranches, getAllSiteFields, SiteField, Branch } from '@/utils/ticketUtils';
@@ -10,7 +9,8 @@ export interface FormData {
   priority: PriorityType;
   description: string;
   imageFile: File | null;
-  [key: string]: string | File | null | PriorityType;
+  anydesk_number?: string;
+  [key: string]: string | File | null | PriorityType | undefined;
 }
 
 export const useFormData = () => {
