@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 
 export interface SiteField {
@@ -384,7 +385,7 @@ export const createSiteField = async (
   }
 ): Promise<{ success: boolean; data: any; error: any }> => {
   try {
-    // Remove field_type from the data we send to Supabase if it doesn't exist in the table
+    // Since field_type doesn't exist in the database table, we need to remove it before inserting
     const { field_type, ...fieldWithoutType } = field;
     
     // Only include fields that exist in the table
