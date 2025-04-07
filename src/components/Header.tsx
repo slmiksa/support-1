@@ -1,3 +1,4 @@
+
 import { Link } from 'react-router-dom';
 import { Home, Search } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -149,10 +150,11 @@ const Header = () => {
       
       {/* Developer footer */}
       <div className="fixed bottom-0 left-0 right-0 py-1 px-4 bg-gray-100 text-[#222222] text-xs text-center z-10 border-t">
-        © 2025 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.
+        © 2025 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة. | Developed by trndsky (version 1.0)
       </div>
     </div>
   );
 };
 
 export default Header;
+
