@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,8 +11,8 @@ import { toast } from 'sonner';
 import { supabase, SiteSettings, HelpField } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon, Plus, X } from 'lucide-react';
-import { v4 as uuidv4 } from '@supabase/supabase-js/dist/module/lib/helpers';
 
+// Generate a UUID v4 compatible string
 const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);

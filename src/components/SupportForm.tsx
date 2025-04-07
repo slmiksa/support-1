@@ -69,6 +69,7 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
+        // Type assertion to handle the File | string type
         image_url: typeof imagePreview === 'string' ? imagePreview : null,
         status: 'pending',
         created_at: new Date().toISOString(),
