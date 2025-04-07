@@ -284,17 +284,6 @@ const SiteCustomizationManager = () => {
                   هذا العنوان سيظهر في شريط المتصفح (Browser Tab) وفي نتائج البحث
                 </p>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="footer_text" className="text-right block">نص التذييل (Footer)</Label>
-                <Input
-                  id="footer_text"
-                  value={settings.footer_text}
-                  onChange={(e) => setSettings({ ...settings, footer_text: e.target.value })}
-                  placeholder="نص التذييل"
-                  className="text-right"
-                />
-              </div>
             </div>
           </TabsContent>
 
