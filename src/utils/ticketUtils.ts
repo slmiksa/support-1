@@ -148,6 +148,25 @@ export const createBranch = async (branchName: string): Promise<{ success: boole
   }
 };
 
+export const updateBranchName = async (branchId: string, newName: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('branches')
+      .update({ name: newName })
+      .eq('id', branchId);
+
+    if (error) {
+      console.error('Error updating branch name:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in updateBranchName:', error);
+    return false;
+  }
+};
+
 export const deleteBranch = async (branchId: string): Promise<boolean> => {
   try {
     const { error } = await supabase

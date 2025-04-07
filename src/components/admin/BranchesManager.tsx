@@ -1,12 +1,13 @@
+
 import { useState, useEffect } from 'react';
-import { getAllBranches, createBranch, deleteBranch, Branch } from '@/utils/ticketUtils';
+import { getAllBranches, createBranch, deleteBranch, updateBranchName, Branch } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, Pencil } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 const BranchesManager = () => {
@@ -14,6 +15,8 @@ const BranchesManager = () => {
   const [loading, setLoading] = useState(true);
   const [newBranchName, setNewBranchName] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingBranch, setEditingBranch] = useState<{ id: string, name: string } | null>(null);
   const { hasPermission } = useAdminAuth();
   const canManageAdmins = hasPermission('manage_admins');
 
@@ -42,6 +45,30 @@ const BranchesManager = () => {
       fetchBranches();
     } else {
       toast.error('فشل في إنشاء الفرع');
+    }
+  };
+
+  const handleEditBranch = (branch: Branch) => {
+    setEditingBranch({ id: String(branch.id), name: branch.name });
+    setEditDialogOpen(true);
+  };
+
+  const handleUpdateBranchName = async () => {
+    if (!editingBranch) return;
+    
+    if (!editingBranch.name.trim()) {
+      toast.error('يرجى إدخال اسم الفرع');
+      return;
+    }
+
+    const success = await updateBranchName(editingBranch.id, editingBranch.name);
+    if (success) {
+      toast.success('تم تحديث اسم الفرع بنجاح');
+      setEditDialogOpen(false);
+      setEditingBranch(null);
+      fetchBranches();
+    } else {
+      toast.error('فشل في تحديث اسم الفرع');
     }
   };
 
@@ -109,7 +136,7 @@ const BranchesManager = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">اسم الفرع</TableHead>
-                  {canManageAdmins && <TableHead className="text-right w-20">إجراءات</TableHead>}
+                  {canManageAdmins && <TableHead className="text-right w-40">إجراءات</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -118,11 +145,20 @@ const BranchesManager = () => {
                     <TableRow key={branch.id}>
                       <TableCell className="font-medium text-right">{branch.name}</TableCell>
                       {canManageAdmins && (
-                        <TableCell>
+                        <TableCell className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEditBranch(branch)}
+                            title="تعديل"
+                          >
+                            <Pencil className="h-4 w-4 text-blue-500" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteBranch(branch.id)}
+                            title="حذف"
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -141,6 +177,30 @@ const BranchesManager = () => {
             </Table>
           </div>
         )}
+
+        {/* Edit Branch Dialog */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="text-right">تعديل اسم الفرع</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Input
+                  id="editBranchName"
+                  value={editingBranch?.name || ''}
+                  onChange={(e) => setEditingBranch(prev => prev ? {...prev, name: e.target.value} : null)}
+                  className="col-span-4"
+                  placeholder="اسم الفرع"
+                  dir="rtl"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" onClick={handleUpdateBranchName}>حفظ التغييرات</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
