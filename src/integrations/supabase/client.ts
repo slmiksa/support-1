@@ -29,10 +29,9 @@ export type SiteSettings = {
 export type PriorityType = 'urgent' | 'medium' | 'normal';
 
 // Supabase client setup
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'http://127.0.0.1:54321';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
+const supabaseUrl = 'https://dmqkgahwnpvtzawncluv.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtcWtnYWh3bnB2dHphd25jbHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIyNjI4MzksImV4cCI6MjA1NzgzODgzOX0.UE1CyrOqzyzfSVkq5krLK_WNxm2_2NZoFC8Y9ex7uow';
 
 export const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default supabase;
-
