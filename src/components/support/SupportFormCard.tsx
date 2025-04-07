@@ -64,14 +64,22 @@ const SupportFormCard = ({
               onChange={(value) => handleSelectChange(value, 'branch')} 
             />
             
-            {sortedCustomFields.map(field => (
-              <CustomFieldInput
-                key={field.id}
-                field={field}
-                value={formData[field.field_name] as string}
-                onChange={handleChange}
-              />
-            ))}
+            {sortedCustomFields.map(field => {
+              // Special handling for Anydesk and Employee number fields
+              const isNumericField = 
+                field.field_name === 'anydesk_number' || 
+                field.field_name === 'field_1743981608110'; // Employee number field
+
+              return (
+                <CustomFieldInput
+                  key={field.id}
+                  field={field}
+                  value={formData[field.field_name] as string}
+                  onChange={handleChange}
+                  numbersOnly={isNumericField}
+                />
+              );
+            })}
             
             <DescriptionInput 
               value={formData.description} 
@@ -93,3 +101,4 @@ const SupportFormCard = ({
 };
 
 export default SupportFormCard;
+

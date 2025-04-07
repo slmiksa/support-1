@@ -133,9 +133,15 @@ interface CustomFieldInputProps {
   field: SiteField;
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  numbersOnly?: boolean;
 }
 
-export const CustomFieldInput = ({ field, value, onChange }: CustomFieldInputProps) => {
+export const CustomFieldInput = ({ 
+  field, 
+  value, 
+  onChange, 
+  numbersOnly = false 
+}: CustomFieldInputProps) => {
   return (
     <div className="grid gap-2">
       <Label htmlFor={field.field_name} className="text-right">
@@ -150,6 +156,7 @@ export const CustomFieldInput = ({ field, value, onChange }: CustomFieldInputPro
         className="text-right"
         value={value || ''}
         onChange={onChange}
+        numbersOnly={numbersOnly}
       />
     </div>
   );
