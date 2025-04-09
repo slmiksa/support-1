@@ -5,6 +5,7 @@
 
 @layer base {
   :root {
+    /* Light mode variables */
     --background: 210 50% 98%;
     --foreground: 222 47% 11%;
     
@@ -38,14 +39,18 @@
     --font-sans: 'Tajawal', system-ui, sans-serif;
 
     /* Company colors */
-    --company: 43 65% 53%; /* Golden for header */
-    --company-dark: 43 74% 40%; /* Darker gold for navigation */
-    --accent-gold: 43 65% 53%; /* Gold accent */
+    --company: 43 65% 53%;
+    --company-dark: 43 74% 40%;
+    --accent-gold: 43 65% 53%;
     
-    /* Global text color to match nav links */
-    --global-text: 0 0% 13%; /* #222222 */
+    /* Global text color */
+    --global-text: 0 0% 13%;
+
+    /* Background pattern for light mode */
+    --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
+  /* Dark mode variables - only applied with .dark class */
   .dark {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
@@ -74,9 +79,13 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 43 65% 53%;
+
+    /* Background pattern for dark mode */
+    --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 }
 
+/* Base styling */
 @layer base {
   * {
     @apply border-border;
@@ -88,6 +97,7 @@
     background-image: var(--bg-pattern);
   }
 
+  /* Typography */
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
   }
@@ -96,19 +106,11 @@
     @apply text-foreground;
   }
 
-  h1 {
-    @apply text-3xl md:text-4xl;
-  }
+  h1 { @apply text-3xl md:text-4xl; }
+  h2 { @apply text-2xl md:text-3xl; }
+  h3 { @apply text-xl md:text-2xl; }
 
-  h2 {
-    @apply text-2xl md:text-3xl;
-  }
-
-  h3 {
-    @apply text-xl md:text-2xl;
-  }
-
-  /* Add custom styles for form elements */
+  /* Form elements */
   input, select, textarea {
     @apply transition-all duration-200;
   }
@@ -118,6 +120,7 @@
   }
 }
 
+/* Font face */
 @font-face {
   font-family: 'Tajawal';
   src: url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
@@ -126,46 +129,48 @@
 
 /* Custom components */
 @layer components {
+  /* Buttons */
   .button-gold {
     @apply bg-accent-gold text-white hover:bg-accent-gold/90 transition-all;
   }
   
+  /* Cards */
   .card-enhanced {
     @apply bg-white rounded-lg shadow-lg border border-border/50 hover:shadow-xl transition-all duration-300;
     @apply dark:bg-card dark:border-border/10;
   }
 
-  .bg-company {
-    @apply bg-[#D4AF37];
-  }
-
-  .bg-company-dark {
-    @apply bg-[#B08C1A];
-  }
-
-  .text-company {
-    @apply text-[#D4AF37];
-  }
-
-  .text-company-dark {
-    @apply text-[#B08C1A];
-  }
-
-  .bg-accent-gold {
-    @apply bg-[#D4AF37];
-  }
+  /* Company colors */
+  .bg-company { @apply bg-[#D4AF37]; }
+  .bg-company-dark { @apply bg-[#B08C1A]; }
+  .text-company { @apply text-[#D4AF37]; }
+  .text-company-dark { @apply text-[#B08C1A]; }
+  .bg-accent-gold { @apply bg-[#D4AF37]; }
   
-  .section-container {
-    @apply py-8 px-4 md:py-12 md:px-6;
-  }
+  /* Layout */
+  .section-container { @apply py-8 px-4 md:py-12 md:px-6; }
+
+  /* Glass effects */
+  .glass { @apply bg-white/90 backdrop-blur-md border border-white/30 shadow-lg; }
+  .glass-dark { @apply bg-black/30 backdrop-blur-md border border-white/10; }
+  
+  /* Dark mode overrides for glass */
+  .dark .glass { @apply bg-black/30 backdrop-blur-md border border-white/10; }
+  
+  /* Loader */
+  .loader { @apply w-6 h-6 rounded-full border-2 border-company border-t-transparent animate-spin; }
 }
 
-/* Dark mode adjustments */
-.dark .glass {
-  @apply bg-black/30 backdrop-blur-md border border-white/10;
+/* Animations */
+@keyframes pulse-light {
+  0% { opacity: 0.4; transform: scale(0.97); }
+  50% { opacity: 0.8; transform: scale(1.03); }
+  100% { opacity: 0.4; transform: scale(0.97); }
 }
 
-/* Animations and transitions */
+.animate-pulse-light { animation: pulse-light 3s ease-in-out infinite; }
+
+/* Page transitions */
 .page-transition-enter {
   opacity: 0;
   transform: translateY(10px);
@@ -186,47 +191,4 @@
   opacity: 0;
   transform: translateY(10px);
   transition: opacity 300ms, transform 300ms;
-}
-
-/* Add the pulse-light animation for the logo glow effect */
-@keyframes pulse-light {
-  0% {
-    opacity: 0.4;
-    transform: scale(0.97);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.03);
-  }
-  100% {
-    opacity: 0.4;
-    transform: scale(0.97);
-  }
-}
-
-.animate-pulse-light {
-  animation: pulse-light 3s ease-in-out infinite;
-}
-
-/* Glass morphism effect */
-.glass {
-  @apply bg-white/90 backdrop-blur-md border border-white/30 shadow-lg;
-}
-
-.glass-dark {
-  @apply bg-black/30 backdrop-blur-md border border-white/10;
-}
-
-/* Loader styles */
-.loader {
-  @apply w-6 h-6 rounded-full border-2 border-company border-t-transparent animate-spin;
-}
-
-/* Custom background with subtle pattern */
-:root {
-  --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-}
-
-.dark {
-  --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
