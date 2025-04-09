@@ -140,6 +140,7 @@ export type Database = {
       }
       ticket_responses: {
         Row: {
+          admin_id: string | null
           created_at: string
           id: string
           is_admin: boolean | null
@@ -147,6 +148,7 @@ export type Database = {
           ticket_id: string
         }
         Insert: {
+          admin_id?: string | null
           created_at?: string
           id?: string
           is_admin?: boolean | null
@@ -154,6 +156,7 @@ export type Database = {
           ticket_id: string
         }
         Update: {
+          admin_id?: string | null
           created_at?: string
           id?: string
           is_admin?: boolean | null
@@ -161,6 +164,13 @@ export type Database = {
           ticket_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "ticket_responses_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ticket_responses_ticket_id_fkey"
             columns: ["ticket_id"]
@@ -225,6 +235,15 @@ export type Database = {
     Functions: {
       add_ticket_response: {
         Args: { p_ticket_id: string; p_response: string; p_is_admin?: boolean }
+        Returns: string
+      }
+      add_ticket_response_with_admin: {
+        Args: {
+          p_ticket_id: string
+          p_response: string
+          p_is_admin?: boolean
+          p_admin_id?: string
+        }
         Returns: string
       }
       check_admin_credentials: {

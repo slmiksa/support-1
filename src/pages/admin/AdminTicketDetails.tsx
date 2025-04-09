@@ -74,7 +74,7 @@ const AdminTicketDetails = () => {
 
       const { data: responsesData, error: responsesError } = await supabase
         .from('ticket_responses')
-        .select('*')
+        .select('*, admin:admins(username)')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true });
 
@@ -82,7 +82,16 @@ const AdminTicketDetails = () => {
         throw responsesError;
       }
 
-      setResponses(responsesData || []);
+      // Transform data to include admin username if available
+      const formattedResponses = responsesData?.map(response => {
+        const adminName = response.admin?.username || null;
+        return {
+          ...response,
+          admin_name: adminName
+        };
+      }) || [];
+
+      setResponses(formattedResponses);
     } catch (error) {
       console.error('Error fetching ticket details:', error);
       toast.error('فشل في تحميل تفاصيل التذكرة');
@@ -110,18 +119,15 @@ const AdminTicketDetails = () => {
 
     setSendingResponse(true);
     try {
-      const { data: adminData, error: adminError } = await supabase
-        .from('admins')
-        .select('id')
-        .eq('username', currentAdmin.username)
-        .single();
-
-      if (adminError) {
-        console.error('Error getting admin ID:', adminError);
-        throw adminError;
+      // Get the admin ID directly from the currentAdmin object
+      const adminId = currentAdmin.id;
+      
+      if (!adminId) {
+        throw new Error('لم يتم العثور على معرف المسؤول');
       }
 
-      const adminId = adminData?.id;
+      console.log('Sending response with admin ID:', adminId);
+      console.log('Current admin:', currentAdmin);
 
       const { data, error } = await supabase.rpc('add_ticket_response_with_admin', {
         p_ticket_id: ticketId,
@@ -131,6 +137,7 @@ const AdminTicketDetails = () => {
       });
 
       if (error) {
+        console.error('Error details:', error);
         throw error;
       }
 
@@ -256,10 +263,10 @@ const AdminTicketDetails = () => {
         <Card className="mb-6">
           <CardHeader className="pb-3">
             <div className="flex justify-between items-start">
-              <div className={`px-3 py-1 text-xs rounded-full ${getStatusColorClass(ticket.status)}`}>
-                {getStatusLabel(ticket.status)}
+              <div className={`px-3 py-1 text-xs rounded-full ${getStatusColorClass(ticket?.status)}`}>
+                {getStatusLabel(ticket?.status)}
               </div>
-              <CardTitle className="text-right">تفاصيل التذكرة #{ticket.ticket_id}</CardTitle>
+              <CardTitle className="text-right">تفاصيل التذكرة #{ticket?.ticket_id}</CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
