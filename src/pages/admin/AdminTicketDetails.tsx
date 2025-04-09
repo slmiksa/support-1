@@ -24,17 +24,21 @@ const AdminTicketDetails = () => {
     assignedAdmin,
     updatingStatus,
     fetchTicketAndResponses,
-    handleStatusChange
+    handleStatusChange,
+    handleDeleteResponse
   } = useTicketDetails(ticketId);
 
   const canChangeTicketStatus = hasPermission('manage_tickets');
   const canRespondToTickets = hasPermission('respond_to_tickets');
   const canDeleteTickets = hasPermission('delete_tickets');
 
-  const handleDeleteResponse = async (responseId: string) => {
+  const handleDeleteResponseRequest = async (responseId: string) => {
     if (!canDeleteTickets) return;
     
     try {
+      // Update the local state first for immediate UI feedback
+      handleDeleteResponse(responseId);
+      
       const { error } = await supabase
         .from('ticket_responses')
         .delete()
@@ -43,14 +47,18 @@ const AdminTicketDetails = () => {
       if (error) {
         toast.error('فشل في حذف الرد');
         console.error('Error deleting response:', error);
+        // Refresh the list to restore the deleted response if there was an error
+        fetchTicketAndResponses();
         return;
       }
 
       toast.success('تم حذف الرد بنجاح');
-      fetchTicketAndResponses();
+      // No need to call fetchTicketAndResponses() since we already updated the UI
     } catch (error) {
       toast.error('حدث خطأ أثناء محاولة حذف الرد');
       console.error('Error in handleDeleteResponse:', error);
+      // Refresh the list to restore the deleted response if there was an error
+      fetchTicketAndResponses();
     }
   };
 
@@ -120,7 +128,7 @@ const AdminTicketDetails = () => {
           <CardContent className="space-y-4">
             <TicketResponseList 
               responses={responses} 
-              onDeleteResponse={canDeleteTickets ? handleDeleteResponse : undefined}
+              onDeleteResponse={canDeleteTickets ? handleDeleteResponseRequest : undefined}
             />
             
             <TicketResponseForm

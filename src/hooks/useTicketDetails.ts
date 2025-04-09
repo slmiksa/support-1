@@ -79,6 +79,11 @@ export const useTicketDetails = (ticketId: string | undefined) => {
     setUpdatingStatus(isUpdating);
   };
 
+  // Function to handle response deletion locally
+  const handleDeleteResponse = (responseId: string) => {
+    setResponses(prev => prev.filter(response => response.id !== responseId));
+  };
+
   useEffect(() => {
     if (ticketId) {
       fetchTicketAndResponses();
@@ -93,6 +98,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
     updatingStatus,
     fetchTicketAndResponses,
     handleStatusChange,
-    setUpdatingStatusState
+    setUpdatingStatusState,
+    handleDeleteResponse
   };
 };

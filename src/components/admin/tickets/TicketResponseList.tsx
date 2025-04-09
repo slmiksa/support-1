@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useState } from 'react';
 
 interface TicketResponse {
   id: string;
@@ -20,6 +21,7 @@ interface TicketResponseListProps {
 const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListProps) => {
   const { hasPermission } = useAdminAuth();
   const canDeleteTickets = hasPermission('delete_tickets');
+  const [deletingResponseId, setDeletingResponseId] = useState<string | null>(null);
   
   if (responses.length === 0) {
     return (
@@ -28,6 +30,15 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
       </div>
     );
   }
+
+  const handleDeleteClick = (responseId: string) => {
+    setDeletingResponseId(responseId);
+    if (onDeleteResponse) {
+      onDeleteResponse(responseId);
+    }
+    // We'll let the parent component handle the actual removal from the list
+    // through the responses prop update
+  };
 
   return (
     <div className="space-y-4">
@@ -43,12 +54,13 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs text-gray-500 dark:text-gray-400">
               {new Date(response.created_at).toLocaleString('ar-SA')}
-              {canDeleteTickets && onDeleteResponse && (
+              {canDeleteTickets && onDeleteResponse && deletingResponseId !== response.id && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   className="ml-2 p-1 h-6 w-6" 
-                  onClick={() => onDeleteResponse(response.id)}
+                  onClick={() => handleDeleteClick(response.id)}
+                  disabled={deletingResponseId !== null}
                 >
                   <Trash2 className="h-3 w-3 text-red-500" />
                 </Button>
