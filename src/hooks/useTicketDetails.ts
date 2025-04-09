@@ -45,7 +45,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       }
 
       console.log('Fetching responses from database...');
-      // Fetch responses with fresh data from the database
+      // Use a separate query to ensure we get the most up-to-date responses
       const { data: responsesData, error: responsesError } = await supabase
         .from('ticket_responses')
         .select('*, admin:admins(username)')

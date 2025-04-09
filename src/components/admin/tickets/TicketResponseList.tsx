@@ -37,12 +37,11 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
     setDeletingResponseId(responseId);
     if (onDeleteResponse) {
       onDeleteResponse(responseId);
+      // Reset delete state after a timeout
+      setTimeout(() => {
+        setDeletingResponseId(null);
+      }, 2000);
     }
-    
-    // Reset the deleting state after a reasonable timeout
-    setTimeout(() => {
-      setDeletingResponseId(null);
-    }, 2000);
   };
 
   return (
@@ -65,7 +64,7 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
                   size="sm" 
                   className="ml-2 p-1 h-6 w-6" 
                   onClick={() => handleDeleteClick(response.id)}
-                  disabled={deletingResponseId !== null}
+                  disabled={deletingResponseId === response.id}
                 >
                   {deletingResponseId === response.id ? (
                     <Loader2 className="h-3 w-3 text-red-500 animate-spin" />

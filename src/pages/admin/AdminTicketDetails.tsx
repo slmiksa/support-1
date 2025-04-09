@@ -25,7 +25,8 @@ const AdminTicketDetails = () => {
     updatingStatus,
     fetchTicketAndResponses,
     handleStatusChange,
-    handleDeleteResponse
+    handleDeleteResponse,
+    setUpdatingStatusState
   } = useTicketDetails(ticketId);
 
   const canChangeTicketStatus = hasPermission('manage_tickets');
@@ -52,20 +53,19 @@ const AdminTicketDetails = () => {
         console.error('Error deleting response:', error);
         toast.error('فشل في حذف الرد');
         // Refresh the list to restore the deleted response if there was an error
-        fetchTicketAndResponses();
+        await fetchTicketAndResponses();
         return;
       }
 
       toast.success('تم حذف الرد بنجاح');
       
-      // Force reload data from database to verify deletion
+      // Force reload data from database after successful deletion
       await fetchTicketAndResponses();
-      
     } catch (error) {
       console.error('Error in handleDeleteResponse:', error);
       toast.error('حدث خطأ أثناء محاولة حذف الرد');
       // Refresh the list to restore the deleted response if there was an error
-      fetchTicketAndResponses();
+      await fetchTicketAndResponses();
     }
   };
 
