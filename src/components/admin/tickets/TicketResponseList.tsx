@@ -1,8 +1,6 @@
 
 import { Separator } from '@/components/ui/separator';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Trash2, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
 interface TicketResponse {
@@ -18,10 +16,8 @@ interface TicketResponseListProps {
   onDeleteResponse?: (responseId: string) => void;
 }
 
-const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListProps) => {
+const TicketResponseList = ({ responses }: TicketResponseListProps) => {
   const { hasPermission } = useAdminAuth();
-  const canDeleteTickets = hasPermission('delete_tickets');
-  const [deletingResponseId, setDeletingResponseId] = useState<string | null>(null);
   
   if (responses.length === 0) {
     return (
@@ -30,19 +26,6 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
       </div>
     );
   }
-
-  const handleDeleteClick = (responseId: string) => {
-    if (deletingResponseId) return; // Prevent multiple clicks while deleting
-    
-    setDeletingResponseId(responseId);
-    if (onDeleteResponse) {
-      onDeleteResponse(responseId);
-      // Reset delete state after a timeout
-      setTimeout(() => {
-        setDeletingResponseId(null);
-      }, 2000);
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -58,21 +41,6 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs text-gray-500 dark:text-gray-400">
               {new Date(response.created_at).toLocaleString('ar-SA')}
-              {canDeleteTickets && onDeleteResponse && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="ml-2 p-1 h-6 w-6" 
-                  onClick={() => handleDeleteClick(response.id)}
-                  disabled={deletingResponseId === response.id}
-                >
-                  {deletingResponseId === response.id ? (
-                    <Loader2 className="h-3 w-3 text-red-500 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-3 w-3 text-red-500" />
-                  )}
-                </Button>
-              )}
             </span>
             <span className="font-medium dark:text-white">
               {response.is_admin 

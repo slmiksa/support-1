@@ -1,4 +1,3 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,8 +8,6 @@ import { useTicketDetails } from '@/hooks/useTicketDetails';
 import TicketDetailsCard from '@/components/admin/tickets/TicketDetailsCard';
 import TicketResponseList from '@/components/admin/tickets/TicketResponseList';
 import TicketResponseForm from '@/components/admin/tickets/TicketResponseForm';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 
 const AdminTicketDetails = () => {
   const { ticketId } = useParams();
@@ -25,49 +22,11 @@ const AdminTicketDetails = () => {
     updatingStatus,
     fetchTicketAndResponses,
     handleStatusChange,
-    handleDeleteResponse,
     setUpdatingStatusState
   } = useTicketDetails(ticketId);
 
   const canChangeTicketStatus = hasPermission('manage_tickets');
   const canRespondToTickets = hasPermission('respond_to_tickets');
-  const canDeleteTickets = hasPermission('delete_tickets');
-
-  // Handle the response deletion process
-  const handleDeleteResponseRequest = async (responseId: string) => {
-    if (!canDeleteTickets) return;
-    
-    try {
-      // Update the local state first for immediate UI feedback
-      handleDeleteResponse(responseId);
-      
-      console.log('Deleting response with ID:', responseId);
-      
-      // Delete from database with proper error handling
-      const { error } = await supabase
-        .from('ticket_responses')
-        .delete()
-        .eq('id', responseId);
-
-      if (error) {
-        console.error('Error deleting response:', error);
-        toast.error('فشل في حذف الرد');
-        // Refresh the list to restore the deleted response if there was an error
-        await fetchTicketAndResponses();
-        return;
-      }
-
-      toast.success('تم حذف الرد بنجاح');
-      
-      // Force reload data from database after successful deletion
-      await fetchTicketAndResponses();
-    } catch (error) {
-      console.error('Error in handleDeleteResponse:', error);
-      toast.error('حدث خطأ أثناء محاولة حذف الرد');
-      // Refresh the list to restore the deleted response if there was an error
-      await fetchTicketAndResponses();
-    }
-  };
 
   if (loading) {
     return (
@@ -133,10 +92,7 @@ const AdminTicketDetails = () => {
             <CardTitle className="text-right">الردود</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <TicketResponseList 
-              responses={responses} 
-              onDeleteResponse={canDeleteTickets ? handleDeleteResponseRequest : undefined}
-            />
+            <TicketResponseList responses={responses} />
             
             <TicketResponseForm
               ticketId={ticketId || ''}
