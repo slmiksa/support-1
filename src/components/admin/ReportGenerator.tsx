@@ -839,7 +839,7 @@ const ReportGenerator = () => {
                         </TableHeader>
                         <TableBody>
                           {tickets.map((ticket) => (
-                            <TableRow key={ticket.id} className="hover:bg-gray-50">
+                            <TableRow key={ticket.ticket_id} className="hover:bg-gray-50">
                               <TableCell className="font-medium text-right">{ticket.ticket_id}</TableCell>
                               <TableCell className="text-right">{ticket.employee_id}</TableCell>
                               <TableCell className="text-right">{ticket.branch}</TableCell>

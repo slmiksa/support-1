@@ -9,11 +9,14 @@ export type SupportTicket = {
   image_url: string | null;
   status: string;
   created_at: string;
+  updated_at?: string;
   employee_id: string;
   custom_fields?: Record<string, any>;
   anydesk_number?: string;
   extension_number?: string;
   assigned_to?: string | null;
+  support_email?: string;
+  id?: string;
 };
 
 export type SiteField = {
@@ -42,7 +45,6 @@ export const deleteTicket = async (ticketId: string): Promise<boolean> => {
   try {
     console.log(`Attempting to delete ticket with ID: ${ticketId}`);
     
-    // First, delete all responses associated with the ticket
     const { error: responsesError } = await supabase
       .from('ticket_responses')
       .delete()
@@ -55,7 +57,6 @@ export const deleteTicket = async (ticketId: string): Promise<boolean> => {
     
     console.log(`Successfully deleted responses for ticket: ${ticketId}`);
 
-    // Use the new Supabase RPC function to delete the ticket
     const { data, error } = await supabase
       .rpc('delete_ticket_by_id', { p_ticket_id: ticketId });
 
@@ -64,13 +65,11 @@ export const deleteTicket = async (ticketId: string): Promise<boolean> => {
       return false;
     }
 
-    // Check if the ticket was actually deleted (data will be true if successful)
     if (!data) {
       console.error('Ticket deletion failed');
       return false;
     }
     
-    // Double-check that the ticket was actually deleted
     const { data: checkData, error: checkError } = await supabase
       .from('tickets')
       .select('ticket_id')
@@ -211,49 +210,379 @@ export const updateBranchName = async (id: string, name: string): Promise<boolea
 };
 
 export const getAllAdmins = async (): Promise<Admin[]> => {
-  return [];
+  try {
+    const { data, error } = await supabase
+      .from('admins')
+      .select('*')
+      .order('username');
+    
+    if (error) {
+      console.error('Error fetching admins:', error);
+      return [];
+    }
+    
+    return data as Admin[];
+  } catch (error) {
+    console.error('Error in getAllAdmins:', error);
+    return [];
+  }
 };
 
-export const createAdmin = async (admin: Omit<Admin, 'id'>): Promise<{ success: boolean, error?: any }> => {
-  return { success: false, error: 'Not implemented' };
+export const createAdmin = async (admin: {
+  username: string;
+  role: string;
+  employee_id?: string;
+  password: string;
+}): Promise<{ success: boolean, error?: any }> => {
+  try {
+    const { error } = await supabase
+      .from('admins')
+      .insert({
+        username: admin.username,
+        password: admin.password,
+        role: admin.role,
+        employee_id: admin.employee_id
+      });
+    
+    if (error) {
+      return { success: false, error };
+    }
+    
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating admin:', error);
+    return { success: false, error };
+  }
 };
 
 export const deleteAdmin = async (id: string): Promise<boolean> => {
-  return false;
+  try {
+    const { error } = await supabase
+      .from('admins')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting admin:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in deleteAdmin:', error);
+    return false;
+  }
 };
 
-export const updateSiteField = async (field: SiteField): Promise<boolean> => {
-  return false;
+export const updateSiteField = async (id: string, fieldData: Partial<SiteField>): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('site_fields')
+      .update(fieldData)
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error updating site field:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in updateSiteField:', error);
+    return false;
+  }
 };
 
-export const createSiteField = async (field: Omit<SiteField, 'id'>): Promise<{ success: boolean, error?: any }> => {
-  return { success: false, error: 'Not implemented' };
+export const createSiteField = async (field: Omit<SiteField, 'id'>): Promise<{ success: boolean, error?: any, data?: SiteField[] }> => {
+  try {
+    const { data, error } = await supabase
+      .from('site_fields')
+      .insert({
+        field_name: field.field_name,
+        display_name: field.display_name,
+        is_required: field.is_required,
+        is_active: field.is_active,
+        sort_order: field.sort_order
+      })
+      .select();
+    
+    if (error) {
+      return { success: false, error };
+    }
+    
+    return { success: true, data: data as SiteField[] };
+  } catch (error) {
+    console.error('Error creating site field:', error);
+    return { success: false, error };
+  }
 };
 
 export const deleteSiteField = async (id: string): Promise<boolean> => {
-  return false;
+  try {
+    const { error } = await supabase
+      .from('site_fields')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting site field:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in deleteSiteField:', error);
+    return false;
+  }
 };
 
 export const updateFieldOrder = async (fields: { id: string, sort_order: number }[]): Promise<boolean> => {
-  return false;
+  try {
+    for (const field of fields) {
+      const { error } = await supabase
+        .from('site_fields')
+        .update({ sort_order: field.sort_order })
+        .eq('id', field.id);
+      
+      if (error) {
+        console.error('Error updating field order:', error);
+        return false;
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in updateFieldOrder:', error);
+    return false;
+  }
 };
 
 export const updateSystemFieldName = async (fieldName: string, displayName: string): Promise<boolean> => {
-  return false;
+  try {
+    const { error } = await supabase
+      .from('site_fields')
+      .update({ display_name: displayName })
+      .eq('field_name', fieldName);
+    
+    if (error) {
+      console.error('Error updating system field name:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in updateSystemFieldName:', error);
+    return false;
+  }
 };
 
 export const getTicketsByDateRange = async (startDate: string, endDate: string): Promise<SupportTicket[]> => {
-  return [];
+  try {
+    const { data, error } = await supabase
+      .from('tickets')
+      .select('*')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching tickets by date range:', error);
+      return [];
+    }
+    
+    return data as SupportTicket[];
+  } catch (error) {
+    console.error('Error in getTicketsByDateRange:', error);
+    return [];
+  }
 };
 
-export const getTicketsWithResolutionDetails = async (): Promise<any[]> => {
-  return [];
+export const getTicketsWithResolutionDetails = async (startDate?: string, endDate?: string): Promise<SupportTicket[]> => {
+  try {
+    let query = supabase
+      .from('tickets')
+      .select('*');
+    
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    
+    if (endDate) {
+      query = query.lte('created_at', endDate);
+    }
+    
+    const { data, error } = await query.order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Error fetching tickets with resolution details:', error);
+      return [];
+    }
+    
+    return data as SupportTicket[];
+  } catch (error) {
+    console.error('Error in getTicketsWithResolutionDetails:', error);
+    return [];
+  }
 };
 
-export const getTicketStats = async (): Promise<any> => {
-  return {};
+export const getTicketStats = async (startDate?: string, endDate?: string): Promise<any> => {
+  try {
+    let query = supabase.from('tickets').select('*');
+    
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    
+    if (endDate) {
+      query = query.lte('created_at', endDate);
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error('Error fetching ticket stats:', error);
+      return {
+        total: 0,
+        byStatus: {},
+        byBranch: {},
+        byStaff: {}
+      };
+    }
+    
+    const tickets = data as SupportTicket[];
+    
+    const total = tickets.length;
+    
+    const byStatus: Record<string, number> = {};
+    const byBranch: Record<string, number> = {};
+    const byStaff: Record<string, number> = {};
+    
+    for (const ticket of tickets) {
+      byStatus[ticket.status] = (byStatus[ticket.status] || 0) + 1;
+      
+      byBranch[ticket.branch] = (byBranch[ticket.branch] || 0) + 1;
+      
+      if (ticket.assigned_to) {
+        byStaff[ticket.assigned_to] = (byStaff[ticket.assigned_to] || 0) + 1;
+      }
+    }
+    
+    return {
+      total,
+      byStatus,
+      byBranch,
+      byStaff
+    };
+  } catch (error) {
+    console.error('Error in getTicketStats:', error);
+    return {
+      total: 0,
+      byStatus: {},
+      byBranch: {},
+      byStaff: {}
+    };
+  }
 };
 
-export const getAdminStats = async (): Promise<any> => {
-  return {};
+export const getAdminStats = async (startDate?: string, endDate?: string): Promise<any> => {
+  try {
+    const { data: admins, error: adminError } = await supabase
+      .from('admins')
+      .select('*');
+    
+    if (adminError) {
+      console.error('Error fetching admins:', adminError);
+      return { staffDetails: [] };
+    }
+    
+    let query = supabase
+      .from('tickets')
+      .select('*, ticket_responses(*, admins:admin_id(username))');
+    
+    if (startDate) {
+      query = query.gte('created_at', startDate);
+    }
+    
+    if (endDate) {
+      query = query.lte('created_at', endDate);
+    }
+    
+    const { data: tickets, error: ticketError } = await query;
+    
+    if (ticketError) {
+      console.error('Error fetching tickets with responses:', ticketError);
+      return { staffDetails: [] };
+    }
+    
+    const staffDetails = [];
+    const adminMap = new Map();
+    
+    for (const admin of admins) {
+      adminMap.set(admin.id, {
+        id: admin.id,
+        name: admin.username,
+        ticketsCount: 0,
+        resolvedCount: 0,
+        responseCount: 0,
+        totalResponseTime: 0,
+        responseRate: 0,
+        averageResponseTime: 0,
+        statusDistribution: {},
+        ticketIds: []
+      });
+    }
+    
+    for (const ticket of tickets) {
+      const assignedTo = ticket.assigned_to;
+      const status = ticket.status;
+      
+      if (assignedTo) {
+        let adminData = null;
+        for (const [_, data] of adminMap) {
+          if (data.name === assignedTo) {
+            adminData = data;
+            break;
+          }
+        }
+        
+        if (adminData) {
+          adminData.ticketsCount++;
+          
+          adminData.statusDistribution[status] = (adminData.statusDistribution[status] || 0) + 1;
+          
+          if (status === 'resolved' || status === 'closed') {
+            adminData.resolvedCount++;
+          }
+          
+          adminData.ticketIds.push(ticket.ticket_id);
+          
+          if (ticket.ticket_responses && ticket.ticket_responses.length > 0) {
+            adminData.responseCount++;
+            
+            const ticketCreatedAt = new Date(ticket.created_at);
+            const firstResponseCreatedAt = new Date(ticket.ticket_responses[0].created_at);
+            const responseTimeHours = (firstResponseCreatedAt.getTime() - ticketCreatedAt.getTime()) / (1000 * 60 * 60);
+            
+            adminData.totalResponseTime += responseTimeHours;
+          }
+        }
+      }
+    }
+    
+    for (const [_, adminData] of adminMap) {
+      if (adminData.ticketsCount > 0) {
+        adminData.responseRate = (adminData.responseCount / adminData.ticketsCount) * 100;
+        adminData.averageResponseTime = adminData.responseCount > 0 
+          ? adminData.totalResponseTime / adminData.responseCount 
+          : 0;
+        
+        staffDetails.push(adminData);
+      }
+    }
+    
+    return { staffDetails };
+  } catch (error) {
+    console.error('Error in getAdminStats:', error);
+    return { staffDetails: [] };
+  }
 };

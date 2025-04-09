@@ -1,3 +1,4 @@
+
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'sonner';
 import {
@@ -143,7 +144,7 @@ const SiteFieldsManager = () => {
       display_name: displayName,
       is_required: isRequired,
       is_active: true,
-      field_type: 'text'
+      sort_order: fields.length + 1 // Add sort_order with a default value
     };
 
     try {
@@ -257,7 +258,7 @@ const SiteFieldsManager = () => {
 
   const updateSystemField = async (fieldName: string, displayName: string) => {
     try {
-      await updateSystemFieldName(fieldName, fieldName, displayName);
+      await updateSystemFieldName(fieldName, displayName);
 
       setFields(prevFields =>
         prevFields.map(field =>

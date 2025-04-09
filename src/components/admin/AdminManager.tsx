@@ -68,7 +68,7 @@ const AdminManager = () => {
   const handleCreateAdmin = async (values: FormValues) => {
     const result = await createAdmin({
       username: values.username,
-      password: values.password,
+      password: values.password, // This will work now since we've added password to the type
       employee_id: values.employee_id || undefined,
       role: values.role,
     });
