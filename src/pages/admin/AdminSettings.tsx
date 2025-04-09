@@ -21,7 +21,6 @@ const AdminSettings = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Check permissions
     if (!hasPermission('view_only')) {
       toast({
         title: "خطأ",
@@ -31,11 +30,9 @@ const AdminSettings = () => {
       navigate('/admin/dashboard');
     }
     
-    // Fetch and update favicon for admin panel
     fetchAndUpdateFavicon();
   }, [hasPermission, navigate, toast]);
   
-  // Function to fetch and update favicon in admin panel
   const fetchAndUpdateFavicon = async () => {
     try {
       const { data, error } = await supabase
@@ -56,7 +53,6 @@ const AdminSettings = () => {
     }
   };
   
-  // Function to update favicon
   const updateFavicon = (faviconUrl: string) => {
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
@@ -71,7 +67,7 @@ const AdminSettings = () => {
     <div className="min-h-screen bg-background">
       <AdminHeader />
       <main className="container mx-auto px-4 py-6">
-        <Card>
+        <Card className="dark:border-border/20">
           <CardContent className="p-6">
             <h1 className="text-2xl font-bold text-company text-right mb-6">إعدادات النظام</h1>
             
@@ -80,7 +76,7 @@ const AdminSettings = () => {
               onValueChange={setActiveTab}
               className="w-full"
             >
-              <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full mb-8">
+              <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full mb-8 dark:bg-muted/50">
                 <TabsTrigger value="branches" className="flex items-center gap-2">
                   <Building size={16} />
                   <span>الفروع</span>
@@ -148,7 +144,7 @@ const AdminSettings = () => {
               </TabsContent>
               
               <TabsContent value="settings">
-                <Card>
+                <Card className="dark:border-border/20">
                   <CardContent className="p-6 text-right">
                     <p className="text-muted-foreground">سيتم إضافة المزيد من الإعدادات هنا قريبًا</p>
                   </CardContent>

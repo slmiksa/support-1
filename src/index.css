@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -82,13 +83,17 @@
   }
   
   body {
-    @apply bg-background text-[#222222] antialiased;
+    @apply bg-background text-foreground antialiased;
     direction: rtl;
     background-image: var(--bg-pattern);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight text-[#222222];
+    @apply font-semibold tracking-tight;
+  }
+
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    @apply text-foreground;
   }
 
   h1 {
@@ -105,7 +110,7 @@
 
   /* Add custom styles for form elements */
   input, select, textarea {
-    @apply transition-all duration-200 text-[#222222];
+    @apply transition-all duration-200;
   }
 
   input:focus, select:focus, textarea:focus {
@@ -127,6 +132,7 @@
   
   .card-enhanced {
     @apply bg-white rounded-lg shadow-lg border border-border/50 hover:shadow-xl transition-all duration-300;
+    @apply dark:bg-card dark:border-border/10;
   }
 
   .bg-company {
@@ -152,6 +158,11 @@
   .section-container {
     @apply py-8 px-4 md:py-12 md:px-6;
   }
+}
+
+/* Dark mode adjustments */
+.dark .glass {
+  @apply bg-black/30 backdrop-blur-md border border-white/10;
 }
 
 /* Animations and transitions */
@@ -214,4 +225,8 @@
 /* Custom background with subtle pattern */
 :root {
   --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.dark {
+  --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }

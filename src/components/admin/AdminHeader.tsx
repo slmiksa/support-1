@@ -2,9 +2,10 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Home, Settings, FileText } from 'lucide-react';
+import { LogOut, Home, Settings, FileText, Moon, Sun } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const DEFAULT_SETTINGS = {
   primary_color: '#15437f',
@@ -16,6 +17,7 @@ const AdminHeader = () => {
   const navigate = useNavigate();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     fetchSiteSettings();
@@ -71,6 +73,19 @@ const AdminHeader = () => {
           )}
         </div>
         <div className="flex items-center space-x-2 flex-wrap">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="ml-2 mb-2 md:mb-0 bg-white/10"
+            onClick={toggleTheme}
+            title={theme === 'light' ? 'تفعيل الوضع المظلم' : 'تفعيل الوضع العادي'}
+          >
+            {theme === 'light' ? (
+              <Moon className="h-5 w-5 text-white" />
+            ) : (
+              <Sun className="h-5 w-5 text-white" />
+            )}
+          </Button>
           <Button 
             variant="secondary" 
             className="flex items-center space-x-2 ml-2 mb-2 md:mb-0"

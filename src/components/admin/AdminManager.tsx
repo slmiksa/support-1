@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { getAllAdmins, createAdmin, deleteAdmin, Admin } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -23,9 +22,9 @@ const roleLabels = {
 };
 
 const roleBadgeColors = {
-  'super_admin': 'bg-red-100 text-red-800 hover:bg-red-200',
-  'admin': 'bg-blue-100 text-blue-800 hover:bg-blue-200',
-  'viewer': 'bg-gray-100 text-gray-800 hover:bg-gray-200',
+  'super_admin': 'bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-300',
+  'admin': 'bg-blue-100 text-blue-800 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300',
+  'viewer': 'bg-gray-100 text-gray-800 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300',
 };
 
 const formSchema = z.object({
@@ -68,7 +67,7 @@ const AdminManager = () => {
   const handleCreateAdmin = async (values: FormValues) => {
     const result = await createAdmin({
       username: values.username,
-      password: values.password, // This will work now since we've added password to the type
+      password: values.password,
       employee_id: values.employee_id || undefined,
       role: values.role,
     });
@@ -85,7 +84,6 @@ const AdminManager = () => {
 
   const handleDeleteAdmin = async (adminId: string) => {
     if (confirm('هل أنت متأكد من حذف هذا المدير؟')) {
-      // Check if it's the current logged in admin
       if (adminId === currentAdmin?.id) {
         toast.error('لا يمكنك حذف حسابك الحالي');
         return;
@@ -102,7 +100,7 @@ const AdminManager = () => {
   };
 
   return (
-    <Card>
+    <Card className="dark:border-border/20">
       <CardHeader className="pb-3">
         <CardTitle className="text-right text-xl font-bold text-company">إدارة المديرين</CardTitle>
       </CardHeader>
@@ -116,7 +114,7 @@ const AdminManager = () => {
                   <span>إضافة مدير جديد</span>
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[425px] dark:border-border/20">
                 <DialogHeader>
                   <DialogTitle className="text-right">إضافة مدير جديد</DialogTitle>
                 </DialogHeader>
@@ -202,10 +200,10 @@ const AdminManager = () => {
             <p className="mt-2">جاري تحميل البيانات...</p>
           </div>
         ) : (
-          <div className="rounded-md border overflow-hidden">
+          <div className="rounded-md border overflow-hidden dark:border-border/20">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="dark:border-border/20">
                   <TableHead className="text-right">اسم المستخدم</TableHead>
                   <TableHead className="text-right">الرقم الوظيفي</TableHead>
                   <TableHead className="text-right">الصلاحية</TableHead>
@@ -215,7 +213,7 @@ const AdminManager = () => {
               <TableBody>
                 {admins.length > 0 ? (
                   admins.map((admin) => (
-                    <TableRow key={admin.id}>
+                    <TableRow key={admin.id} className="dark:border-border/20">
                       <TableCell className="font-medium text-right">{admin.username}</TableCell>
                       <TableCell className="text-right">{admin.employee_id || '--'}</TableCell>
                       <TableCell className="text-right">
@@ -238,7 +236,7 @@ const AdminManager = () => {
                     </TableRow>
                   ))
                 ) : (
-                  <TableRow>
+                  <TableRow className="dark:border-border/20">
                     <TableCell colSpan={canManageAdmins ? 4 : 3} className="text-center h-24">
                       <p>لا يوجد مديرين مسجلين</p>
                     </TableCell>
