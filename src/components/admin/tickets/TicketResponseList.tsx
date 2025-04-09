@@ -1,6 +1,8 @@
 
 import { Separator } from '@/components/ui/separator';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { Trash2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TicketResponse {
   id: string;
@@ -12,9 +14,10 @@ interface TicketResponse {
 
 interface TicketResponseListProps {
   responses: TicketResponse[];
+  onDeleteResponse?: (responseId: string) => void;
 }
 
-const TicketResponseList = ({ responses }: TicketResponseListProps) => {
+const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListProps) => {
   const { hasPermission } = useAdminAuth();
   const canDeleteTickets = hasPermission('delete_tickets');
   
@@ -40,6 +43,16 @@ const TicketResponseList = ({ responses }: TicketResponseListProps) => {
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs text-gray-500">
               {new Date(response.created_at).toLocaleString('ar-SA')}
+              {canDeleteTickets && onDeleteResponse && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="ml-2 p-1 h-6 w-6" 
+                  onClick={() => onDeleteResponse(response.id)}
+                >
+                  <Trash2 className="h-3 w-3 text-red-500" />
+                </Button>
+              )}
             </span>
             <span className="font-medium">
               {response.is_admin 

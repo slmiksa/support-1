@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -187,6 +188,9 @@ const AdminDashboard = () => {
     }
   };
 
+  const { hasPermission } = useAdminAuth();
+  const canDeleteTickets = hasPermission('delete_tickets');
+
   return (
     <div className="min-h-screen bg-background">
       <AdminHeader />
@@ -320,15 +324,17 @@ const AdminDashboard = () => {
                               عرض التفاصيل
                             </Button>
                             
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteTicket(ticket.ticket_id)}
-                              title="حذف التذكرة"
-                              className="px-2"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            {canDeleteTickets && (
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleDeleteTicket(ticket.ticket_id)}
+                                title="حذف التذكرة"
+                                className="px-2"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))
