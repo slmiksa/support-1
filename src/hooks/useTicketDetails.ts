@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -26,6 +27,22 @@ export const useTicketDetails = (ticketId: string | undefined) => {
 
       if (ticketError) {
         throw ticketError;
+      }
+
+      // If the ticket status is 'pending', update it to 'open' automatically
+      if (ticketData.status === 'pending') {
+        const { error: updateError } = await supabase.rpc('update_ticket_status', {
+          p_ticket_id: ticketId,
+          p_status: 'open'
+        });
+        
+        if (!updateError) {
+          // Update local state with the new status
+          ticketData.status = 'open';
+          toast.success('تم تحديث حالة التذكرة إلى مفتوحة');
+        } else {
+          console.error('Error updating ticket status:', updateError);
+        }
       }
 
       setTicket(ticketData);
@@ -84,14 +101,6 @@ export const useTicketDetails = (ticketId: string | undefined) => {
 
   const setUpdatingStatusState = (isUpdating: boolean) => {
     setUpdatingStatus(isUpdating);
-  };
-
-  // Function to handle response deletion
-  const handleDeleteResponse = async (responseId: string) => {
-    // The actual deletion happens in TicketResponseList component
-    // Here we just update the local state to reflect the deletion
-    console.log('Removing response ID from local state:', responseId);
-    setResponses(prev => prev.filter(response => response.id !== responseId));
   };
 
   // Fetch data when ticketId changes
