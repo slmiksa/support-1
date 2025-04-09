@@ -277,10 +277,10 @@ const AdminDashboard = () => {
                 <p className="mt-4 text-lg font-medium text-company">جاري تحميل التذاكر...</p>
               </div>
             ) : (
-              <div className="rounded-md border-2 border-gray-200 overflow-hidden shadow-sm">
+              <div className="rounded-md border-2 border-gray-200 overflow-hidden shadow-sm dark:border-gray-700">
                 <Table>
                   <TableHeader className="bg-gray-50">
-                    <TableRow className="border-b-2 border-gray-200">
+                    <TableRow className="border-b-2 border-gray-200 dark:border-gray-700">
                       <TableHead className="text-right font-bold text-company py-4">رقم التذكرة</TableHead>
                       <TableHead className="text-right font-bold text-company py-4">الرقم الوظيفي</TableHead>
                       <TableHead className="text-right font-bold text-company py-4">الفرع</TableHead>
@@ -295,11 +295,11 @@ const AdminDashboard = () => {
                       filterTickets().map((ticket) => (
                         <TableRow 
                           key={ticket.id} 
-                          className="hover:bg-gray-50 border-b border-gray-200"
+                          className="hover:bg-gray-50 border-b border-gray-200 dark:border-gray-700 dark:hover:bg-gray-700"
                         >
-                          <TableCell className="font-medium text-right py-4">{ticket.ticket_id}</TableCell>
-                          <TableCell className="text-right py-4">{ticket.employee_id}</TableCell>
-                          <TableCell className="text-right py-4">{ticket.branch}</TableCell>
+                          <TableCell className="font-medium text-right py-4 dark:text-gray-200">{ticket.ticket_id}</TableCell>
+                          <TableCell className="text-right py-4 dark:text-gray-200">{ticket.employee_id}</TableCell>
+                          <TableCell className="text-right py-4 dark:text-gray-200">{ticket.branch}</TableCell>
                           <TableCell className="text-right py-4">
                             {getPriorityDisplay(ticket.priority)}
                           </TableCell>
@@ -308,7 +308,7 @@ const AdminDashboard = () => {
                               {statusLabels[ticket.status] || ticket.status}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right py-4">
+                          <TableCell className="text-right py-4 dark:text-gray-200">
                             {new Date(ticket.created_at).toLocaleDateString('en-US', {
                               year: 'numeric',
                               month: 'numeric',
