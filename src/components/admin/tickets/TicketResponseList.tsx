@@ -1,7 +1,7 @@
 
 import { Separator } from '@/components/ui/separator';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
@@ -32,14 +32,17 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
   }
 
   const handleDeleteClick = (responseId: string) => {
+    if (deletingResponseId) return; // Prevent multiple clicks while deleting
+    
     setDeletingResponseId(responseId);
     if (onDeleteResponse) {
       onDeleteResponse(responseId);
     }
-    // Reset the deleting state after a short delay
+    
+    // Reset the deleting state after a reasonable timeout
     setTimeout(() => {
       setDeletingResponseId(null);
-    }, 1000);
+    }, 2000);
   };
 
   return (
@@ -56,7 +59,7 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
           <div className="flex justify-between items-start mb-2">
             <span className="text-xs text-gray-500 dark:text-gray-400">
               {new Date(response.created_at).toLocaleString('ar-SA')}
-              {canDeleteTickets && onDeleteResponse && deletingResponseId !== response.id && (
+              {canDeleteTickets && onDeleteResponse && (
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -64,7 +67,11 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
                   onClick={() => handleDeleteClick(response.id)}
                   disabled={deletingResponseId !== null}
                 >
-                  <Trash2 className="h-3 w-3 text-red-500" />
+                  {deletingResponseId === response.id ? (
+                    <Loader2 className="h-3 w-3 text-red-500 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3 w-3 text-red-500" />
+                  )}
                 </Button>
               )}
             </span>

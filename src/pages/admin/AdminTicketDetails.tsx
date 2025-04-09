@@ -46,8 +46,8 @@ const AdminTicketDetails = () => {
         .eq('id', responseId);
 
       if (error) {
-        toast.error('فشل في حذف الرد');
         console.error('Error deleting response:', error);
+        toast.error('فشل في حذف الرد');
         // Refresh the list to restore the deleted response if there was an error
         fetchTicketAndResponses();
         return;
@@ -56,8 +56,8 @@ const AdminTicketDetails = () => {
       toast.success('تم حذف الرد بنجاح');
       // No need to call fetchTicketAndResponses() since we already updated the UI
     } catch (error) {
-      toast.error('حدث خطأ أثناء محاولة حذف الرد');
       console.error('Error in handleDeleteResponse:', error);
+      toast.error('حدث خطأ أثناء محاولة حذف الرد');
       // Refresh the list to restore the deleted response if there was an error
       fetchTicketAndResponses();
     }
