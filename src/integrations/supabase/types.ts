@@ -253,6 +253,10 @@ export type Database = {
         Args: { p_username: string; p_password: string }
         Returns: boolean
       }
+      delete_ticket_by_id: {
+        Args: { p_ticket_id: string }
+        Returns: boolean
+      }
       update_ticket_status: {
         Args: { p_ticket_id: string; p_status: string }
         Returns: boolean
