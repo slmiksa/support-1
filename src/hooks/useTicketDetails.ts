@@ -79,7 +79,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
     setUpdatingStatus(isUpdating);
   };
 
-  // Function to handle response deletion locally
+  // Function to handle response deletion in the local state
   const handleDeleteResponse = (responseId: string) => {
     setResponses(prev => prev.filter(response => response.id !== responseId));
   };

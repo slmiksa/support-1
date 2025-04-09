@@ -36,8 +36,10 @@ const TicketResponseList = ({ responses, onDeleteResponse }: TicketResponseListP
     if (onDeleteResponse) {
       onDeleteResponse(responseId);
     }
-    // We'll let the parent component handle the actual removal from the list
-    // through the responses prop update
+    // Reset the deleting state after a short delay
+    setTimeout(() => {
+      setDeletingResponseId(null);
+    }, 1000);
   };
 
   return (

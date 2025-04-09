@@ -39,6 +39,7 @@ const AdminTicketDetails = () => {
       // Update the local state first for immediate UI feedback
       handleDeleteResponse(responseId);
       
+      console.log('Deleting response with ID:', responseId);
       const { error } = await supabase
         .from('ticket_responses')
         .delete()
