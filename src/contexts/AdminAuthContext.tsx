@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,7 +16,7 @@ interface AdminAuthContextProps {
   currentAdmin: AdminUser | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
-  hasPermission: (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets') => boolean;
+  hasPermission: (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets' | 'delete_tickets') => boolean;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextProps>({
@@ -126,7 +125,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     setCurrentAdmin(null);
   };
 
-  const hasPermission = (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets'): boolean => {
+  const hasPermission = (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets' | 'delete_tickets'): boolean => {
     if (!currentAdmin) return false;
 
     switch (permission) {
@@ -137,6 +136,8 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       case 'manage_admins':
         return currentAdmin.role === 'super_admin';
       case 'respond_to_tickets':
+        return ['super_admin', 'admin'].includes(currentAdmin.role);
+      case 'delete_tickets':
         return ['super_admin', 'admin'].includes(currentAdmin.role);
       default:
         return false;

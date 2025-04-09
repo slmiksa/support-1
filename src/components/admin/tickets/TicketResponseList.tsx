@@ -1,5 +1,6 @@
 
 import { Separator } from '@/components/ui/separator';
+import { useAdminAuth } from '@/contexts/AdminAuthContext';
 
 interface TicketResponse {
   id: string;
@@ -14,6 +15,9 @@ interface TicketResponseListProps {
 }
 
 const TicketResponseList = ({ responses }: TicketResponseListProps) => {
+  const { hasPermission } = useAdminAuth();
+  const canDeleteTickets = hasPermission('delete_tickets');
+  
   if (responses.length === 0) {
     return (
       <div className="text-center py-4 text-gray-500">
