@@ -13,22 +13,22 @@ const NotificationSettings = () => {
   const [notificationEmail, setNotificationEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialEmail, setInitialEmail] = useState('');
-  const { adminData } = useAdminAuth();
+  const { currentAdmin } = useAdminAuth();
 
   useEffect(() => {
-    if (adminData?.id) {
+    if (currentAdmin?.id) {
       fetchNotificationEmail();
     }
-  }, [adminData]);
+  }, [currentAdmin]);
 
   const fetchNotificationEmail = async () => {
-    if (!adminData?.id) return;
+    if (!currentAdmin?.id) return;
 
     try {
       const { data, error } = await supabase
         .from('admins')
         .select('notification_email')
-        .eq('id', adminData.id)
+        .eq('id', currentAdmin.id)
         .single();
 
       if (error) throw error;
@@ -44,7 +44,7 @@ const NotificationSettings = () => {
   };
 
   const handleSaveEmail = async () => {
-    if (!adminData?.id) {
+    if (!currentAdmin?.id) {
       toast.error('لم يتم العثور على بيانات المسؤول', {
         duration: 30000
       });
@@ -53,7 +53,7 @@ const NotificationSettings = () => {
 
     setLoading(true);
     try {
-      const success = await saveAdminNotificationEmail(adminData.id, notificationEmail);
+      const success = await saveAdminNotificationEmail(currentAdmin.id, notificationEmail);
 
       if (success) {
         toast.success('تم حفظ البريد الإلكتروني للإشعارات بنجاح', {
