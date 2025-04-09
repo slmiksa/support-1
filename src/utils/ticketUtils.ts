@@ -692,28 +692,31 @@ export const deleteTicket = async (ticketId: string): Promise<boolean> => {
     
     console.log(`Successfully deleted responses for ticket: ${ticketId}`);
 
-    // Then delete the ticket itself
-    const { error, count } = await supabase
+    // Then delete the ticket itself - removing .select('count') which was causing the error
+    const { error } = await supabase
       .from('tickets')
       .delete()
-      .eq('ticket_id', ticketId)
-      .select('count');
+      .eq('ticket_id', ticketId);
 
     if (error) {
       console.error('Error deleting ticket:', error);
       return false;
     }
     
-    console.log(`Ticket deletion result: ${count} rows affected`);
+    console.log(`Ticket deletion request completed`);
     
     // Double-check that the ticket was actually deleted
-    const { data: checkData } = await supabase
+    const { data: checkData, error: checkError } = await supabase
       .from('tickets')
       .select('ticket_id')
-      .eq('ticket_id', ticketId)
-      .single();
+      .eq('ticket_id', ticketId);
     
-    if (checkData) {
+    if (checkError) {
+      console.error('Error verifying ticket deletion:', checkError);
+      return false;
+    }
+    
+    if (checkData && checkData.length > 0) {
       console.error('Ticket still exists after deletion attempt');
       return false;
     }
