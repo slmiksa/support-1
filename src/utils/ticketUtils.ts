@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -274,7 +275,7 @@ export const getTicketResponses = async (ticketId: string): Promise<any[]> => {
   try {
     const { data, error } = await supabase
       .from('ticket_responses')
-      .select('*')
+      .select('*, admin:admins(username)')
       .eq('ticket_id', ticketId)
       .order('created_at', { ascending: true });
 
@@ -283,7 +284,19 @@ export const getTicketResponses = async (ticketId: string): Promise<any[]> => {
       return [];
     }
 
-    return data || [];
+    // Transform data to include admin username if available
+    const formattedResponses = data?.map(response => {
+      const adminName = response.admin?.username || null;
+      const { admin, ...responseWithoutAdmin } = response;
+      
+      return {
+        ...responseWithoutAdmin,
+        admin_name: adminName
+      };
+    }) || [];
+
+    console.log('Formatted responses:', formattedResponses);
+    return formattedResponses;
   } catch (error) {
     console.error('Error in getTicketResponses:', error);
     return [];

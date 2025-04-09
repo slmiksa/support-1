@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -46,7 +45,7 @@ const AdminTicketDetails = () => {
   const [responseText, setResponseText] = useState('');
   const [sendingResponse, setSendingResponse] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const { hasPermission } = useAdminAuth();
+  const { hasPermission, user } = useAdminAuth();
 
   const canChangeTicketStatus = hasPermission('manage_tickets');
   const canRespondToTickets = hasPermission('respond_to_tickets');
@@ -105,10 +104,24 @@ const AdminTicketDetails = () => {
 
     setSendingResponse(true);
     try {
-      const { data, error } = await supabase.rpc('add_ticket_response', {
+      const { data: adminData, error: adminError } = await supabase
+        .from('admins')
+        .select('id')
+        .eq('username', user?.username)
+        .single();
+
+      if (adminError) {
+        console.error('Error getting admin ID:', adminError);
+        throw adminError;
+      }
+
+      const adminId = adminData?.id;
+
+      const { data, error } = await supabase.rpc('add_ticket_response_with_admin', {
         p_ticket_id: ticketId,
         p_response: responseText,
-        p_is_admin: true
+        p_is_admin: true,
+        p_admin_id: adminId
       });
 
       if (error) {
@@ -354,7 +367,9 @@ const AdminTicketDetails = () => {
                         {new Date(response.created_at).toLocaleString('ar-SA')}
                       </span>
                       <span className="font-medium">
-                        {response.is_admin ? 'الدعم الفني' : 'الموظف'}
+                        {response.is_admin 
+                          ? response.admin_name || 'الدعم الفني' 
+                          : 'الموظف'}
                       </span>
                     </div>
                     <p className="text-right">{response.response}</p>

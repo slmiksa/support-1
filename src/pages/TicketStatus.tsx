@@ -1,4 +1,3 @@
-
 import Header from '@/components/Header';
 import TicketTracker from '@/components/TicketTracker';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
@@ -87,16 +86,13 @@ const TicketStatus = () => {
     return statusColorMap[status] || 'bg-gray-100 text-gray-800 hover:bg-gray-100';
   };
 
-  // Filter out fields we don't want to display in the ticket details
   const getFilteredCustomFields = (customFields: any) => {
     if (!customFields || typeof customFields !== 'object') {
       return {};
     }
     
-    // Create a copy of the custom fields object
     const filteredFields = { ...customFields };
     
-    // Remove the support_email field if it exists
     if ('support_email' in filteredFields) {
       delete filteredFields.support_email;
     }
@@ -113,7 +109,6 @@ const TicketStatus = () => {
           <DateTimeDisplay />
         </div>
 
-        {/* Always show the TicketTracker at the top of the page */}
         <TicketTracker onSearchTicket={fetchTicket} />
 
         {loading && ticketId ? (
@@ -204,7 +199,9 @@ const TicketStatus = () => {
                               {new Date(response.created_at).toLocaleString('ar-SA')}
                             </span>
                             <span className="font-medium">
-                              {response.is_admin ? 'الدعم الفني' : 'الموظف'}
+                              {response.is_admin 
+                                ? (response.admin_name || 'الدعم الفني') 
+                                : 'الموظف'}
                             </span>
                           </div>
                           <p>{response.response}</p>
