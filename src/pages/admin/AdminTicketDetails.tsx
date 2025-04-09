@@ -32,6 +32,7 @@ const AdminTicketDetails = () => {
   const canRespondToTickets = hasPermission('respond_to_tickets');
   const canDeleteTickets = hasPermission('delete_tickets');
 
+  // Handle the response deletion process
   const handleDeleteResponseRequest = async (responseId: string) => {
     if (!canDeleteTickets) return;
     
@@ -40,7 +41,8 @@ const AdminTicketDetails = () => {
       handleDeleteResponse(responseId);
       
       console.log('Deleting response with ID:', responseId);
-      // Use the delete method with proper error handling
+      
+      // Delete from database with proper error handling
       const { error } = await supabase
         .from('ticket_responses')
         .delete()
@@ -55,6 +57,10 @@ const AdminTicketDetails = () => {
       }
 
       toast.success('تم حذف الرد بنجاح');
+      
+      // Force reload data from database to verify deletion
+      await fetchTicketAndResponses();
+      
     } catch (error) {
       console.error('Error in handleDeleteResponse:', error);
       toast.error('حدث خطأ أثناء محاولة حذف الرد');

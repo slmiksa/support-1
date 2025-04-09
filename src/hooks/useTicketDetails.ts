@@ -15,6 +15,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
   const fetchTicketAndResponses = async () => {
     if (!ticketId) return;
     
+    console.log('Fetching fresh data for ticket and responses...');
     setLoading(true);
     try {
       // Fetch ticket data
@@ -43,6 +44,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
         }
       }
 
+      console.log('Fetching responses from database...');
       // Fetch responses with fresh data from the database
       const { data: responsesData, error: responsesError } = await supabase
         .from('ticket_responses')
@@ -54,6 +56,8 @@ export const useTicketDetails = (ticketId: string | undefined) => {
         throw responsesError;
       }
 
+      console.log('Responses received:', responsesData?.length || 0);
+      
       // Format responses for display
       const formattedResponses = responsesData?.map(response => {
         const adminName = response.admin?.username || null;
