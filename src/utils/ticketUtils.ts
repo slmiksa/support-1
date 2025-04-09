@@ -692,18 +692,26 @@ export const deleteTicket = async (ticketId: string): Promise<boolean> => {
     
     console.log(`Successfully deleted responses for ticket: ${ticketId}`);
 
-    // Then delete the ticket itself - removing .select('count') which was causing the error
-    const { error } = await supabase
-      .from('tickets')
-      .delete()
-      .eq('ticket_id', ticketId);
+    // Then delete the ticket itself
+    const { error: ticketError } = await supabase
+      .rpc('delete_ticket_by_id', { p_ticket_id: ticketId });
 
-    if (error) {
-      console.error('Error deleting ticket:', error);
-      return false;
+    if (ticketError) {
+      console.error('Error calling delete_ticket_by_id function:', ticketError);
+      
+      // Fallback to direct delete if RPC fails
+      const { error } = await supabase
+        .from('tickets')
+        .delete()
+        .eq('ticket_id', ticketId);
+        
+      if (error) {
+        console.error('Error in fallback ticket deletion:', error);
+        return false;
+      }
     }
     
-    console.log(`Ticket deletion request completed`);
+    console.log(`Ticket deletion completed`);
     
     // Double-check that the ticket was actually deleted
     const { data: checkData, error: checkError } = await supabase
