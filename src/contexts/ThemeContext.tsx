@@ -18,17 +18,55 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   useEffect(() => {
-    // تحديث الكلاس في عنصر html عند تغيير الثيم
+    // تحديث الكلاس في عنصر html عند تغيير الثيم - فقط للصفحات الإدارية
+    const adminPaths = ['/admin', '/admin/'];
+    const pathname = window.location.pathname;
+    const isAdminPage = pathname.startsWith('/admin/') || adminPaths.includes(pathname);
+    
     const root = window.document.documentElement;
     
-    if (theme === 'dark') {
-      root.classList.add('dark');
+    if (isAdminPage) {
+      if (theme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
     } else {
+      // إزالة الوضع المظلم دائمًا من الصفحات غير الإدارية
       root.classList.remove('dark');
     }
     
     // حفظ الخيار في التخزين المحلي
     localStorage.setItem('admin-theme', theme);
+  }, [theme]);
+
+  // راقب تغيير المسار لتحديث الثيم
+  useEffect(() => {
+    const handleRouteChange = () => {
+      const adminPaths = ['/admin', '/admin/'];
+      const pathname = window.location.pathname;
+      const isAdminPage = pathname.startsWith('/admin/') || adminPaths.includes(pathname);
+      const root = window.document.documentElement;
+      
+      if (isAdminPage) {
+        if (theme === 'dark') {
+          root.classList.add('dark');
+        } else {
+          root.classList.remove('dark');
+        }
+      } else {
+        // إزالة الوضع المظلم دائمًا من الصفحات غير الإدارية
+        root.classList.remove('dark');
+      }
+    };
+
+    // استمع لتغييرات المسار
+    window.addEventListener('popstate', handleRouteChange);
+    
+    // تنظيف عند إلغاء التحميل
+    return () => {
+      window.removeEventListener('popstate', handleRouteChange);
+    };
   }, [theme]);
 
   const toggleTheme = () => {

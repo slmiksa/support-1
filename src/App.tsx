@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Index from './pages/Index';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import { AdminAuthProvider } from './contexts/AdminAuthContext';
@@ -17,11 +17,39 @@ import { Toaster } from 'sonner';
 
 const queryClient = new QueryClient();
 
+// مكون لمراقبة تغييرات المسار
+const RouteChangeObserver = () => {
+  const location = useLocation();
+  
+  useEffect(() => {
+    const adminPaths = ['/admin', '/admin/'];
+    const pathname = location.pathname;
+    const isAdminPage = pathname.startsWith('/admin/') || adminPaths.includes(pathname);
+    const root = window.document.documentElement;
+    
+    if (!isAdminPage) {
+      // إزالة الوضع المظلم من الصفحات غير الإدارية
+      root.classList.remove('dark');
+    } else {
+      // استعادة الثيم المحفوظ للصفحات الإدارية
+      const savedTheme = localStorage.getItem('admin-theme');
+      if (savedTheme === 'dark') {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    }
+  }, [location]);
+  
+  return null;
+};
+
 function App() {
   return (
     <div className="App">
       <BrowserRouter>
         <ThemeProvider>
+          <RouteChangeObserver />
           <AdminAuthProvider>
             <QueryClientProvider client={queryClient}>
               <Routes>

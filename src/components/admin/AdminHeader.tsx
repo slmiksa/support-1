@@ -76,7 +76,7 @@ const AdminHeader = () => {
           <Button 
             variant="outline" 
             size="icon"
-            className="ml-2 mb-2 md:mb-0"
+            className={`ml-2 mb-2 md:mb-0 ${theme === 'dark' ? 'bg-gray-700 text-white border-gray-600' : 'bg-white/90 text-gray-700 border-gray-200'}`}
             onClick={toggleTheme}
             title={theme === 'light' ? 'تفعيل الوضع المظلم' : 'تفعيل الوضع العادي'}
           >
