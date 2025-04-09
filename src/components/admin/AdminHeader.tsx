@@ -74,16 +74,16 @@ const AdminHeader = () => {
         </div>
         <div className="flex items-center space-x-2 flex-wrap">
           <Button 
-            variant="ghost" 
+            variant="outline" 
             size="icon"
-            className="ml-2 mb-2 md:mb-0 bg-white/10"
+            className="ml-2 mb-2 md:mb-0"
             onClick={toggleTheme}
             title={theme === 'light' ? 'تفعيل الوضع المظلم' : 'تفعيل الوضع العادي'}
           >
             {theme === 'light' ? (
-              <Moon className="h-5 w-5 text-white" />
+              <Moon className="h-5 w-5" />
             ) : (
-              <Sun className="h-5 w-5 text-white" />
+              <Sun className="h-5 w-5" />
             )}
           </Button>
           <Button 
