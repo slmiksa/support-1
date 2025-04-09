@@ -1,5 +1,6 @@
+
 import { useState, useRef } from 'react';
-import { getTicketsByDateRange, getTicketStats, SupportTicket } from '@/utils/ticketUtils';
+import { getTicketsByDateRange, getTicketStats, getAdminStats, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +10,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
-import { Calendar as CalendarIcon, Download, FileText, BarChart } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, FileText, BarChart, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -46,6 +47,14 @@ const statusLabelsEn = {
 // Colors for the charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
+// Staff performance levels
+const getPerformanceLevel = (resolvedTickets, averageResponseTime) => {
+  if (resolvedTickets > 20 && averageResponseTime < 24) return { label: 'ممتاز', class: 'bg-green-100 text-green-800' };
+  if (resolvedTickets > 10 && averageResponseTime < 48) return { label: 'جيد جدا', class: 'bg-blue-100 text-blue-800' };
+  if (resolvedTickets > 5) return { label: 'جيد', class: 'bg-purple-100 text-purple-800' };
+  return { label: 'متوسط', class: 'bg-yellow-100 text-yellow-800' };
+};
+
 const ReportGenerator = () => {
   const [startDate, setStartDate] = useState<Date>(new Date(new Date().setDate(new Date().getDate() - 30)));
   const [endDate, setEndDate] = useState<Date>(new Date());
@@ -60,6 +69,19 @@ const ReportGenerator = () => {
     byStatus: {},
     byBranch: {},
     byStaff: {},
+  });
+  const [adminStats, setAdminStats] = useState<{
+    staffDetails: Array<{
+      name: string;
+      ticketsCount: number;
+      resolvedCount: number;
+      averageResponseTime: number;
+      responseRate: number;
+      statusDistribution: Record<string, number>;
+      ticketIds: string[];
+    }>;
+  }>({
+    staffDetails: []
   });
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
@@ -96,6 +118,13 @@ const ReportGenerator = () => {
         adjustedEndDate.toISOString()
       );
       setTicketStats(stats);
+
+      // Get detailed admin statistics
+      const adminStatsData = await getAdminStats(
+        startDate.toISOString(),
+        adjustedEndDate.toISOString()
+      );
+      setAdminStats(adminStatsData);
       
       setHasSearched(true);
     } catch (error) {
@@ -233,7 +262,44 @@ const ReportGenerator = () => {
       // Get current Y position after the stats table
       const finalStatsY = (doc as any).lastAutoTable.finalY + 10;
       
+      // Add staff performance section
+      if (adminStats.staffDetails.length > 0) {
+        doc.setFontSize(14);
+        doc.setTextColor(21, 67, 127);
+        doc.text('Staff Performance', doc.internal.pageSize.width / 2, finalStatsY, { align: 'center' });
+        
+        const staffPerformanceData = adminStats.staffDetails.map(staff => [
+          staff.name,
+          staff.ticketsCount.toString(),
+          staff.resolvedCount.toString(),
+          `${staff.responseRate.toFixed(1)}%`,
+          `${staff.averageResponseTime.toFixed(1)} hours`,
+          staff.resolvedCount > 0 ? 
+            `${((staff.resolvedCount / staff.ticketsCount) * 100).toFixed(1)}%` : 
+            '0%'
+        ]);
+        
+        // Add staff performance table
+        autoTable(doc, {
+          startY: finalStatsY + 5,
+          head: [['Staff Member', 'Total Tickets', 'Resolved', 'Response Rate', 'Avg Response Time', 'Resolution Rate']],
+          body: staffPerformanceData,
+          theme: 'grid',
+          headStyles: { 
+            halign: 'center',
+            fillColor: [21, 67, 127],
+            textColor: [255, 255, 255],
+            fontSize: 12
+          },
+          bodyStyles: { 
+            halign: 'center',
+            fontSize: 10
+          },
+        });
+      }
+      
       // Add branch distribution section if data exists
+      const staffTableY = (doc as any).lastAutoTable.finalY + 10;
       if (Object.keys(ticketStats.byBranch).length > 0) {
         // Create top branches table
         const branchData = Object.entries(ticketStats.byBranch)
@@ -242,11 +308,11 @@ const ReportGenerator = () => {
           .map(([branch, count]) => [branch, count.toString()]);
         
         // Add branch table title
-        doc.text('Ticket Distribution by Branch', doc.internal.pageSize.width / 2, finalStatsY, { align: 'center' });
+        doc.text('Ticket Distribution by Branch', doc.internal.pageSize.width / 2, staffTableY, { align: 'center' });
         
         // Add branch distribution table
         autoTable(doc, {
-          startY: finalStatsY + 5,
+          startY: staffTableY + 5,
           head: [['Branch', 'Ticket Count']],
           body: branchData,
           theme: 'grid',
@@ -266,7 +332,7 @@ const ReportGenerator = () => {
       }
       
       // Add ticket details section header
-      const ticketsTitleY = (doc as any).lastAutoTable.finalY + 15 || finalStatsY + 50;
+      const ticketsTitleY = (doc as any).lastAutoTable.finalY + 15 || staffTableY + 50;
       doc.setFontSize(14);
       doc.setTextColor(21, 67, 127);
       doc.text('Ticket Details', doc.internal.pageSize.width / 2, ticketsTitleY, { align: 'center' });
@@ -360,6 +426,17 @@ const ReportGenerator = () => {
         name: branch,
         count: count
       }));
+  };
+
+  // Prepare the data for the staff comparative chart
+  const prepareStaffComparativeData = () => {
+    if (!adminStats.staffDetails.length) return [];
+    
+    return adminStats.staffDetails.map(staff => ({
+      name: staff.name,
+      تذاكر_كلية: staff.ticketsCount,
+      تم_حلها: staff.resolvedCount
+    }));
   };
 
   return (
@@ -606,10 +683,184 @@ const ReportGenerator = () => {
                   </div>
                 </div>
 
+                {/* NEW SECTION: Staff Performance Analysis */}
+                {adminStats.staffDetails.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-medium text-right mb-4 text-company">تحليل أداء فريق الدعم الفني</h3>
+                    
+                    {/* Staff Performance Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                      {adminStats.staffDetails.map((staff, index) => {
+                        const performance = getPerformanceLevel(staff.resolvedCount, staff.averageResponseTime);
+                        return (
+                          <Card key={index} className="shadow-md">
+                            <CardHeader className="pb-2 bg-gray-50">
+                              <CardTitle className="text-right text-base text-company">{staff.name}</CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-4">
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                  <Badge className="bg-company text-white px-3 py-1">{staff.ticketsCount}</Badge>
+                                  <span>إجمالي التذاكر</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <Badge className="bg-green-100 text-green-800 px-3 py-1">{staff.resolvedCount}</Badge>
+                                  <span>تذاكر تم حلها</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <Badge className="bg-blue-100 text-blue-800 px-3 py-1">{staff.responseRate.toFixed(1)}%</Badge>
+                                  <span>معدل الاستجابة</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <Badge className="bg-purple-100 text-purple-800 px-3 py-1">{staff.averageResponseTime.toFixed(1)} ساعة</Badge>
+                                  <span>متوسط وقت الاستجابة</span>
+                                </div>
+                                <div className="flex justify-between items-center pt-2 border-t">
+                                  <Badge className={`${performance.class} px-3 py-1`}>{performance.label}</Badge>
+                                  <span>تقييم الأداء</span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        );
+                      })}
+                    </div>
+                    
+                    {/* Comparative Chart */}
+                    <Card className="shadow-md">
+                      <CardHeader className="pb-2 bg-gray-50">
+                        <CardTitle className="text-right text-base text-company">مقارنة أداء فريق الدعم الفني</CardTitle>
+                      </CardHeader>
+                      <CardContent className="h-80 pt-4">
+                        <ChartContainer
+                          config={{
+                            total: { color: "#15437f" },
+                            resolved: { color: "#00C49F" },
+                          }}
+                        >
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ReBarChart data={prepareStaffComparativeData()}>
+                              <XAxis dataKey="name" />
+                              <YAxis />
+                              <Tooltip />
+                              <Legend />
+                              <Bar dataKey="تذاكر_كلية" fill="#15437f" name="إجمالي التذاكر" />
+                              <Bar dataKey="تم_حلها" fill="#00C49F" name="تم حلها" />
+                            </ReBarChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </CardContent>
+                    </Card>
+                    
+                    {/* Staff Status Distribution */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
+                      {adminStats.staffDetails.map((staff, index) => (
+                        <Card key={index} className="shadow-md">
+                          <CardHeader className="pb-2 bg-gray-50">
+                            <CardTitle className="text-right text-base text-company">
+                              توزيع حالات تذاكر {staff.name}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="h-64 pt-4">
+                            <ChartContainer>
+                              <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                  <Pie
+                                    data={Object.entries(staff.statusDistribution).map(([status, count]) => ({
+                                      name: statusLabels[status] || status,
+                                      value: count
+                                    }))}
+                                    cx="50%"
+                                    cy="50%"
+                                    labelLine={false}
+                                    outerRadius={60}
+                                    fill="#8884d8"
+                                    dataKey="value"
+                                    nameKey="name"
+                                    label={({ name, percent }) => 
+                                      percent > 0.05 ? `${name}: ${(percent * 100).toFixed(0)}%` : ''
+                                    }
+                                  >
+                                    {Object.keys(staff.statusDistribution).map((status, i) => (
+                                      <Cell key={`cell-${i}`} fill={COLORS[i % COLORS.length]} />
+                                    ))}
+                                  </Pie>
+                                  <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                </PieChart>
+                              </ResponsiveContainer>
+                            </ChartContainer>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Detailed Staff Ticket Lists */}
+                {adminStats.staffDetails.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-lg font-medium text-right mb-4 text-company">تفاصيل تذاكر فريق الدعم الفني</h3>
+                    
+                    {adminStats.staffDetails.map((staff, index) => (
+                      <Card key={index} className="shadow-md mb-4">
+                        <CardHeader className="pb-2 bg-gray-50">
+                          <CardTitle className="text-right text-base text-company">
+                            تذاكر {staff.name} ({staff.ticketIds.length})
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-0">
+                          <div className="rounded-md overflow-hidden">
+                            <Table>
+                              <TableHeader className="bg-gray-50">
+                                <TableRow>
+                                  <TableHead className="text-right font-bold text-company">رقم التذكرة</TableHead>
+                                  <TableHead className="text-right font-bold text-company">الرقم الوظيفي</TableHead>
+                                  <TableHead className="text-right font-bold text-company">الفرع</TableHead>
+                                  <TableHead className="text-right font-bold text-company">الحالة</TableHead>
+                                  <TableHead className="text-right font-bold text-company">تاريخ الإنشاء</TableHead>
+                                  <TableHead className="text-right font-bold text-company">إجراءات</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {tickets
+                                  .filter(ticket => ticket.assigned_to === staff.name)
+                                  .map((ticket) => (
+                                    <TableRow key={ticket.id} className="hover:bg-gray-50">
+                                      <TableCell className="font-medium text-right">{ticket.ticket_id}</TableCell>
+                                      <TableCell className="text-right">{ticket.employee_id}</TableCell>
+                                      <TableCell className="text-right">{ticket.branch}</TableCell>
+                                      <TableCell className="text-right">
+                                        <Badge className={`${statusColorMap[ticket.status] || 'bg-gray-100'} px-3 py-1`}>
+                                          {statusLabels[ticket.status] || ticket.status}
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell className="text-right">
+                                        {new Date(ticket.created_at || '').toLocaleDateString('ar-SA')}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button 
+                                          size="sm"
+                                          className="bg-company hover:bg-company-dark"
+                                          onClick={() => handleViewTicket(ticket.ticket_id)}
+                                        >
+                                          عرض التفاصيل
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+
                 {/* Ticket details table with improved styling */}
                 <Card className="shadow-md">
                   <CardHeader className="pb-2 bg-gray-50">
-                    <CardTitle className="text-right text-base text-company">تفاصيل التذاكر</CardTitle>
+                    <CardTitle className="text-right text-base text-company">تفاصيل جميع التذاكر</CardTitle>
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="rounded-md overflow-hidden">

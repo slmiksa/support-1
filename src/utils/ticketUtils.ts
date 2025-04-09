@@ -367,6 +367,144 @@ export const getTicketStats = async (startDate: string, endDate: string): Promis
   }
 };
 
+// New function for detailed admin stats
+export const getAdminStats = async (startDate: string, endDate: string): Promise<{
+  staffDetails: Array<{
+    name: string;
+    ticketsCount: number;
+    resolvedCount: number;
+    averageResponseTime: number;
+    responseRate: number;
+    statusDistribution: Record<string, number>;
+    ticketIds: string[];
+  }>;
+}> => {
+  try {
+    // Get all tickets in the date range
+    const tickets = await getTicketsByDateRange(startDate, endDate);
+    
+    // Get all ticket responses 
+    const { data: allResponses, error: respError } = await supabase
+      .from('ticket_responses')
+      .select('*, admin:admins(username)')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+      .order('created_at', { ascending: true });
+    
+    if (respError) {
+      console.error('Error fetching ticket responses:', respError);
+      throw respError;
+    }
+    
+    // Map to store admin stats
+    const adminStatsMap = new Map();
+    
+    // Process assigned tickets for each admin
+    tickets.forEach(ticket => {
+      if (!ticket.assigned_to) return;
+      
+      const adminName = ticket.assigned_to;
+      if (!adminStatsMap.has(adminName)) {
+        adminStatsMap.set(adminName, {
+          name: adminName,
+          ticketsCount: 0,
+          resolvedCount: 0,
+          responseTimes: [],
+          responses: 0,
+          statusDistribution: {},
+          ticketIds: []
+        });
+      }
+      
+      const adminStat = adminStatsMap.get(adminName);
+      adminStat.ticketsCount++;
+      adminStat.ticketIds.push(ticket.ticket_id);
+      
+      // Count resolved/closed tickets
+      if (ticket.status === 'resolved' || ticket.status === 'closed') {
+        adminStat.resolvedCount++;
+      }
+      
+      // Add to status distribution
+      const status = ticket.status || 'unknown';
+      adminStat.statusDistribution[status] = (adminStat.statusDistribution[status] || 0) + 1;
+    });
+    
+    // Process response times
+    if (allResponses) {
+      // Create a map of first response times for each ticket
+      const firstResponseMap = new Map();
+      
+      allResponses.forEach(response => {
+        if (!response.is_admin || !response.admin) return;
+        
+        const adminName = response.admin.username;
+        const ticketId = response.ticket_id;
+        
+        // Find matching ticket
+        const ticket = tickets.find(t => t.ticket_id === ticketId);
+        if (!ticket) return;
+        
+        // If this admin is processing this ticket, count the response
+        if (ticket.assigned_to === adminName) {
+          // If this is the first response by this admin for this ticket
+          if (!firstResponseMap.has(`${adminName}-${ticketId}`)) {
+            firstResponseMap.set(`${adminName}-${ticketId}`, true);
+            
+            // Get response time in hours
+            const ticketDate = new Date(ticket.created_at);
+            const responseDate = new Date(response.created_at);
+            const responseTimeHours = (responseDate.getTime() - ticketDate.getTime()) / (1000 * 60 * 60);
+            
+            // Get or create admin stats
+            if (!adminStatsMap.has(adminName)) {
+              adminStatsMap.set(adminName, {
+                name: adminName,
+                ticketsCount: 0,
+                resolvedCount: 0,
+                responseTimes: [],
+                responses: 0,
+                statusDistribution: {},
+                ticketIds: []
+              });
+            }
+            
+            const adminStat = adminStatsMap.get(adminName);
+            adminStat.responseTimes.push(responseTimeHours);
+            adminStat.responses++;
+          }
+        }
+      });
+    }
+    
+    // Calculate averages and prepare final result
+    const staffDetails = Array.from(adminStatsMap.values()).map(admin => {
+      const avgResponseTime = admin.responseTimes.length > 0
+        ? admin.responseTimes.reduce((sum, time) => sum + time, 0) / admin.responseTimes.length
+        : 0;
+      
+      const responseRate = admin.ticketsCount > 0
+        ? (admin.responses / admin.ticketsCount) * 100
+        : 0;
+      
+      return {
+        name: admin.name,
+        ticketsCount: admin.ticketsCount,
+        resolvedCount: admin.resolvedCount,
+        averageResponseTime: avgResponseTime,
+        responseRate: responseRate,
+        statusDistribution: admin.statusDistribution,
+        ticketIds: admin.ticketIds
+      };
+    });
+    
+    return { staffDetails };
+  } catch (error) {
+    console.error('Error in getAdminStats:', error);
+    return { staffDetails: [] };
+  }
+};
+
 export const updateSiteField = async (
   fieldId: string,
   updates: {
