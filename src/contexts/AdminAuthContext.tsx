@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -17,7 +18,6 @@ interface AdminAuthContextProps {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   hasPermission: (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets') => boolean;
-  adminData: AdminUser | null;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextProps>({
@@ -26,7 +26,6 @@ const AdminAuthContext = createContext<AdminAuthContextProps>({
   login: async () => false,
   logout: () => {},
   hasPermission: () => false,
-  adminData: null,
 });
 
 export const useAdminAuth = () => useContext(AdminAuthContext);
@@ -150,8 +149,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       currentAdmin, 
       login, 
       logout, 
-      hasPermission,
-      adminData: currentAdmin
+      hasPermission
     }}>
       {children}
     </AdminAuthContext.Provider>

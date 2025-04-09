@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,7 +46,7 @@ const AdminTicketDetails = () => {
   const [responseText, setResponseText] = useState('');
   const [sendingResponse, setSendingResponse] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
-  const { hasPermission, user } = useAdminAuth();
+  const { hasPermission, currentAdmin } = useAdminAuth();
 
   const canChangeTicketStatus = hasPermission('manage_tickets');
   const canRespondToTickets = hasPermission('respond_to_tickets');
@@ -102,12 +103,17 @@ const AdminTicketDetails = () => {
       return;
     }
 
+    if (!currentAdmin) {
+      toast.error('لم يتم العثور على بيانات المسؤول');
+      return;
+    }
+
     setSendingResponse(true);
     try {
       const { data: adminData, error: adminError } = await supabase
         .from('admins')
         .select('id')
-        .eq('username', user?.username)
+        .eq('username', currentAdmin.username)
         .single();
 
       if (adminError) {
