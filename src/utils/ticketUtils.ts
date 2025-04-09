@@ -677,6 +677,18 @@ export const formatCustomFieldsForDisplay = (ticket: SupportTicket, fields: any[
 
 export const deleteTicket = async (ticketId: string): Promise<boolean> => {
   try {
+    // أولاً، نحذف الردو�� المرتبطة بالتذكرة
+    const { error: responsesError } = await supabase
+      .from('ticket_responses')
+      .delete()
+      .eq('ticket_id', ticketId);
+
+    if (responsesError) {
+      console.error('Error deleting ticket responses:', responsesError);
+      return false;
+    }
+
+    // ثم نحذف التذكرة نفسها
     const { error } = await supabase
       .from('tickets')
       .delete()

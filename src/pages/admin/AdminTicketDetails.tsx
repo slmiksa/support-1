@@ -9,6 +9,8 @@ import { useTicketDetails } from '@/hooks/useTicketDetails';
 import TicketDetailsCard from '@/components/admin/tickets/TicketDetailsCard';
 import TicketResponseList from '@/components/admin/tickets/TicketResponseList';
 import TicketResponseForm from '@/components/admin/tickets/TicketResponseForm';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const AdminTicketDetails = () => {
   const { ticketId } = useParams();
@@ -27,6 +29,30 @@ const AdminTicketDetails = () => {
 
   const canChangeTicketStatus = hasPermission('manage_tickets');
   const canRespondToTickets = hasPermission('respond_to_tickets');
+  const canDeleteTickets = hasPermission('delete_tickets');
+
+  const handleDeleteResponse = async (responseId: string) => {
+    if (!canDeleteTickets) return;
+    
+    try {
+      const { error } = await supabase
+        .from('ticket_responses')
+        .delete()
+        .eq('id', responseId);
+
+      if (error) {
+        toast.error('فشل في حذف الرد');
+        console.error('Error deleting response:', error);
+        return;
+      }
+
+      toast.success('تم حذف الرد بنجاح');
+      fetchTicketAndResponses();
+    } catch (error) {
+      toast.error('حدث خطأ أثناء محاولة حذف الرد');
+      console.error('Error in handleDeleteResponse:', error);
+    }
+  };
 
   if (loading) {
     return (
@@ -92,7 +118,10 @@ const AdminTicketDetails = () => {
             <CardTitle className="text-right">الردود</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <TicketResponseList responses={responses} />
+            <TicketResponseList 
+              responses={responses} 
+              onDeleteResponse={canDeleteTickets ? handleDeleteResponse : undefined}
+            />
             
             <TicketResponseForm
               ticketId={ticketId || ''}
