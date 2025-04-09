@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -139,12 +140,12 @@
     @apply dark:bg-card dark:border-border/10;
   }
 
-  /* Company colors */
-  .bg-company { @apply bg-[#D4AF37]; }
-  .bg-company-dark { @apply bg-[#B08C1A]; }
-  .text-company { @apply text-[#D4AF37]; }
-  .text-company-dark { @apply text-[#B08C1A]; }
-  .bg-accent-gold { @apply bg-[#D4AF37]; }
+  /* Company colors - Fixed circular dependency issue */
+  .bg-company { background-color: #D4AF37; }
+  .bg-company-dark { background-color: #B08C1A; }
+  .text-company { color: #D4AF37; }
+  .text-company-dark { color: #B08C1A; }
+  .bg-accent-gold { background-color: #D4AF37; }
   
   /* Layout */
   .section-container { @apply py-8 px-4 md:py-12 md:px-6; }
@@ -214,7 +215,7 @@
   
   /* Ensure table headers remain visible in dark mode */
   .dark .text-company {
-    @apply text-company;
+    color: #D4AF37; /* Using direct CSS property to avoid circular dependency */
   }
 }
 
