@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,9 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Search, X, Flag, AlertTriangle, CircleCheck, Bell } from 'lucide-react';
+import { Search, X, Flag, AlertTriangle, CircleCheck, Bell, Trash2 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { deleteTicket } from '@/utils/ticketUtils';
 
 const statusColorMap = {
   pending: 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200',
@@ -72,7 +72,6 @@ const AdminDashboard = () => {
       }, (payload) => {
         const newTicket = payload.new;
         
-        // تحسين شكل وأداء الإشعارات
         toast(
           <div className="flex items-start space-x-2 rtl:space-x-reverse">
             <Bell className="h-5 w-5 text-company flex-shrink-0 mt-0.5" />
@@ -168,6 +167,24 @@ const AdminDashboard = () => {
         {priorityLabels[actualPriority] || 'عادية'}
       </Badge>
     );
+  };
+
+  const handleDeleteTicket = async (ticketId: string) => {
+    if (confirm(`هل أنت متأكد من حذف التذكرة ${ticketId}؟`)) {
+      try {
+        const success = await deleteTicket(ticketId);
+        
+        if (success) {
+          toast.success('تم حذف التذكرة بنجاح');
+          setTickets(prevTickets => prevTickets.filter(ticket => ticket.ticket_id !== ticketId));
+        } else {
+          toast.error('فشل في حذف التذكرة');
+        }
+      } catch (error) {
+        console.error('Error deleting ticket:', error);
+        toast.error('حدث خطأ أثناء محاولة حذف التذكرة');
+      }
+    }
   };
 
   return (
@@ -294,13 +311,23 @@ const AdminDashboard = () => {
                               day: 'numeric'
                             })}
                           </TableCell>
-                          <TableCell className="py-4">
+                          <TableCell className="py-4 flex items-center gap-2">
                             <Button 
                               size="sm" 
                               onClick={() => handleViewTicket(ticket.ticket_id)}
                               className="bg-company hover:bg-company-dark"
                             >
                               عرض التفاصيل
+                            </Button>
+                            
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleDeleteTicket(ticket.ticket_id)}
+                              title="حذف التذكرة"
+                              className="px-2"
+                            >
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </TableCell>
                         </TableRow>

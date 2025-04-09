@@ -473,3 +473,22 @@ export const formatCustomFieldsForDisplay = (ticket: SupportTicket, fields: any[
   
   return formattedFields;
 };
+
+export const deleteTicket = async (ticketId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('ticket_id', ticketId);
+
+    if (error) {
+      console.error('Error deleting ticket:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error in deleteTicket:', error);
+    return false;
+  }
+};
