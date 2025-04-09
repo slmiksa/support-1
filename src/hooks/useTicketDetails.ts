@@ -87,8 +87,10 @@ export const useTicketDetails = (ticketId: string | undefined) => {
     setUpdatingStatus(isUpdating);
   };
 
-  // Function to handle response deletion in the local state
-  const handleDeleteResponse = (responseId: string) => {
+  // Function to handle response deletion
+  const handleDeleteResponse = async (responseId: string) => {
+    // The actual deletion happens in TicketResponseList component
+    // Here we just update the local state to reflect the deletion
     console.log('Removing response ID from local state:', responseId);
     setResponses(prev => prev.filter(response => response.id !== responseId));
   };

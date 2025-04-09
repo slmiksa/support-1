@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,7 +23,8 @@ const AdminTicketDetails = () => {
     updatingStatus,
     fetchTicketAndResponses,
     handleStatusChange,
-    setUpdatingStatusState
+    setUpdatingStatusState,
+    handleDeleteResponse
   } = useTicketDetails(ticketId);
 
   const canChangeTicketStatus = hasPermission('manage_tickets');
@@ -92,7 +94,10 @@ const AdminTicketDetails = () => {
             <CardTitle className="text-right">الردود</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <TicketResponseList responses={responses} />
+            <TicketResponseList 
+              responses={responses} 
+              onDeleteResponse={handleDeleteResponse}
+            />
             
             <TicketResponseForm
               ticketId={ticketId || ''}
