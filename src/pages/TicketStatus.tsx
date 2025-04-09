@@ -1,3 +1,4 @@
+
 import Header from '@/components/Header';
 import TicketTracker from '@/components/TicketTracker';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
@@ -141,6 +142,13 @@ const TicketStatus = () => {
                     <p className="text-right font-medium">الفرع:</p>
                     <p className="text-right">{ticket.branch}</p>
                   </div>
+                  
+                  {ticket.assigned_to && (
+                    <div className="space-y-2">
+                      <p className="text-right font-medium">موظف الدعم المسؤول:</p>
+                      <p className="text-right">{ticket.assigned_to}</p>
+                    </div>
+                  )}
                   
                   {ticket.anydesk_number && (
                     <div className="space-y-2">

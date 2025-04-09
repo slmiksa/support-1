@@ -183,6 +183,7 @@ export type Database = {
       tickets: {
         Row: {
           anydesk_number: string | null
+          assigned_to: string | null
           branch: string
           created_at: string
           custom_fields: Json | null
@@ -198,6 +199,7 @@ export type Database = {
         }
         Insert: {
           anydesk_number?: string | null
+          assigned_to?: string | null
           branch: string
           created_at?: string
           custom_fields?: Json | null
@@ -213,6 +215,7 @@ export type Database = {
         }
         Update: {
           anydesk_number?: string | null
+          assigned_to?: string | null
           branch?: string
           created_at?: string
           custom_fields?: Json | null
