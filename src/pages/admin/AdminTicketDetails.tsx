@@ -46,6 +46,7 @@ const AdminTicketDetails = () => {
   const [responseText, setResponseText] = useState('');
   const [sendingResponse, setSendingResponse] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [assignedAdmin, setAssignedAdmin] = useState(null);
   const { hasPermission, currentAdmin } = useAdminAuth();
 
   const canChangeTicketStatus = hasPermission('manage_tickets');
@@ -60,9 +61,10 @@ const AdminTicketDetails = () => {
   const fetchTicketAndResponses = async () => {
     setLoading(true);
     try {
+      // Fetch ticket details with assigned admin information
       const { data: ticketData, error: ticketError } = await supabase
         .from('tickets')
-        .select('*')
+        .select('*, assigned_to')
         .eq('ticket_id', ticketId)
         .single();
 
@@ -72,6 +74,20 @@ const AdminTicketDetails = () => {
 
       setTicket(ticketData);
 
+      // Get assigned admin details if assigned_to is available
+      if (ticketData.assigned_to) {
+        const { data: adminData, error: adminError } = await supabase
+          .from('admins')
+          .select('id, username')
+          .eq('username', ticketData.assigned_to)
+          .single();
+          
+        if (!adminError && adminData) {
+          setAssignedAdmin(adminData);
+        }
+      }
+
+      // Fetch ticket responses with admin information
       const { data: responsesData, error: responsesError } = await supabase
         .from('ticket_responses')
         .select('*, admin:admins(username)')
@@ -126,9 +142,28 @@ const AdminTicketDetails = () => {
         throw new Error('لم يتم العثور على معرف المسؤول');
       }
 
-      console.log('Sending response with admin ID:', adminId);
-      console.log('Current admin:', currentAdmin);
+      // If this is the first response and the ticket is not assigned, assign it to the current admin
+      if (responses.length === 0 && (!ticket.assigned_to || ticket.assigned_to === '')) {
+        // Update the ticket with the assigned admin
+        const { error: updateError } = await supabase
+          .from('tickets')
+          .update({ assigned_to: currentAdmin.username })
+          .eq('ticket_id', ticketId);
 
+        if (updateError) {
+          console.error('Error assigning ticket:', updateError);
+          // Continue anyway as this is not critical
+        } else {
+          // Update the local state
+          setTicket(prev => ({
+            ...prev,
+            assigned_to: currentAdmin.username
+          }));
+          setAssignedAdmin(currentAdmin);
+        }
+      }
+
+      // Add the response
       const { data, error } = await supabase.rpc('add_ticket_response_with_admin', {
         p_ticket_id: ticketId,
         p_response: responseText,
@@ -169,6 +204,26 @@ const AdminTicketDetails = () => {
 
       if (error) {
         throw error;
+      }
+
+      // If the ticket is being resolved or closed, and there's no assigned admin yet, 
+      // assign it to the current admin
+      if ((newStatus === 'resolved' || newStatus === 'closed') && 
+          (!ticket.assigned_to || ticket.assigned_to === '') && 
+          currentAdmin) {
+        
+        const { error: updateError } = await supabase
+          .from('tickets')
+          .update({ assigned_to: currentAdmin.username })
+          .eq('ticket_id', ticketId);
+
+        if (!updateError) {
+          setTicket(prev => ({
+            ...prev,
+            assigned_to: currentAdmin.username
+          }));
+          setAssignedAdmin(currentAdmin);
+        }
       }
 
       setTicket({ ...ticket, status: newStatus });
@@ -327,6 +382,17 @@ const AdminTicketDetails = () => {
                     <p className="text-right">{ticket.extension_number}</p>
                   </div>
                 )}
+                
+                <div>
+                  <p className="text-right font-medium">موظف الدعم المسؤول:</p>
+                  <p className="text-right">
+                    {ticket.assigned_to ? (
+                      <span className="font-medium text-company">{ticket.assigned_to}</span>
+                    ) : (
+                      <span className="text-gray-500">لم يتم التعيين</span>
+                    )}
+                  </p>
+                </div>
                 
                 {Object.entries(getFilteredCustomFields(ticket)).map(([key, value]) => (
                   <div key={key}>

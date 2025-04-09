@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { getTicketsByDateRange, getTicketStats, getAdminStats, SupportTicket } from '@/utils/ticketUtils';
+import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -99,7 +99,7 @@ const ReportGenerator = () => {
     adjustedEndDate.setHours(23, 59, 59, 999);
 
     try {
-      const data = await getTicketsByDateRange(
+      const data = await getTicketsWithResolutionDetails(
         startDate.toISOString(),
         adjustedEndDate.toISOString()
       );
@@ -848,7 +848,13 @@ const ReportGenerator = () => {
                                   {statusLabels[ticket.status] || ticket.status}
                                 </Badge>
                               </TableCell>
-                              <TableCell className="text-right">{ticket.assigned_to || 'لم يتم التعيين'}</TableCell>
+                              <TableCell className="text-right">
+                                {ticket.assigned_to ? (
+                                  <span className="font-medium text-company">{ticket.assigned_to}</span>
+                                ) : (
+                                  <span className="text-gray-500">لم يتم التعيين</span>
+                                )}
+                              </TableCell>
                               <TableCell className="text-right">
                                 {new Date(ticket.created_at || '').toLocaleDateString('ar-SA')}
                               </TableCell>

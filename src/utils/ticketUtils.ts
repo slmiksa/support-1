@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -327,6 +326,58 @@ export const getTicketsByDateRange = async (startDate: string, endDate: string):
   }
 };
 
+export const getTicketsWithResolutionDetails = async (startDate: string, endDate: string): Promise<SupportTicket[]> => {
+  try {
+    // First get all tickets in the date range
+    const tickets = await getTicketsByDateRange(startDate, endDate);
+    
+    // Get all responses to identify which admin resolved each ticket
+    const { data: responses, error: respError } = await supabase
+      .from('ticket_responses')
+      .select('*, admin:admins(username, id)')
+      .gte('created_at', startDate)
+      .lte('created_at', endDate)
+      .order('created_at', { ascending: true });
+    
+    if (respError) {
+      console.error('Error fetching ticket responses:', respError);
+      return tickets; // Return tickets without resolution data
+    }
+    
+    // For each ticket, find the admin who provided the first response or resolved it
+    const enhancedTickets = tickets.map(ticket => {
+      // Get all responses for this ticket
+      const ticketResponses = responses?.filter(r => r.ticket_id === ticket.ticket_id) || [];
+      
+      // Try to find the admin who resolved this ticket
+      let resolvingAdmin = null;
+      
+      // Use the assigned_to field if available
+      if (ticket.assigned_to) {
+        // The ticket already has an assigned admin
+        resolvingAdmin = ticket.assigned_to;
+      } else if (ticketResponses.length > 0) {
+        // Try to get the first admin who responded
+        const firstAdminResponse = ticketResponses.find(r => r.is_admin && r.admin?.username);
+        if (firstAdminResponse) {
+          resolvingAdmin = firstAdminResponse.admin.username;
+        }
+      }
+      
+      // Return enhanced ticket
+      return {
+        ...ticket,
+        resolving_admin: resolvingAdmin,
+      };
+    });
+    
+    return enhancedTickets;
+  } catch (error) {
+    console.error('Error in getTicketsWithResolutionDetails:', error);
+    return [];
+  }
+};
+
 export const getTicketStats = async (startDate: string, endDate: string): Promise<{
   total: number;
   byStatus: Record<string, number>;
@@ -367,7 +418,6 @@ export const getTicketStats = async (startDate: string, endDate: string): Promis
   }
 };
 
-// New function for detailed admin stats
 export const getAdminStats = async (startDate: string, endDate: string): Promise<{
   staffDetails: Array<{
     name: string;
