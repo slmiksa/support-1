@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketStats, getAdminStats, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -17,7 +16,6 @@ import { PieChart, Pie, Cell, BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-// Define ticket status color map
 const statusColorMap = {
   pending: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
   open: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
@@ -26,7 +24,6 @@ const statusColorMap = {
   closed: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
 };
 
-// Define ticket status labels in Arabic
 const statusLabels = {
   pending: 'قيد الانتظار',
   open: 'مفتوحة',
@@ -35,7 +32,6 @@ const statusLabels = {
   closed: 'مغلقة',
 };
 
-// Define ticket status labels in English for PDF export
 const statusLabelsEn = {
   pending: 'Pending',
   open: 'Open',
@@ -44,10 +40,8 @@ const statusLabelsEn = {
   closed: 'Closed',
 };
 
-// Colors for the charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
-// Staff performance levels
 const getPerformanceLevel = (resolvedTickets, averageResponseTime) => {
   if (resolvedTickets > 20 && averageResponseTime < 24) return { label: 'ممتاز', class: 'bg-green-100 text-green-800' };
   if (resolvedTickets > 10 && averageResponseTime < 48) return { label: 'جيد جدا', class: 'bg-blue-100 text-blue-800' };
@@ -101,7 +95,6 @@ const ReportGenerator = () => {
 
     setLoading(true);
 
-    // Adjust to end of day for end date
     const adjustedEndDate = new Date(endDate);
     adjustedEndDate.setHours(23, 59, 59, 999);
 
@@ -112,14 +105,12 @@ const ReportGenerator = () => {
       );
       setTickets(data);
       
-      // Get ticket statistics
       const stats = await getTicketStats(
         startDate.toISOString(),
         adjustedEndDate.toISOString()
       );
       setTicketStats(stats);
 
-      // Get detailed admin statistics
       const adminStatsData = await getAdminStats(
         startDate.toISOString(),
         adjustedEndDate.toISOString()
@@ -175,7 +166,6 @@ const ReportGenerator = () => {
       new Date(ticket.updated_at || '').toLocaleDateString('ar-SA')
     ]);
 
-    // Add BOM to support Arabic in Excel
     let csvString = '\uFEFF' + headers.join(',') + '\n' + 
                     csvContent.map(row => row.join(',')).join('\n');
 
@@ -203,33 +193,26 @@ const ReportGenerator = () => {
     }
 
     try {
-      // Create a new PDF document instance
       const doc = new jsPDF({
         orientation: 'landscape',
         unit: 'mm',
         format: 'a4',
       });
       
-      // Set font size for the header
       doc.setFontSize(18);
-      doc.setTextColor(21, 67, 127); // Company blue color
-      
-      // Add title in English
+      doc.setTextColor(21, 67, 127);
       const title = `Ticket Report: ${format(startDate, 'yyyy/MM/dd')} - ${format(endDate, 'yyyy/MM/dd')}`;
       doc.text(title, doc.internal.pageSize.width / 2, 20, { align: 'center' });
       
-      // Add the current date
       doc.setFontSize(10);
       doc.setTextColor(100, 100, 100);
       const currentDate = `Report Date: ${format(new Date(), 'yyyy/MM/dd HH:mm')}`;
       doc.text(currentDate, doc.internal.pageSize.width - 20, 30, { align: 'right' });
       
-      // Add statistics section header
       doc.setFontSize(14);
       doc.setTextColor(21, 67, 127);
       doc.text('Ticket Statistics', doc.internal.pageSize.width / 2, 40, { align: 'center' });
       
-      // Create statistics table in English
       const statsData = [
         ['Total Tickets', ticketStats.total.toString()],
         ['Pending', (ticketStats.byStatus.pending || 0).toString()],
@@ -239,7 +222,6 @@ const ReportGenerator = () => {
         ['Closed', (ticketStats.byStatus.closed || 0).toString()]
       ];
       
-      // Add the statistics table
       autoTable(doc, {
         startY: 45,
         head: [['Status', 'Count']],
@@ -259,10 +241,8 @@ const ReportGenerator = () => {
         tableWidth: 'auto',
       });
 
-      // Get current Y position after the stats table
       const finalStatsY = (doc as any).lastAutoTable.finalY + 10;
       
-      // Add staff performance section
       if (adminStats.staffDetails.length > 0) {
         doc.setFontSize(14);
         doc.setTextColor(21, 67, 127);
@@ -279,7 +259,6 @@ const ReportGenerator = () => {
             '0%'
         ]);
         
-        // Add staff performance table
         autoTable(doc, {
           startY: finalStatsY + 5,
           head: [['Staff Member', 'Total Tickets', 'Resolved', 'Response Rate', 'Avg Response Time', 'Resolution Rate']],
@@ -298,19 +277,15 @@ const ReportGenerator = () => {
         });
       }
       
-      // Add branch distribution section if data exists
       const staffTableY = (doc as any).lastAutoTable.finalY + 10;
       if (Object.keys(ticketStats.byBranch).length > 0) {
-        // Create top branches table
         const branchData = Object.entries(ticketStats.byBranch)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 5)
           .map(([branch, count]) => [branch, count.toString()]);
         
-        // Add branch table title
         doc.text('Ticket Distribution by Branch', doc.internal.pageSize.width / 2, staffTableY, { align: 'center' });
         
-        // Add branch distribution table
         autoTable(doc, {
           startY: staffTableY + 5,
           head: [['Branch', 'Ticket Count']],
@@ -331,13 +306,11 @@ const ReportGenerator = () => {
         });
       }
       
-      // Add ticket details section header
       const ticketsTitleY = (doc as any).lastAutoTable.finalY + 15 || staffTableY + 50;
       doc.setFontSize(14);
       doc.setTextColor(21, 67, 127);
       doc.text('Ticket Details', doc.internal.pageSize.width / 2, ticketsTitleY, { align: 'center' });
       
-      // Prepare ticket data for the table with English status labels
       const ticketRows = tickets.map(ticket => [
         ticket.ticket_id,
         ticket.employee_id,
@@ -347,7 +320,6 @@ const ReportGenerator = () => {
         new Date(ticket.created_at || '').toLocaleDateString('en-US')
       ]);
       
-      // Add the ticket details table
       autoTable(doc, {
         startY: ticketsTitleY + 5,
         head: [['Ticket ID', 'Employee ID', 'Branch', 'Status', 'Support Staff', 'Created Date']],
@@ -373,7 +345,6 @@ const ReportGenerator = () => {
         }
       });
       
-      // Add footer with page numbers
       const totalPages = doc.getNumberOfPages();
       for (let i = 1; i <= totalPages; i++) {
         doc.setPage(i);
@@ -382,12 +353,10 @@ const ReportGenerator = () => {
         const pageText = `Page ${i} of ${totalPages}`;
         doc.text(pageText, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
         
-        // Add the company name in the footer
         doc.setTextColor(21, 67, 127);
         doc.text("Al-Wasl Technical Support", 20, doc.internal.pageSize.height - 10);
       }
       
-      // Save the PDF
       const dateRange = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`;
       doc.save(`Ticket_Report_${dateRange}.pdf`);
       
@@ -409,7 +378,6 @@ const ReportGenerator = () => {
     navigate(`/admin/tickets/${ticketId}`);
   };
 
-  // Prepare chart data for status distribution
   const prepareStatusChartData = () => {
     return Object.entries(ticketStats.byStatus).map(([status, count]) => ({
       name: statusLabels[status] || status,
@@ -417,18 +385,16 @@ const ReportGenerator = () => {
     }));
   };
 
-  // Prepare chart data for branch distribution
   const prepareBranchChartData = () => {
     return Object.entries(ticketStats.byBranch)
-      .sort((a, b) => b[1] - a[1]) // Sort by count in descending order
-      .slice(0, 5) // Take top 5 branches
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
       .map(([branch, count]) => ({
         name: branch,
         count: count
       }));
   };
 
-  // Prepare the data for the staff comparative chart
   const prepareStaffComparativeData = () => {
     if (!adminStats.staffDetails.length) return [];
     
@@ -546,11 +512,8 @@ const ReportGenerator = () => {
               <div className="mb-8">
                 <h3 className="text-lg font-medium text-right mb-4 text-company">إحصائيات التذاكر</h3>
                 
-                {/* Improved layout: Stats and Charts in separate boxes */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                  {/* Left Column - Statistics */}
                   <div className="space-y-6">
-                    {/* Ticket status statistics */}
                     <Card className="shadow-md">
                       <CardHeader className="pb-2 bg-gray-50">
                         <CardTitle className="text-right text-base text-company">توزيع حالات التذاكر</CardTitle>
@@ -585,7 +548,6 @@ const ReportGenerator = () => {
                       </CardContent>
                     </Card>
                     
-                    {/* Staff distribution */}
                     {Object.keys(ticketStats.byStaff).length > 0 && (
                       <Card className="shadow-md">
                         <CardHeader className="pb-2 bg-gray-50">
@@ -615,9 +577,7 @@ const ReportGenerator = () => {
                     )}
                   </div>
                   
-                  {/* Right Column - Charts */}
                   <div className="space-y-6">
-                    {/* Pie chart for ticket status distribution */}
                     <Card className="shadow-md">
                       <CardHeader className="pb-2 bg-gray-50">
                         <CardTitle className="text-right text-base text-company">توزيع حالات التذاكر</CardTitle>
@@ -625,11 +585,11 @@ const ReportGenerator = () => {
                       <CardContent className="h-64 pt-4">
                         <ChartContainer
                           config={{
-                            status1: { color: "#FFBB28" },  // pending
-                            status2: { color: "#0088FE" },  // open
-                            status3: { color: "#8884d8" },  // inprogress
-                            status4: { color: "#00C49F" },  // resolved
-                            status5: { color: "#999999" },  // closed
+                            status1: { color: "#FFBB28" },
+                            status2: { color: "#0088FE" },
+                            status3: { color: "#8884d8" },
+                            status4: { color: "#00C49F" },
+                            status5: { color: "#999999" }
                           }}
                         >
                           <ResponsiveContainer width="100%" height="100%">
@@ -656,7 +616,6 @@ const ReportGenerator = () => {
                       </CardContent>
                     </Card>
                     
-                    {/* Branch distribution chart */}
                     {Object.keys(ticketStats.byBranch).length > 0 && (
                       <Card className="shadow-md">
                         <CardHeader className="pb-2 bg-gray-50">
@@ -683,12 +642,10 @@ const ReportGenerator = () => {
                   </div>
                 </div>
 
-                {/* NEW SECTION: Staff Performance Analysis */}
                 {adminStats.staffDetails.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-lg font-medium text-right mb-4 text-company">تحليل أداء فريق الدعم الفني</h3>
                     
-                    {/* Staff Performance Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                       {adminStats.staffDetails.map((staff, index) => {
                         const performance = getPerformanceLevel(staff.resolvedCount, staff.averageResponseTime);
@@ -726,7 +683,6 @@ const ReportGenerator = () => {
                       })}
                     </div>
                     
-                    {/* Comparative Chart */}
                     <Card className="shadow-md">
                       <CardHeader className="pb-2 bg-gray-50">
                         <CardTitle className="text-right text-base text-company">مقارنة أداء فريق الدعم الفني</CardTitle>
@@ -752,7 +708,6 @@ const ReportGenerator = () => {
                       </CardContent>
                     </Card>
                     
-                    {/* Staff Status Distribution */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
                       {adminStats.staffDetails.map((staff, index) => (
                         <Card key={index} className="shadow-md">
@@ -762,7 +717,15 @@ const ReportGenerator = () => {
                             </CardTitle>
                           </CardHeader>
                           <CardContent className="h-64 pt-4">
-                            <ChartContainer>
+                            <ChartContainer
+                              config={{
+                                status1: { color: "#FFBB28" },
+                                status2: { color: "#0088FE" },
+                                status3: { color: "#8884d8" },
+                                status4: { color: "#00C49F" },
+                                status5: { color: "#999999" }
+                              }}
+                            >
                               <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
                                   <Pie
@@ -796,7 +759,6 @@ const ReportGenerator = () => {
                   </div>
                 )}
 
-                {/* Detailed Staff Ticket Lists */}
                 {adminStats.staffDetails.length > 0 && (
                   <div className="mb-6">
                     <h3 className="text-lg font-medium text-right mb-4 text-company">تفاصيل تذاكر فريق الدعم الفني</h3>
@@ -857,7 +819,6 @@ const ReportGenerator = () => {
                   </div>
                 )}
 
-                {/* Ticket details table with improved styling */}
                 <Card className="shadow-md">
                   <CardHeader className="pb-2 bg-gray-50">
                     <CardTitle className="text-right text-base text-company">تفاصيل جميع التذاكر</CardTitle>
