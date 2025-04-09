@@ -677,7 +677,9 @@ export const formatCustomFieldsForDisplay = (ticket: SupportTicket, fields: any[
 
 export const deleteTicket = async (ticketId: string): Promise<boolean> => {
   try {
-    // أولاً، نحذف الردو�� المرتبطة بالتذكرة
+    console.log(`Attempting to delete ticket with ID: ${ticketId}`);
+    
+    // First, delete all responses associated with the ticket
     const { error: responsesError } = await supabase
       .from('ticket_responses')
       .delete()
@@ -687,18 +689,36 @@ export const deleteTicket = async (ticketId: string): Promise<boolean> => {
       console.error('Error deleting ticket responses:', responsesError);
       return false;
     }
+    
+    console.log(`Successfully deleted responses for ticket: ${ticketId}`);
 
-    // ثم نحذف التذكرة نفسها
-    const { error } = await supabase
+    // Then delete the ticket itself
+    const { error, count } = await supabase
       .from('tickets')
       .delete()
-      .eq('ticket_id', ticketId);
+      .eq('ticket_id', ticketId)
+      .select('count');
 
     if (error) {
       console.error('Error deleting ticket:', error);
       return false;
     }
-
+    
+    console.log(`Ticket deletion result: ${count} rows affected`);
+    
+    // Double-check that the ticket was actually deleted
+    const { data: checkData } = await supabase
+      .from('tickets')
+      .select('ticket_id')
+      .eq('ticket_id', ticketId)
+      .single();
+    
+    if (checkData) {
+      console.error('Ticket still exists after deletion attempt');
+      return false;
+    }
+    
+    console.log(`Confirmed ticket ${ticketId} was successfully deleted`);
     return true;
   } catch (error) {
     console.error('Error in deleteTicket:', error);

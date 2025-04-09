@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -180,6 +179,7 @@ const AdminDashboard = () => {
           setTickets(prevTickets => prevTickets.filter(ticket => ticket.ticket_id !== ticketId));
         } else {
           toast.error('فشل في حذف التذكرة');
+          console.error('Failed to delete ticket');
         }
       } catch (error) {
         console.error('Error deleting ticket:', error);
