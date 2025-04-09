@@ -40,6 +40,7 @@ const AdminTicketDetails = () => {
       handleDeleteResponse(responseId);
       
       console.log('Deleting response with ID:', responseId);
+      // Use the delete method with proper error handling
       const { error } = await supabase
         .from('ticket_responses')
         .delete()
@@ -54,7 +55,6 @@ const AdminTicketDetails = () => {
       }
 
       toast.success('تم حذف الرد بنجاح');
-      // No need to call fetchTicketAndResponses() since we already updated the UI
     } catch (error) {
       console.error('Error in handleDeleteResponse:', error);
       toast.error('حدث خطأ أثناء محاولة حذف الرد');

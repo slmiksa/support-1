@@ -17,6 +17,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
     
     setLoading(true);
     try {
+      // Fetch ticket data
       const { data: ticketData, error: ticketError } = await supabase
         .from('tickets')
         .select('*, assigned_to')
@@ -29,6 +30,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
 
       setTicket(ticketData);
 
+      // Fetch admin data if ticket is assigned
       if (ticketData.assigned_to) {
         const { data: adminData, error: adminError } = await supabase
           .from('admins')
@@ -41,6 +43,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
         }
       }
 
+      // Fetch responses with fresh data from the database
       const { data: responsesData, error: responsesError } = await supabase
         .from('ticket_responses')
         .select('*, admin:admins(username)')
@@ -51,6 +54,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
         throw responsesError;
       }
 
+      // Format responses for display
       const formattedResponses = responsesData?.map(response => {
         const adminName = response.admin?.username || null;
         return {
@@ -85,6 +89,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
     setResponses(prev => prev.filter(response => response.id !== responseId));
   };
 
+  // Fetch data when ticketId changes
   useEffect(() => {
     if (ticketId) {
       fetchTicketAndResponses();
