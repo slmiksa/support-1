@@ -153,7 +153,7 @@ const ReportGenerator = () => {
         { header: 'الرقم الوظيفي', key: 'employeeId', width: 15 },
         { header: 'الفرع', key: 'branch', width: 20 },
         { header: 'رقم Anydesk', key: 'anydeskNumber', width: 15 },
-        { header: 'رقم التحويلة', key: 'extension', width: 15 },
+        { header: 'Contact_Number', key: 'contactNumber', width: 15 },
         { header: 'الوصف', key: 'description', width: 40 },
         { header: 'الحالة', key: 'status', width: 15 },
         { header: 'موظف الدعم الفني', key: 'supportStaff', width: 20 },
@@ -170,12 +170,16 @@ const ReportGenerator = () => {
           `${r.is_admin ? (r.admin_name || 'الدعم الفني') : 'الموظف'}: ${r.response} (${format(new Date(r.created_at), 'yyyy-MM-dd HH:mm')})`
         ).join(' | ');
         
+        const contactNumber = ticket.custom_fields && ticket.custom_fields.Contact_Number 
+          ? ticket.custom_fields.Contact_Number 
+          : ticket.extension_number || '';
+        
         worksheet.addRow({
           ticketId: ticket.ticket_id,
           employeeId: ticket.employee_id,
           branch: ticket.branch,
           anydeskNumber: ticket.anydesk_number || '',
-          extension: ticket.extension_number || '',
+          contactNumber: contactNumber,
           description: ticket.description,
           status: statusLabels[ticket.status] || ticket.status,
           supportStaff: ticket.assigned_to || 'لم يتم التعيين',
@@ -527,8 +531,10 @@ const ReportGenerator = () => {
                             <p className="text-right font-medium">{ticket.anydesk_number || 'غير محدد'}</p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-right text-gray-500 text-sm">رقم التحويلة</p>
-                            <p className="text-right font-medium">{ticket.extension_number || 'غير محدد'}</p>
+                            <p className="text-right text-gray-500 text-sm">Contact_Number</p>
+                            <p className="text-right font-medium">{ticket.custom_fields && ticket.custom_fields.Contact_Number 
+                              ? ticket.custom_fields.Contact_Number 
+                              : ticket.extension_number || 'غير محدد'}</p>
                           </div>
                           <div className="space-y-1">
                             <p className="text-right text-gray-500 text-sm">تاريخ الإنشاء</p>
