@@ -51,19 +51,7 @@ const TicketResponseForm = ({
         throw new Error('لم يتم العثور على معرف المسؤول');
       }
 
-      if (responses.length === 0 && (!ticket.assigned_to || ticket.assigned_to === '')) {
-        const { error: updateError } = await supabase
-          .from('tickets')
-          .update({ assigned_to: currentAdmin.username })
-          .eq('ticket_id', ticketId);
-
-        if (updateError) {
-          console.error('Error assigning ticket:', updateError);
-        } else {
-          ticket.assigned_to = currentAdmin.username;
-        }
-      }
-
+      // الرد سيتم تخزينه وسيتم تعيين المسؤول تلقائياً في hook الخاص بالتذكرة
       const { data, error } = await supabase.rpc('add_ticket_response_with_admin', {
         p_ticket_id: ticketId,
         p_response: responseText,

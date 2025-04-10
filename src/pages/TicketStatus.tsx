@@ -17,6 +17,7 @@ const TicketStatus = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [responses, setResponses] = useState<any[]>([]);
   const { toast } = useToast();
+  const [assignedAdmin, setAssignedAdmin] = useState<any>(null);
 
   useEffect(() => {
     if (ticketId) {
@@ -36,6 +37,19 @@ const TicketStatus = () => {
         setTicket(fetchedTicket);
         // Fetch ticket responses
         await fetchTicketResponses(id);
+
+        if (fetchedTicket.assigned_to) {
+          // Fetch the assigned admin details to display employee ID
+          const { data: adminData, error: adminError } = await supabase
+            .from('admins')
+            .select('id, username, employee_id')
+            .eq('username', fetchedTicket.assigned_to)
+            .single();
+            
+          if (!adminError && adminData) {
+            setAssignedAdmin(adminData);
+          }
+        }
       } else {
         toast({
           title: "خطأ",
@@ -61,6 +75,19 @@ const TicketStatus = () => {
       const fetchedResponses = await getTicketResponses(id);
       console.log('Fetched responses in component:', fetchedResponses);
       setResponses(fetchedResponses);
+      
+      // Auto-assign the ticket to the first admin who responds if not already assigned
+      if (!ticket?.assigned_to && fetchedResponses.length > 0) {
+        const firstAdminResponse = fetchedResponses.find(resp => resp.is_admin && resp.admin_name);
+        
+        if (firstAdminResponse && ticket) {
+          // Update the ticket locally
+          setTicket({
+            ...ticket,
+            assigned_to: firstAdminResponse.admin_name
+          });
+        }
+      }
     } catch (error) {
       console.error("Error fetching ticket responses:", error);
     }
@@ -144,14 +171,23 @@ const TicketStatus = () => {
                     <p className="text-right">{ticket.branch}</p>
                   </div>
                   
-                  {ticket.assigned_to && (
-                    <div className="space-y-2">
-                      <p className="text-right font-medium">موظف الدعم المسؤول:</p>
-                      <p className="text-right">
-                        {ticket.assigned_to}
-                      </p>
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <p className="text-right font-medium">موظف الدعم المسؤول:</p>
+                    <p className="text-right">
+                      {ticket.assigned_to ? (
+                        <span className="font-medium text-company">
+                          {ticket.assigned_to}
+                          {assignedAdmin?.employee_id && (
+                            <span className="mr-2 text-sm text-gray-500">
+                              (عضوية: {assignedAdmin.employee_id})
+                            </span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500">لم يتم التعيين</span>
+                      )}
+                    </p>
+                  </div>
                   
                   {ticket.anydesk_number && (
                     <div className="space-y-2">

@@ -47,24 +47,11 @@ export const useTicketDetails = (ticketId: string | undefined) => {
 
       setTicket(ticketData);
 
-      // Fetch admin data if ticket is assigned
-      if (ticketData.assigned_to) {
-        const { data: adminData, error: adminError } = await supabase
-          .from('admins')
-          .select('id, username, employee_id')
-          .eq('username', ticketData.assigned_to)
-          .single();
-          
-        if (!adminError && adminData) {
-          setAssignedAdmin(adminData);
-        }
-      }
-
+      // Fetch responses to identify the first admin who responded
       console.log('Fetching responses from database...');
-      // Use a separate query to ensure we get the most up-to-date responses
       const { data: responsesData, error: responsesError } = await supabase
         .from('ticket_responses')
-        .select('*, admin:admins(username, employee_id)')
+        .select('*, admin:admins(username, employee_id, id)')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true });
 
@@ -86,6 +73,41 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       }) || [];
 
       setResponses(formattedResponses);
+      
+      // Automatically set the assigned admin if not already assigned
+      if (!ticketData.assigned_to && formattedResponses.length > 0) {
+        // Find the first admin response
+        const firstAdminResponse = formattedResponses.find(resp => resp.is_admin && resp.admin_name);
+        
+        if (firstAdminResponse) {
+          // Update the ticket's assigned_to field
+          const { error: assignError } = await supabase
+            .from('tickets')
+            .update({ assigned_to: firstAdminResponse.admin_name })
+            .eq('ticket_id', ticketId);
+            
+          if (!assignError) {
+            // Update local state
+            ticketData.assigned_to = firstAdminResponse.admin_name;
+            console.log(`Ticket assigned to ${firstAdminResponse.admin_name} automatically`);
+          } else {
+            console.error('Error assigning ticket to admin:', assignError);
+          }
+        }
+      }
+
+      // Fetch admin data if ticket is assigned
+      if (ticketData.assigned_to) {
+        const { data: adminData, error: adminError } = await supabase
+          .from('admins')
+          .select('id, username, employee_id')
+          .eq('username', ticketData.assigned_to)
+          .single();
+          
+        if (!adminError && adminData) {
+          setAssignedAdmin(adminData);
+        }
+      }
     } catch (error) {
       console.error('Error fetching ticket details:', error);
       toast.error('فشل في تحميل تفاصيل التذكرة');
