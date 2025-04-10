@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, getAllTicketResponses, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -153,7 +154,7 @@ const ReportGenerator = () => {
         { header: 'الرقم الوظيفي', key: 'employeeId', width: 15 },
         { header: 'الفرع', key: 'branch', width: 20 },
         { header: 'رقم Anydesk', key: 'anydeskNumber', width: 15 },
-        { header: 'Contact_Number', key: 'contactNumber', width: 15 },
+        { header: 'رقم التحويلة', key: 'contactNumber', width: 15 },
         { header: 'الوصف', key: 'description', width: 40 },
         { header: 'الحالة', key: 'status', width: 15 },
         { header: 'موظف الدعم الفني', key: 'supportStaff', width: 20 },
@@ -170,9 +171,12 @@ const ReportGenerator = () => {
           `${r.is_admin ? (r.admin_name || 'الدعم الفني') : 'الموظف'}: ${r.response} (${format(new Date(r.created_at), 'yyyy-MM-dd HH:mm')})`
         ).join(' | ');
         
+        // يستخدم حقل Contact_Number من custom_fields إذا كان موجودًا أو رقم التحويلة كبديل
         const contactNumber = ticket.custom_fields && ticket.custom_fields.Contact_Number 
           ? ticket.custom_fields.Contact_Number 
           : ticket.extension_number || '';
+        
+        console.log(`Ticket ${ticket.ticket_id} contact number: ${contactNumber}, custom fields:`, ticket.custom_fields);
         
         worksheet.addRow({
           ticketId: ticket.ticket_id,
@@ -531,7 +535,7 @@ const ReportGenerator = () => {
                             <p className="text-right font-medium">{ticket.anydesk_number || 'غير محدد'}</p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-right text-gray-500 text-sm">Contact_Number</p>
+                            <p className="text-right text-gray-500 text-sm">رقم التحويلة</p>
                             <p className="text-right font-medium">{ticket.custom_fields && ticket.custom_fields.Contact_Number 
                               ? ticket.custom_fields.Contact_Number 
                               : ticket.extension_number || 'غير محدد'}</p>

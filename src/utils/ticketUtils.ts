@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
@@ -427,6 +428,7 @@ export const getTicketsByDateRange = async (startDate: string, endDate: string):
 
 export const getTicketsWithResolutionDetails = async (startDate?: string, endDate?: string): Promise<SupportTicket[]> => {
   try {
+    console.log(`Fetching tickets from ${startDate} to ${endDate}`);
     let query = supabase
       .from('tickets')
       .select('*');
@@ -446,7 +448,16 @@ export const getTicketsWithResolutionDetails = async (startDate?: string, endDat
       return [];
     }
     
-    return data as SupportTicket[];
+    // تأكد من تحويل custom_fields بشكل صحيح
+    const tickets = data.map(ticket => {
+      console.log(`Ticket ${ticket.ticket_id} custom fields:`, ticket.custom_fields);
+      return {
+        ...ticket,
+        custom_fields: ticket.custom_fields || {}
+      };
+    });
+    
+    return tickets as SupportTicket[];
   } catch (error) {
     console.error('Error in getTicketsWithResolutionDetails:', error);
     return [];
