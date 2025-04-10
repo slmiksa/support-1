@@ -238,7 +238,10 @@ const TicketStatus = () => {
                 {responses && responses.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-right font-medium">ردود الدعم الفني:</p>
-                    <TicketResponseList responses={responses} />
+                    <TicketResponseList 
+                      responses={responses} 
+                      isCustomerView={true}
+                    />
                   </div>
                 )}
               </CardContent>

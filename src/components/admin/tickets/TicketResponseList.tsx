@@ -13,9 +13,10 @@ interface TicketResponse {
 
 interface TicketResponseListProps {
   responses: TicketResponse[];
+  isCustomerView?: boolean; // New prop to control visibility
 }
 
-const TicketResponseList = ({ responses }: TicketResponseListProps) => {
+const TicketResponseList = ({ responses, isCustomerView = false }: TicketResponseListProps) => {
   const { hasPermission } = useAdminAuth();
   
   if (responses.length === 0) {
@@ -47,7 +48,7 @@ const TicketResponseList = ({ responses }: TicketResponseListProps) => {
                   ? response.admin_name || 'الدعم الفني' 
                   : 'الموظف'}
               </span>
-              {response.is_admin && response.admin_employee_id && (
+              {response.is_admin && response.admin_employee_id && !isCustomerView && (
                 <div className="text-xs text-gray-500 mt-1">
                   عضوية: {response.admin_employee_id}
                 </div>
@@ -62,3 +63,4 @@ const TicketResponseList = ({ responses }: TicketResponseListProps) => {
 };
 
 export default TicketResponseList;
+
