@@ -116,7 +116,7 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
 export const getTicketResponses = async (ticketId: string) => {
   const { data, error } = await supabase
     .from('ticket_responses')
-    .select('*, admin:admins(username)')
+    .select('*, admin:admins(username, employee_id)')
     .eq('ticket_id', ticketId)
     .order('created_at', { ascending: true });
     
@@ -127,7 +127,8 @@ export const getTicketResponses = async (ticketId: string) => {
   
   return data.map(response => ({
     ...response,
-    admin_name: response.admin?.username || null
+    admin_name: response.admin?.username || null,
+    admin_employee_id: response.admin?.employee_id || null
   }));
 };
 
@@ -136,7 +137,7 @@ export const getAllTicketResponses = async (ticketIds: string[]) => {
   
   const { data, error } = await supabase
     .from('ticket_responses')
-    .select('*, admin:admins(username)')
+    .select('*, admin:admins(username, employee_id)')
     .in('ticket_id', ticketIds)
     .order('created_at', { ascending: true });
     
@@ -153,7 +154,8 @@ export const getAllTicketResponses = async (ticketIds: string[]) => {
     
     acc[ticketId].push({
       ...response,
-      admin_name: response.admin?.username || null
+      admin_name: response.admin?.username || null,
+      admin_employee_id: response.admin?.employee_id || null
     });
     
     return acc;

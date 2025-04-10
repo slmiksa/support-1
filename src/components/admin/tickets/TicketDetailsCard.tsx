@@ -83,7 +83,14 @@ const TicketDetailsCard = ({
               <p className="text-right font-medium ticket-info-label">موظف الدعم المسؤول:</p>
               <p className="text-right">
                 {ticket.assigned_to ? (
-                  <span className="font-medium text-company">{ticket.assigned_to}</span>
+                  <span className="font-medium text-company">
+                    {ticket.assigned_to}
+                    {assignedAdmin?.employee_id && (
+                      <span className="mr-2 text-sm text-gray-500">
+                        (عضوية: {assignedAdmin.employee_id})
+                      </span>
+                    )}
+                  </span>
                 ) : (
                   <span className="text-gray-500 dark:text-gray-400">لم يتم التعيين</span>
                 )}

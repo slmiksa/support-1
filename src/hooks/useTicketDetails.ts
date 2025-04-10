@@ -51,7 +51,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       if (ticketData.assigned_to) {
         const { data: adminData, error: adminError } = await supabase
           .from('admins')
-          .select('id, username')
+          .select('id, username, employee_id')
           .eq('username', ticketData.assigned_to)
           .single();
           
@@ -64,7 +64,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       // Use a separate query to ensure we get the most up-to-date responses
       const { data: responsesData, error: responsesError } = await supabase
         .from('ticket_responses')
-        .select('*, admin:admins(username)')
+        .select('*, admin:admins(username, employee_id)')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true });
 
@@ -77,9 +77,11 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       // Format responses for display
       const formattedResponses = responsesData?.map(response => {
         const adminName = response.admin?.username || null;
+        const adminEmployeeId = response.admin?.employee_id || null;
         return {
           ...response,
-          admin_name: adminName
+          admin_name: adminName,
+          admin_employee_id: adminEmployeeId
         };
       }) || [];
 

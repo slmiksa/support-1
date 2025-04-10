@@ -8,6 +8,7 @@ interface TicketResponse {
   is_admin: boolean;
   created_at: string;
   admin_name?: string | null;
+  admin_employee_id?: string | null;
 }
 
 interface TicketResponseListProps {
@@ -40,11 +41,18 @@ const TicketResponseList = ({ responses }: TicketResponseListProps) => {
             <span className="text-xs text-gray-500 dark:text-gray-400">
               {new Date(response.created_at).toLocaleString('ar-SA')}
             </span>
-            <span className="font-medium dark:text-white">
-              {response.is_admin 
-                ? response.admin_name || 'الدعم الفني' 
-                : 'الموظف'}
-            </span>
+            <div className="text-right">
+              <span className="font-medium dark:text-white">
+                {response.is_admin 
+                  ? response.admin_name || 'الدعم الفني' 
+                  : 'الموظف'}
+              </span>
+              {response.is_admin && response.admin_employee_id && (
+                <div className="text-xs text-gray-500 mt-1">
+                  عضوية: {response.admin_employee_id}
+                </div>
+              )}
+            </div>
           </div>
           <p className="text-right dark:text-white">{response.response}</p>
         </div>
