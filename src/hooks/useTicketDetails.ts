@@ -21,7 +21,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       // Fetch ticket data
       const { data: ticketData, error: ticketError } = await supabase
         .from('tickets')
-        .select('*, assigned_to')
+        .select('*, assigned_to, extension_number')
         .eq('ticket_id', ticketId)
         .single();
 

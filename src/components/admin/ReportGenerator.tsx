@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, getAllTicketResponses, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -146,11 +145,9 @@ const ReportGenerator = () => {
     }
 
     try {
-      // Create workbook and worksheet
       const workbook = new Workbook();
       const worksheet = workbook.addWorksheet('تقرير التذاكر');
       
-      // Add headers
       worksheet.columns = [
         { header: 'رقم التذكرة', key: 'ticketId', width: 15 },
         { header: 'الرقم الوظيفي', key: 'employeeId', width: 15 },
@@ -165,10 +162,8 @@ const ReportGenerator = () => {
         { header: 'الردود', key: 'responses', width: 60 }
       ];
       
-      // Make headers bold
       worksheet.getRow(1).font = { bold: true };
       
-      // Add data
       tickets.forEach(ticket => {
         const responses = ticketResponses[ticket.ticket_id] || [];
         const responsesText = responses.map(r => 
@@ -190,10 +185,8 @@ const ReportGenerator = () => {
         });
       });
       
-      // Add statistics sheet
       const statsSheet = workbook.addWorksheet('إحصائيات');
       
-      // Status statistics
       statsSheet.addRow(['إحصائيات حالة التذاكر']);
       statsSheet.addRow(['الحالة', 'العدد']);
       statsSheet.getRow(1).font = { bold: true };
@@ -203,10 +196,8 @@ const ReportGenerator = () => {
         statsSheet.addRow([statusLabels[status] || status, count]);
       });
       
-      // Add a row gap
       statsSheet.addRow([]);
       
-      // Staff statistics
       if (adminStats.staffDetails.length > 0) {
         statsSheet.addRow(['إحصائيات أداء الموظفين']);
         statsSheet.addRow(['الموظف', 'عدد التذاكر', 'تم الحل', 'نسبة الاستجابة', 'متوسط وقت الاستجابة (ساعة)', 'معدل الحل']);
@@ -227,10 +218,8 @@ const ReportGenerator = () => {
         });
       }
       
-      // Add a row gap
       statsSheet.addRow([]);
       
-      // Branch statistics
       if (Object.keys(ticketStats.byBranch).length > 0) {
         statsSheet.addRow(['توزيع التذاكر حسب الفرع']);
         statsSheet.addRow(['الفرع', 'عدد التذاكر']);
@@ -244,10 +233,8 @@ const ReportGenerator = () => {
           });
       }
       
-      // Generate buffer
       const buffer = await workbook.xlsx.writeBuffer();
       
-      // Create and download file
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -405,7 +392,6 @@ const ReportGenerator = () => {
 
             {tickets.length > 0 && ticketStats.total > 0 && (
               <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Status Distribution Pie Chart */}
                 <Card className="col-span-1">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-right text-base">توزيع التذاكر حسب الحالة</CardTitle>
@@ -436,7 +422,6 @@ const ReportGenerator = () => {
                   </CardContent>
                 </Card>
 
-                {/* Staff Comparison Chart */}
                 <Card className="col-span-1 md:col-span-2">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-right text-base">مقارنة أداء الموظفين</CardTitle>
@@ -465,7 +450,6 @@ const ReportGenerator = () => {
                   </CardContent>
                 </Card>
 
-                {/* Branches Bar Chart */}
                 {Object.keys(ticketStats.byBranch).length > 0 && (
                   <Card className="col-span-1 md:col-span-3">
                     <CardHeader className="pb-2">
@@ -617,4 +601,3 @@ const ReportGenerator = () => {
 };
 
 export default ReportGenerator;
-
