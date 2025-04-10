@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, getAllTicketResponses, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -8,13 +9,11 @@ import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { ar } from 'date-fns/locale';
 import { Calendar as CalendarIcon, Download, FileText, BarChart, Users, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { Workbook } from 'exceljs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const statusColorMap = {
@@ -136,7 +135,7 @@ const ReportGenerator = () => {
     }
   };
 
-  const exportToCSV = () => {
+  const exportToExcel = async () => {
     if (tickets.length === 0) {
       toast({
         title: "خطأ",
@@ -146,313 +145,131 @@ const ReportGenerator = () => {
       return;
     }
 
-    const headers = [
-      'رقم التذكرة',
-      'الرقم الوظيفي',
-      'الفرع',
-      'رقم Anydesk',
-      'رقم التحويلة',
-      'الوصف',
-      'الحالة',
-      'موظف الدعم الفني',
-      'تاريخ الإنشاء',
-      'تاريخ آخر تحديث',
-      'الردود'
-    ];
-
-    const csvContent = tickets.map(ticket => {
-      const responses = ticketResponses[ticket.ticket_id] || [];
-      const responsesText = responses.map(r => 
-        `${r.is_admin ? (r.admin_name || 'الدعم الفني') : 'الموظف'}: ${r.response.replace(/"/g, '""')} (${format(new Date(r.created_at), 'yyyy-MM-dd HH:mm')})`
-      ).join(' | ');
-
-      return [
-        ticket.ticket_id,
-        ticket.employee_id,
-        ticket.branch,
-        ticket.anydesk_number || '',
-        ticket.extension_number || '',
-        `"${ticket.description.replace(/"/g, '""')}"`,
-        statusLabels[ticket.status] || ticket.status,
-        ticket.assigned_to || 'لم يتم التعيين',
-        format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm'),
-        ticket.updated_at ? format(new Date(ticket.updated_at), 'yyyy-MM-dd HH:mm') : '',
-        `"${responsesText.replace(/"/g, '""')}"`
-      ];
-    });
-
-    let csvString = '\uFEFF' + headers.join(',') + '\n' + 
-                    csvContent.map(row => row.join(',')).join('\n');
-
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    
-    const dateRange = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`;
-    link.setAttribute('href', url);
-    link.setAttribute('download', `تقرير_التذاكر_${dateRange}.csv`);
-    document.body.appendChild(link);
-    
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const exportToPDF = () => {
-    if (tickets.length === 0) {
-      toast({
-        title: "خطأ",
-        description: "لا توجد بيانات للتصدير",
-        variant: "destructive"
-      });
-      return;
-    }
-
     try {
-      const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4',
-      });
+      // Create workbook and worksheet
+      const workbook = new Workbook();
+      const worksheet = workbook.addWorksheet('تقرير التذاكر');
       
-      doc.setFontSize(18);
-      doc.setTextColor(21, 67, 127);
-      const title = `Ticket Report: ${format(startDate, 'yyyy/MM/dd')} - ${format(endDate, 'yyyy/MM/dd')}`;
-      doc.text(title, doc.internal.pageSize.width / 2, 20, { align: 'center' });
-      
-      doc.setFontSize(10);
-      doc.setTextColor(100, 100, 100);
-      const currentDate = `Report Date: ${format(new Date(), 'yyyy/MM/dd HH:mm')}`;
-      doc.text(currentDate, doc.internal.pageSize.width - 20, 30, { align: 'right' });
-      
-      doc.setFontSize(14);
-      doc.setTextColor(21, 67, 127);
-      doc.text('Ticket Statistics', doc.internal.pageSize.width / 2, 40, { align: 'center' });
-      
-      const statsData = [
-        ['Total Tickets', ticketStats.total.toString()],
-        ['Pending', (ticketStats.byStatus.pending || 0).toString()],
-        ['Open', (ticketStats.byStatus.open || 0).toString()],
-        ['In Progress', (ticketStats.byStatus.inprogress || 0).toString()],
-        ['Resolved', (ticketStats.byStatus.resolved || 0).toString()],
-        ['Closed', (ticketStats.byStatus.closed || 0).toString()]
+      // Add headers
+      worksheet.columns = [
+        { header: 'رقم التذكرة', key: 'ticketId', width: 15 },
+        { header: 'الرقم الوظيفي', key: 'employeeId', width: 15 },
+        { header: 'الفرع', key: 'branch', width: 20 },
+        { header: 'رقم Anydesk', key: 'anydeskNumber', width: 15 },
+        { header: 'رقم التحويلة', key: 'extension', width: 15 },
+        { header: 'الوصف', key: 'description', width: 40 },
+        { header: 'الحالة', key: 'status', width: 15 },
+        { header: 'موظف الدعم الفني', key: 'supportStaff', width: 20 },
+        { header: 'تاريخ الإنشاء', key: 'createdAt', width: 20 },
+        { header: 'تاريخ آخر تحديث', key: 'updatedAt', width: 20 },
+        { header: 'الردود', key: 'responses', width: 60 }
       ];
       
-      autoTable(doc, {
-        startY: 45,
-        head: [['Status', 'Count']],
-        body: statsData,
-        theme: 'grid',
-        headStyles: { 
-          halign: 'center',
-          fillColor: [21, 67, 127],
-          textColor: [255, 255, 255],
-          fontSize: 12
-        },
-        bodyStyles: { 
-          halign: 'center',
-          fontSize: 10
-        },
-        margin: { left: 100, right: 100 },
-        tableWidth: 'auto',
-      });
-
-      const finalStatsY = (doc as any).lastAutoTable.finalY + 10;
+      // Make headers bold
+      worksheet.getRow(1).font = { bold: true };
       
-      if (adminStats.staffDetails.length > 0) {
-        doc.setFontSize(14);
-        doc.setTextColor(21, 67, 127);
-        doc.text('Staff Performance', doc.internal.pageSize.width / 2, finalStatsY, { align: 'center' });
-        
-        const staffPerformanceData = adminStats.staffDetails.map(staff => [
-          staff.name,
-          staff.ticketsCount.toString(),
-          staff.resolvedCount.toString(),
-          `${staff.responseRate.toFixed(1)}%`,
-          `${staff.averageResponseTime.toFixed(1)} hours`,
-          staff.resolvedCount > 0 ? 
-            `${((staff.resolvedCount / staff.ticketsCount) * 100).toFixed(1)}%` : 
-            '0%'
-        ]);
-        
-        autoTable(doc, {
-          startY: finalStatsY + 5,
-          head: [['Staff Member', 'Total Tickets', 'Resolved', 'Response Rate', 'Avg Response Time', 'Resolution Rate']],
-          body: staffPerformanceData,
-          theme: 'grid',
-          headStyles: { 
-            halign: 'center',
-            fillColor: [21, 67, 127],
-            textColor: [255, 255, 255],
-            fontSize: 12
-          },
-          bodyStyles: { 
-            halign: 'center',
-            fontSize: 10
-          },
-        });
-      }
-      
-      const staffTableY = (doc as any).lastAutoTable.finalY + 10;
-      if (Object.keys(ticketStats.byBranch).length > 0) {
-        const branchData = Object.entries(ticketStats.byBranch)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 5)
-          .map(([branch, count]) => [branch, count.toString()]);
-        
-        doc.text('Ticket Distribution by Branch', doc.internal.pageSize.width / 2, staffTableY, { align: 'center' });
-        
-        autoTable(doc, {
-          startY: staffTableY + 5,
-          head: [['Branch', 'Ticket Count']],
-          body: branchData,
-          theme: 'grid',
-          headStyles: { 
-            halign: 'center',
-            fillColor: [21, 67, 127],
-            textColor: [255, 255, 255],
-            fontSize: 12
-          },
-          bodyStyles: { 
-            halign: 'center',
-            fontSize: 10
-          },
-          margin: { left: 20, right: 20 },
-          tableWidth: 'auto',
-        });
-      }
-      
-      const ticketsTitleY = (doc as any).lastAutoTable.finalY + 15 || staffTableY + 50;
-      doc.setFontSize(14);
-      doc.setTextColor(21, 67, 127);
-      doc.text('Ticket Details with Responses', doc.internal.pageSize.width / 2, ticketsTitleY, { align: 'center' });
-      
-      let currentY = ticketsTitleY + 10;
-      
-      for (const ticket of tickets) {
-        if (currentY > doc.internal.pageSize.height - 40) {
-          doc.addPage();
-          currentY = 20;
-        }
-        
-        doc.setFontSize(12);
-        doc.setTextColor(21, 67, 127);
-        doc.text(`Ticket #${ticket.ticket_id}`, 15, currentY);
-        
-        const ticketDetailRows = [
-          ['Employee ID', ticket.employee_id],
-          ['Branch', ticket.branch],
-          ['Anydesk Number', ticket.anydesk_number || 'N/A'],
-          ['Extension Number', ticket.extension_number || 'N/A'],
-          ['Status', statusLabelsEn[ticket.status] || ticket.status],
-          ['Support Staff', ticket.assigned_to || 'Not Assigned'],
-          ['Created Date', format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm')],
-          ['Updated Date', ticket.updated_at ? format(new Date(ticket.updated_at), 'yyyy-MM-dd HH:mm') : 'N/A']
-        ];
-        
-        autoTable(doc, {
-          startY: currentY + 5,
-          head: [['Field', 'Value']],
-          body: ticketDetailRows,
-          theme: 'grid',
-          headStyles: { 
-            halign: 'center',
-            fillColor: [21, 67, 127],
-            textColor: [255, 255, 255],
-            fontSize: 10
-          },
-          bodyStyles: { 
-            halign: 'center',
-            fontSize: 8
-          },
-          margin: { left: 15, right: 15 },
-          tableWidth: 'auto',
-        });
-        
-        currentY = (doc as any).lastAutoTable.finalY + 5;
-        
-        doc.setFontSize(10);
-        doc.setTextColor(0, 0, 0);
-        doc.text('Description:', 15, currentY);
-        
-        const splitDescription = doc.splitTextToSize(ticket.description, doc.internal.pageSize.width - 30);
-        doc.text(splitDescription, 15, currentY + 5);
-        
-        currentY += 10 + (splitDescription.length * 5);
-        
+      // Add data
+      tickets.forEach(ticket => {
         const responses = ticketResponses[ticket.ticket_id] || [];
-        if (responses.length > 0) {
-          if (currentY > doc.internal.pageSize.height - 40) {
-            doc.addPage();
-            currentY = 20;
-          }
-          
-          doc.setFontSize(10);
-          doc.setTextColor(21, 67, 127);
-          doc.text('Responses:', 15, currentY);
-          
-          currentY += 5;
-          
-          const responseRows = responses.map(response => [
-            response.is_admin ? (response.admin_name || 'Support Staff') : 'Employee',
-            response.response,
-            format(new Date(response.created_at), 'yyyy-MM-dd HH:mm')
+        const responsesText = responses.map(r => 
+          `${r.is_admin ? (r.admin_name || 'الدعم الفني') : 'الموظف'}: ${r.response} (${format(new Date(r.created_at), 'yyyy-MM-dd HH:mm')})`
+        ).join(' | ');
+        
+        worksheet.addRow({
+          ticketId: ticket.ticket_id,
+          employeeId: ticket.employee_id,
+          branch: ticket.branch,
+          anydeskNumber: ticket.anydesk_number || '',
+          extension: ticket.extension_number || '',
+          description: ticket.description,
+          status: statusLabels[ticket.status] || ticket.status,
+          supportStaff: ticket.assigned_to || 'لم يتم التعيين',
+          createdAt: format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm'),
+          updatedAt: ticket.updated_at ? format(new Date(ticket.updated_at), 'yyyy-MM-dd HH:mm') : '',
+          responses: responsesText
+        });
+      });
+      
+      // Add statistics sheet
+      const statsSheet = workbook.addWorksheet('إحصائيات');
+      
+      // Status statistics
+      statsSheet.addRow(['إحصائيات حالة التذاكر']);
+      statsSheet.addRow(['الحالة', 'العدد']);
+      statsSheet.getRow(1).font = { bold: true };
+      statsSheet.getRow(2).font = { bold: true };
+      
+      Object.entries(ticketStats.byStatus).forEach(([status, count]) => {
+        statsSheet.addRow([statusLabels[status] || status, count]);
+      });
+      
+      // Add a row gap
+      statsSheet.addRow([]);
+      
+      // Staff statistics
+      if (adminStats.staffDetails.length > 0) {
+        statsSheet.addRow(['إحصائيات أداء الموظفين']);
+        statsSheet.addRow(['الموظف', 'عدد التذاكر', 'تم الحل', 'نسبة الاستجابة', 'متوسط وقت الاستجابة (ساعة)', 'معدل الحل']);
+        statsSheet.getRow(statsSheet.rowCount - 1).font = { bold: true };
+        statsSheet.getRow(statsSheet.rowCount).font = { bold: true };
+        
+        adminStats.staffDetails.forEach(staff => {
+          statsSheet.addRow([
+            staff.name,
+            staff.ticketsCount,
+            staff.resolvedCount,
+            `${staff.responseRate.toFixed(1)}%`,
+            staff.averageResponseTime.toFixed(1),
+            staff.resolvedCount > 0 ? 
+              `${((staff.resolvedCount / staff.ticketsCount) * 100).toFixed(1)}%` : 
+              '0%'
           ]);
-          
-          autoTable(doc, {
-            startY: currentY,
-            head: [['From', 'Response', 'Date']],
-            body: responseRows,
-            theme: 'grid',
-            headStyles: { 
-              halign: 'center',
-              fillColor: [100, 100, 150],
-              textColor: [255, 255, 255],
-              fontSize: 9
-            },
-            bodyStyles: { 
-              fontSize: 8
-            },
-            columnStyles: {
-              0: { cellWidth: 30 },
-              1: { cellWidth: 'auto' },
-              2: { cellWidth: 25 }
-            },
-            margin: { left: 15, right: 15 },
-          });
-          
-          currentY = (doc as any).lastAutoTable.finalY + 15;
-        } else {
-          doc.setFontSize(9);
-          doc.setTextColor(100, 100, 100);
-          doc.text('No responses for this ticket.', 15, currentY + 5);
-          currentY += 15;
-        }
+        });
       }
       
-      const totalPages = doc.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
-        const pageText = `Page ${i} of ${totalPages}`;
-        doc.text(pageText, doc.internal.pageSize.width / 2, doc.internal.pageSize.height - 10, { align: 'center' });
+      // Add a row gap
+      statsSheet.addRow([]);
+      
+      // Branch statistics
+      if (Object.keys(ticketStats.byBranch).length > 0) {
+        statsSheet.addRow(['توزيع التذاكر حسب الفرع']);
+        statsSheet.addRow(['الفرع', 'عدد التذاكر']);
+        statsSheet.getRow(statsSheet.rowCount - 1).font = { bold: true };
+        statsSheet.getRow(statsSheet.rowCount).font = { bold: true };
         
-        doc.setTextColor(21, 67, 127);
-        doc.text("Al-Wasl Technical Support", 20, doc.internal.pageSize.height - 10);
+        Object.entries(ticketStats.byBranch)
+          .sort((a, b) => b[1] - a[1])
+          .forEach(([branch, count]) => {
+            statsSheet.addRow([branch, count]);
+          });
       }
+      
+      // Generate buffer
+      const buffer = await workbook.xlsx.writeBuffer();
+      
+      // Create and download file
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
       
       const dateRange = `${format(startDate, 'yyyy-MM-dd')}_${format(endDate, 'yyyy-MM-dd')}`;
-      doc.save(`Ticket_Report_${dateRange}.pdf`);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `تقرير_التذاكر_${dateRange}.xlsx`);
+      document.body.appendChild(link);
+      
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
       
       toast({
         title: "تم بنجاح",
-        description: "تم تصدير التقرير بصيغة PDF بنجاح",
+        description: "تم تصدير التقرير إلى Excel بنجاح",
       });
     } catch (error) {
-      console.error("PDF generation error:", error);
+      console.error("Excel generation error:", error);
       toast({
         title: "خطأ",
-        description: "حدث خطأ أثناء إنشاء ملف PDF",
+        description: "حدث خطأ أثناء إنشاء ملف Excel",
         variant: "destructive"
       });
     }
@@ -578,19 +395,107 @@ const ReportGenerator = () => {
               </div>
               <div className="flex space-x-2 rtl:space-x-reverse">
                 {tickets.length > 0 && (
-                  <>
-                    <Button variant="outline" onClick={exportToCSV} className="flex items-center gap-2">
-                      <FileText size={16} />
-                      <span>تصدير CSV</span>
-                    </Button>
-                    <Button variant="outline" onClick={exportToPDF} className="flex items-center gap-2">
-                      <BarChart size={16} />
-                      <span>تصدير PDF</span>
-                    </Button>
-                  </>
+                  <Button variant="outline" onClick={exportToExcel} className="flex items-center gap-2">
+                    <FileText size={16} />
+                    <span>تصدير Excel</span>
+                  </Button>
                 )}
               </div>
             </div>
+
+            {tickets.length > 0 && ticketStats.total > 0 && (
+              <div className="mb-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Status Distribution Pie Chart */}
+                <Card className="col-span-1">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-right text-base">توزيع التذاكر حسب الحالة</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={prepareStatusChartData()}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {prepareStatusChartData().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                          </Pie>
+                          <Tooltip />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Staff Comparison Chart */}
+                <Card className="col-span-1 md:col-span-2">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-right text-base">مقارنة أداء الموظفين</CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <ReBarChart
+                          data={prepareStaffComparativeData()}
+                          margin={{
+                            top: 5,
+                            right: 30,
+                            left: 20,
+                            bottom: 5,
+                          }}
+                        >
+                          <XAxis dataKey="name" />
+                          <YAxis />
+                          <Tooltip />
+                          <Legend />
+                          <Bar dataKey="تذاكر_كلية" fill="#8884d8" />
+                          <Bar dataKey="تم_حلها" fill="#82ca9d" />
+                        </ReBarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Branches Bar Chart */}
+                {Object.keys(ticketStats.byBranch).length > 0 && (
+                  <Card className="col-span-1 md:col-span-3">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-right text-base">توزيع التذاكر حسب الفروع (أعلى 5 فروع)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-2">
+                      <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ReBarChart
+                            data={prepareBranchChartData()}
+                            margin={{
+                              top: 5,
+                              right: 30,
+                              left: 20,
+                              bottom: 5,
+                            }}
+                          >
+                            <XAxis dataKey="name" />
+                            <YAxis />
+                            <Tooltip />
+                            <Legend />
+                            <Bar dataKey="count" name="عدد التذاكر" fill="#00C49F" />
+                          </ReBarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
 
             {tickets.length > 0 && (
               <div className="mb-6">
@@ -712,3 +617,4 @@ const ReportGenerator = () => {
 };
 
 export default ReportGenerator;
+
