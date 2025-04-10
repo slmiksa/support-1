@@ -362,7 +362,7 @@ const ReportGenerator = () => {
       </div>
 
       {/* Staff performance comparison chart - only show if data exists */}
-      {Object.keys(ticketStats.byBranch).length > 0 && adminStats.staffDetails.length > 0 && (
+      {adminStats.staffDetails.length > 0 && (
         <Card className="col-span-1 md:col-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="text-right text-base">مقارنة أداء الموظفين</CardTitle>
