@@ -163,7 +163,7 @@ const ReportGenerator = () => {
     const csvContent = tickets.map(ticket => {
       const responses = ticketResponses[ticket.ticket_id] || [];
       const responsesText = responses.map(r => 
-        `${r.is_admin ? (r.admin_name || 'الدعم الفني') : 'الموظف'}: ${r.response.replace(/"/g, '""')} (${new Date(r.created_at).toLocaleDateString('ar-SA')})`
+        `${r.is_admin ? (r.admin_name || 'الدعم الفني') : 'الموظف'}: ${r.response.replace(/"/g, '""')} (${format(new Date(r.created_at), 'yyyy-MM-dd HH:mm')})`
       ).join(' | ');
 
       return [
@@ -175,8 +175,8 @@ const ReportGenerator = () => {
         `"${ticket.description.replace(/"/g, '""')}"`,
         statusLabels[ticket.status] || ticket.status,
         ticket.assigned_to || 'لم يتم التعيين',
-        new Date(ticket.created_at || '').toLocaleDateString('ar-SA'),
-        new Date(ticket.updated_at || '').toLocaleDateString('ar-SA'),
+        format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm'),
+        ticket.updated_at ? format(new Date(ticket.updated_at), 'yyyy-MM-dd HH:mm') : '',
         `"${responsesText.replace(/"/g, '""')}"`
       ];
     });
@@ -341,9 +341,12 @@ const ReportGenerator = () => {
         const ticketDetailRows = [
           ['Employee ID', ticket.employee_id],
           ['Branch', ticket.branch],
+          ['Anydesk Number', ticket.anydesk_number || 'N/A'],
+          ['Extension Number', ticket.extension_number || 'N/A'],
           ['Status', statusLabelsEn[ticket.status] || ticket.status],
           ['Support Staff', ticket.assigned_to || 'Not Assigned'],
-          ['Created Date', new Date(ticket.created_at || '').toLocaleDateString('en-US')]
+          ['Created Date', format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm')],
+          ['Updated Date', ticket.updated_at ? format(new Date(ticket.updated_at), 'yyyy-MM-dd HH:mm') : 'N/A']
         ];
         
         autoTable(doc, {
@@ -392,7 +395,7 @@ const ReportGenerator = () => {
           const responseRows = responses.map(response => [
             response.is_admin ? (response.admin_name || 'Support Staff') : 'Employee',
             response.response,
-            new Date(response.created_at).toLocaleDateString('en-US')
+            format(new Date(response.created_at), 'yyyy-MM-dd HH:mm')
           ]);
           
           autoTable(doc, {
@@ -503,7 +506,7 @@ const ReportGenerator = () => {
                     className="w-full justify-between text-right"
                   >
                     {startDate ? (
-                      format(startDate, 'PPP', { locale: ar })
+                      format(startDate, 'yyyy-MM-dd')
                     ) : (
                       <span>اختر التاريخ</span>
                     )}
@@ -532,7 +535,7 @@ const ReportGenerator = () => {
                     className="w-full justify-between text-right"
                   >
                     {endDate ? (
-                      format(endDate, 'PPP', { locale: ar })
+                      format(endDate, 'yyyy-MM-dd')
                     ) : (
                       <span>اختر التاريخ</span>
                     )}
@@ -629,6 +632,21 @@ const ReportGenerator = () => {
                           </div>
                         </div>
                         
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="space-y-1">
+                            <p className="text-right text-gray-500 text-sm">رقم Anydesk</p>
+                            <p className="text-right font-medium">{ticket.anydesk_number || 'غير محدد'}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-right text-gray-500 text-sm">رقم التحويلة</p>
+                            <p className="text-right font-medium">{ticket.extension_number || 'غير محدد'}</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-right text-gray-500 text-sm">تاريخ الإنشاء</p>
+                            <p className="text-right font-medium">{format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm')}</p>
+                          </div>
+                        </div>
+                        
                         <div className="mb-4">
                           <p className="text-right text-gray-500 text-sm mb-1">وصف المشكلة</p>
                           <p className="text-right p-3 bg-gray-50 rounded-md">{ticket.description}</p>
@@ -656,7 +674,7 @@ const ReportGenerator = () => {
                                     >
                                       <div className="flex justify-between items-center mb-1">
                                         <span className="text-xs text-gray-500">
-                                          {new Date(response.created_at).toLocaleString('ar-SA')}
+                                          {format(new Date(response.created_at), 'yyyy-MM-dd HH:mm')}
                                         </span>
                                         <span className="font-medium text-right">
                                           {response.is_admin 
