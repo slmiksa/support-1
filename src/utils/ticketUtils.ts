@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
@@ -430,7 +431,7 @@ export const getTicketsWithResolutionDetails = async (startDate?: string, endDat
     console.log(`Fetching tickets from ${startDate} to ${endDate}`);
     let query = supabase
       .from('tickets')
-      .select('*');
+      .select('*, assigned_to');
     
     if (startDate) {
       query = query.gte('created_at', startDate);
@@ -450,11 +451,11 @@ export const getTicketsWithResolutionDetails = async (startDate?: string, endDat
     // تأكد من تحويل custom_fields بشكل صحيح وأن assigned_to موجود
     const tickets = data.map(ticket => {
       console.log(`Ticket ${ticket.ticket_id} custom fields:`, ticket.custom_fields);
-      console.log(`Ticket ${ticket.ticket_id} assigned to:`, ticket.assigned_to);
+      console.log(`Ticket ${ticket.ticket_id} assigned to:`, ticket.assigned_to || 'لم يتم التعيين');
       return {
         ...ticket,
         custom_fields: ticket.custom_fields || {},
-        assigned_to: ticket.assigned_to || null
+        assigned_to: ticket.assigned_to || 'لم يتم التعيين'  // Use default text if null
       };
     });
     

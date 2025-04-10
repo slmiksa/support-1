@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, getAllTicketResponses, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
