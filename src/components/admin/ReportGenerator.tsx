@@ -2,9 +2,7 @@
 import { useReportData } from '@/hooks/useReportData';
 import { useExportUtils } from './report/ExportUtils';
 import ReportControls from './report/ReportControls';
-import StatisticsCards from './report/StatisticsCards';
-import StaffPerformanceChart from './report/StaffPerformanceChart';
-import TicketsTable from './report/TicketsTable';
+import ReportContent from './report/ReportContent';
 
 const ReportGenerator = () => {
   const {
@@ -41,21 +39,15 @@ const ReportGenerator = () => {
         exportToPDF={exportToPDF}
       />
       
-      {/* Statistics cards */}
-      <StatisticsCards
+      {/* Report content - statistics, charts, and tables */}
+      <ReportContent 
         ticketStats={ticketStats}
+        adminStats={adminStats}
+        tickets={tickets}
         startDate={startDate}
         endDate={endDate}
-      />
-
-      {/* Staff performance comparison chart */}
-      <StaffPerformanceChart
-        adminStats={adminStats}
         prepareStaffComparativeData={prepareStaffComparativeData}
       />
-      
-      {/* Tickets table */}
-      <TicketsTable tickets={tickets} />
     </div>
   );
 };

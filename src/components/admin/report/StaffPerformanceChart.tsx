@@ -16,6 +16,9 @@ const StaffPerformanceChart: React.FC<StaffPerformanceChartProps> = ({
     return null;
   }
 
+  // Prepare chart data
+  const chartData = prepareStaffComparativeData();
+  
   return (
     <Card className="col-span-1 md:col-span-2">
       <CardHeader className="pb-2">
@@ -25,7 +28,7 @@ const StaffPerformanceChart: React.FC<StaffPerformanceChartProps> = ({
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
-              data={prepareStaffComparativeData()}
+              data={chartData}
               margin={{
                 top: 5,
                 right: 30,
