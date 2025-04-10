@@ -178,6 +178,10 @@ const ReportGenerator = () => {
         
         console.log(`Ticket ${ticket.ticket_id} contact number: ${contactNumber}, custom fields:`, ticket.custom_fields);
         
+        // تأكد من أن اسم موظف الدعم الفني يظهر بشكل صحيح
+        const supportStaff = ticket.assigned_to || 'لم يتم التعيين';
+        console.log(`Ticket ${ticket.ticket_id} support staff: ${supportStaff}`);
+        
         worksheet.addRow({
           ticketId: ticket.ticket_id,
           employeeId: ticket.employee_id,
@@ -186,7 +190,7 @@ const ReportGenerator = () => {
           contactNumber: contactNumber,
           description: ticket.description,
           status: statusLabels[ticket.status] || ticket.status,
-          supportStaff: ticket.assigned_to || 'لم يتم التعيين',
+          supportStaff: supportStaff,
           createdAt: format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm'),
           updatedAt: ticket.updated_at ? format(new Date(ticket.updated_at), 'yyyy-MM-dd HH:mm') : '',
           responses: responsesText

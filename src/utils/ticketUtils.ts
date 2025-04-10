@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
@@ -448,12 +447,14 @@ export const getTicketsWithResolutionDetails = async (startDate?: string, endDat
       return [];
     }
     
-    // تأكد من تحويل custom_fields بشكل صحيح
+    // تأكد من تحويل custom_fields بشكل صحيح وأن assigned_to موجود
     const tickets = data.map(ticket => {
       console.log(`Ticket ${ticket.ticket_id} custom fields:`, ticket.custom_fields);
+      console.log(`Ticket ${ticket.ticket_id} assigned to:`, ticket.assigned_to);
       return {
         ...ticket,
-        custom_fields: ticket.custom_fields || {}
+        custom_fields: ticket.custom_fields || {},
+        assigned_to: ticket.assigned_to || null
       };
     });
     
