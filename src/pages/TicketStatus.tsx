@@ -1,3 +1,4 @@
+
 import Header from '@/components/Header';
 import TicketTracker from '@/components/TicketTracker';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
@@ -8,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import TicketResponseList from '@/components/admin/tickets/TicketResponseList';
 
 const TicketStatus = () => {
   const { ticketId } = useParams<{ ticketId: string }>();
@@ -147,11 +149,6 @@ const TicketStatus = () => {
                       <p className="text-right font-medium">موظف الدعم المسؤول:</p>
                       <p className="text-right">
                         {ticket.assigned_to}
-                        {ticket.admin_employee_id && (
-                          <span className="mr-2 text-sm text-gray-500">
-                            (عضوية: {ticket.admin_employee_id})
-                          </span>
-                        )}
                       </p>
                     </div>
                   )}
@@ -202,35 +199,12 @@ const TicketStatus = () => {
                   </div>
                 )}
                 
-                {responses && responses.length > 0 ? (
+                {responses && responses.length > 0 && (
                   <div className="space-y-2">
                     <p className="text-right font-medium">ردود الدعم الفني:</p>
-                    <div className="space-y-3">
-                      {responses.map((response, index) => (
-                        <div key={index} className="p-4 bg-company-light/20 rounded-md border border-company/20 text-right">
-                          <div className="flex justify-between items-start mb-2">
-                            <span className="text-xs text-gray-500">
-                              {new Date(response.created_at).toLocaleString('ar-SA')}
-                            </span>
-                            <div className="text-right">
-                              <span className="font-medium">
-                                {response.is_admin 
-                                  ? (response.admin_name || 'الدعم الفني') 
-                                  : 'الموظف'}
-                              </span>
-                              {response.is_admin && response.admin_employee_id && (
-                                <div className="text-xs text-gray-500 mt-1">
-                                  عضوية: {response.admin_employee_id}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <p>{response.response}</p>
-                        </div>
-                      ))}
-                    </div>
+                    <TicketResponseList responses={responses} />
                   </div>
-                ) : null}
+                )}
               </CardContent>
             </Card>
           </div>
