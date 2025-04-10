@@ -170,16 +170,16 @@ const ReportGenerator = () => {
           `${r.is_admin ? (r.admin_name || 'الدعم الفني') : 'الموظف'}: ${r.response} (${format(new Date(r.created_at), 'yyyy-MM-dd HH:mm')})`
         ).join(' | ');
         
-        // يستخدم حقل Contact_Number من custom_fields إذا كان موجودًا أو رقم التحويلة كبديل
         const contactNumber = ticket.custom_fields && ticket.custom_fields.Contact_Number 
           ? ticket.custom_fields.Contact_Number 
           : ticket.extension_number || '';
         
-        console.log(`Ticket ${ticket.ticket_id} contact number: ${contactNumber}, custom fields:`, ticket.custom_fields);
+        let supportStaff = 'لم يتم التعيين';
         
-        // تأكد من أن اسم موظف الدعم الفني يظهر بشكل صحيح
-        const supportStaff = ticket.assigned_to || 'لم يتم التعيين';
-        console.log(`Ticket ${ticket.ticket_id} support staff: ${supportStaff}`);
+        if (ticket.assigned_to && ticket.assigned_to !== 'لم يتم التعيين') {
+          supportStaff = ticket.assigned_to;
+          console.log(`Excel: Using assigned_to for ticket ${ticket.ticket_id}: ${supportStaff}`);
+        }
         
         worksheet.addRow({
           ticketId: ticket.ticket_id,
