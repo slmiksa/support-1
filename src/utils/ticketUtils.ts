@@ -113,27 +113,53 @@ export const findTicketById = async (ticketId: string): Promise<SupportTicket | 
   }
 };
 
-export const getTicketResponses = async (ticketId: string): Promise<any[]> => {
-  try {
-    const { data, error } = await supabase
-      .from('ticket_responses')
-      .select('*, admins:admin_id(username)')
-      .eq('ticket_id', ticketId)
-      .order('created_at', { ascending: true });
+export const getTicketResponses = async (ticketId: string) => {
+  const { data, error } = await supabase
+    .from('ticket_responses')
+    .select('*, admin:admins(username)')
+    .eq('ticket_id', ticketId)
+    .order('created_at', { ascending: true });
     
-    if (error) {
-      console.error('Error fetching ticket responses:', error);
-      return [];
+  if (error) {
+    console.error('Error fetching ticket responses:', error);
+    throw error;
+  }
+  
+  return data.map(response => ({
+    ...response,
+    admin_name: response.admin?.username || null
+  }));
+};
+
+export const getAllTicketResponses = async (ticketIds: string[]) => {
+  if (!ticketIds.length) return {};
+  
+  const { data, error } = await supabase
+    .from('ticket_responses')
+    .select('*, admin:admins(username)')
+    .in('ticket_id', ticketIds)
+    .order('created_at', { ascending: true });
+    
+  if (error) {
+    console.error('Error fetching all ticket responses:', error);
+    throw error;
+  }
+  
+  const responsesByTicket = data.reduce((acc, response) => {
+    const ticketId = response.ticket_id;
+    if (!acc[ticketId]) {
+      acc[ticketId] = [];
     }
     
-    return data.map(response => ({
+    acc[ticketId].push({
       ...response,
-      admin_name: response.admins?.username || null
-    }));
-  } catch (error) {
-    console.error('Error in getTicketResponses:', error);
-    return [];
-  }
+      admin_name: response.admin?.username || null
+    });
+    
+    return acc;
+  }, {});
+  
+  return responsesByTicket;
 };
 
 export const generateTicketId = (): string => {
