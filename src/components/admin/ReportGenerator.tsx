@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, getAllTicketResponses, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -156,7 +157,7 @@ const ReportGenerator = () => {
         { header: 'رقم التحويلة', key: 'contactNumber', width: 15 },
         { header: 'الوصف', key: 'description', width: 40 },
         { header: 'الحالة', key: 'status', width: 15 },
-        { header: 'موظف الدعم الفني', key: 'supportStaff', width: 20 },
+        { header: 'موظف الدعم المسؤول', key: 'supportStaff', width: 20 }, // Changed column name here
         { header: 'تاريخ الإنشاء', key: 'createdAt', width: 20 },
         { header: 'تاريخ آخر تحديث', key: 'updatedAt', width: 20 },
         { header: 'الردود', key: 'responses', width: 60 }
