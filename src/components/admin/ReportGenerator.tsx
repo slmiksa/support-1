@@ -1,3 +1,4 @@
+
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, getAllTicketResponses, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -104,6 +105,7 @@ const ReportGenerator = () => {
         adjustedEndDate.toISOString()
       );
       
+      // Log each ticket's assigned staff for debugging
       data.forEach(ticket => {
         console.log(`Ticket ${ticket.ticket_id} assigned to: ${ticket.assigned_to || 'لم يتم التعيين'}`);
       });
@@ -179,12 +181,13 @@ const ReportGenerator = () => {
           ? ticket.custom_fields.Contact_Number 
           : ticket.extension_number || '';
         
-        let supportStaff = 'لم يتم التعيين';
-        
-        if (ticket.assigned_to && ticket.assigned_to !== 'لم يتم التعيين') {
-          supportStaff = ticket.assigned_to;
-          console.log(`Excel: Using assigned_to for ticket ${ticket.ticket_id}: ${supportStaff}`);
+        // Get the assigned staff and use a default value if not set
+        let supportStaff = ticket.assigned_to;
+        if (!supportStaff || supportStaff === '') {
+          supportStaff = 'لم يتم التعيين';
         }
+        
+        console.log(`Excel export - Ticket ${ticket.ticket_id}: Support staff = ${supportStaff}`);
         
         worksheet.addRow({
           ticketId: ticket.ticket_id,
