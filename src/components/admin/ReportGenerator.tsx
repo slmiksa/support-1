@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, getAllTicketResponses, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -104,6 +103,11 @@ const ReportGenerator = () => {
         startDate.toISOString(),
         adjustedEndDate.toISOString()
       );
+      
+      data.forEach(ticket => {
+        console.log(`Ticket ${ticket.ticket_id} assigned to: ${ticket.assigned_to || 'لم يتم التعيين'}`);
+      });
+      
       setTickets(data);
       
       const ticketIds = data.map(ticket => ticket.ticket_id);
@@ -157,7 +161,7 @@ const ReportGenerator = () => {
         { header: 'رقم التحويلة', key: 'contactNumber', width: 15 },
         { header: 'الوصف', key: 'description', width: 40 },
         { header: 'الحالة', key: 'status', width: 15 },
-        { header: 'موظف الدعم المسؤول', key: 'supportStaff', width: 20 }, // Changed column name here
+        { header: 'موظف الدعم المسؤول', key: 'supportStaff', width: 20 },
         { header: 'تاريخ الإنشاء', key: 'createdAt', width: 20 },
         { header: 'تاريخ آخر تحديث', key: 'updatedAt', width: 20 },
         { header: 'الردود', key: 'responses', width: 60 }
@@ -389,7 +393,7 @@ const ReportGenerator = () => {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <span className="text-sm text-gray-500">
-                  تم العثور على {tickets.length} تذكرة خلال الفترة
+                  تم العثور ��لى {tickets.length} تذكرة خلال الفترة
                 </span>
               </div>
               <div className="flex space-x-2 rtl:space-x-reverse">
@@ -528,7 +532,7 @@ const ReportGenerator = () => {
                             <p className="text-right font-medium">{ticket.branch}</p>
                           </div>
                           <div className="space-y-1">
-                            <p className="text-right text-gray-500 text-sm">موظف الدعم الفني</p>
+                            <p className="text-right text-gray-500 text-sm">موظف الدعم المسؤول</p>
                             <p className="text-right font-medium">{ticket.assigned_to || 'لم يتم التعيين'}</p>
                           </div>
                         </div>
