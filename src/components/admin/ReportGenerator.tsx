@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { getTicketsByDateRange, getTicketsWithResolutionDetails, getTicketStats, getAdminStats, getAllTicketResponses, SupportTicket } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -9,12 +8,16 @@ import { useToast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, Download, FileText, BarChart, Users, MessageSquare } from 'lucide-react';
+import { Calendar as CalendarIcon, Download, FileText, BarChart, Users, MessageSquare, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, BarChart as ReBarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Workbook } from 'exceljs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel } from '@/components/ui/form';
+import { useForm } from 'react-hook-form';
 
 const statusColorMap = {
   pending: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
@@ -80,9 +83,28 @@ const ReportGenerator = () => {
   });
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showExportOptions, setShowExportOptions] = useState(false);
   const navigate = useNavigate();
   const reportRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  const exportFieldsForm = useForm({
+    defaultValues: {
+      exportFields: {
+        ticketId: true,
+        employeeId: true,
+        branch: true,
+        anydeskNumber: true,
+        contactNumber: true,
+        description: true,
+        status: true,
+        supportStaff: true,
+        createdAt: true,
+        updatedAt: true,
+        responses: true
+      }
+    }
+  });
 
   const handleGenerateReport = async () => {
     if (!startDate || !endDate) {
@@ -105,7 +127,6 @@ const ReportGenerator = () => {
         adjustedEndDate.toISOString()
       );
       
-      // Log each ticket's assigned staff for debugging
       data.forEach(ticket => {
         console.log(`Ticket ${ticket.ticket_id} assigned to: ${ticket.assigned_to || 'لم يتم التعيين'}`);
       });
@@ -141,7 +162,7 @@ const ReportGenerator = () => {
     }
   };
 
-  const exportToExcel = async () => {
+  const exportToExcel = async (customFields = null) => {
     if (tickets.length === 0) {
       toast({
         title: "خطأ",
@@ -151,24 +172,27 @@ const ReportGenerator = () => {
       return;
     }
 
+    const fieldSelections = customFields || exportFieldsForm.getValues().exportFields;
+
     try {
       const workbook = new Workbook();
       const worksheet = workbook.addWorksheet('تقرير التذاكر');
       
-      worksheet.columns = [
-        { header: 'رقم التذكرة', key: 'ticketId', width: 15 },
-        { header: 'الرقم الوظيفي', key: 'employeeId', width: 15 },
-        { header: 'الفرع', key: 'branch', width: 20 },
-        { header: 'رقم Anydesk', key: 'anydeskNumber', width: 15 },
-        { header: 'رقم التحويلة', key: 'contactNumber', width: 15 },
-        { header: 'الوصف', key: 'description', width: 40 },
-        { header: 'الحالة', key: 'status', width: 15 },
-        { header: 'موظف الدعم المسؤول', key: 'supportStaff', width: 20 },
-        { header: 'تاريخ الإنشاء', key: 'createdAt', width: 20 },
-        { header: 'تاريخ آخر تحديث', key: 'updatedAt', width: 20 },
-        { header: 'الردود', key: 'responses', width: 60 }
-      ];
+      const columns = [];
       
+      if (fieldSelections.ticketId) columns.push({ header: 'رقم التذكرة', key: 'ticketId', width: 15 });
+      if (fieldSelections.employeeId) columns.push({ header: 'الرقم الوظيفي', key: 'employeeId', width: 15 });
+      if (fieldSelections.branch) columns.push({ header: 'الفرع', key: 'branch', width: 20 });
+      if (fieldSelections.anydeskNumber) columns.push({ header: 'رقم Anydesk', key: 'anydeskNumber', width: 15 });
+      if (fieldSelections.contactNumber) columns.push({ header: 'رقم التحويلة', key: 'contactNumber', width: 15 });
+      if (fieldSelections.description) columns.push({ header: 'الوصف', key: 'description', width: 40 });
+      if (fieldSelections.status) columns.push({ header: 'الحالة', key: 'status', width: 15 });
+      if (fieldSelections.supportStaff) columns.push({ header: 'موظف الدعم المسؤول', key: 'supportStaff', width: 20 });
+      if (fieldSelections.createdAt) columns.push({ header: 'تاريخ الإنشاء', key: 'createdAt', width: 20 });
+      if (fieldSelections.updatedAt) columns.push({ header: 'تاريخ آخر تحديث', key: 'updatedAt', width: 20 });
+      if (fieldSelections.responses) columns.push({ header: 'الردود', key: 'responses', width: 60 });
+      
+      worksheet.columns = columns;
       worksheet.getRow(1).font = { bold: true };
       
       tickets.forEach(ticket => {
@@ -181,7 +205,6 @@ const ReportGenerator = () => {
           ? ticket.custom_fields.Contact_Number 
           : ticket.extension_number || '';
         
-        // Get the assigned staff and use a default value if not set
         let supportStaff = ticket.assigned_to;
         if (!supportStaff || supportStaff === '') {
           supportStaff = 'لم يتم التعيين';
@@ -189,19 +212,21 @@ const ReportGenerator = () => {
         
         console.log(`Excel export - Ticket ${ticket.ticket_id}: Support staff = ${supportStaff}`);
         
-        worksheet.addRow({
-          ticketId: ticket.ticket_id,
-          employeeId: ticket.employee_id,
-          branch: ticket.branch,
-          anydeskNumber: ticket.anydesk_number || '',
-          contactNumber: contactNumber,
-          description: ticket.description,
-          status: statusLabels[ticket.status] || ticket.status,
-          supportStaff: supportStaff,
-          createdAt: format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm'),
-          updatedAt: ticket.updated_at ? format(new Date(ticket.updated_at), 'yyyy-MM-dd HH:mm') : '',
-          responses: responsesText
-        });
+        const rowData: any = {};
+        
+        if (fieldSelections.ticketId) rowData.ticketId = ticket.ticket_id;
+        if (fieldSelections.employeeId) rowData.employeeId = ticket.employee_id;
+        if (fieldSelections.branch) rowData.branch = ticket.branch;
+        if (fieldSelections.anydeskNumber) rowData.anydeskNumber = ticket.anydesk_number || '';
+        if (fieldSelections.contactNumber) rowData.contactNumber = contactNumber;
+        if (fieldSelections.description) rowData.description = ticket.description;
+        if (fieldSelections.status) rowData.status = statusLabels[ticket.status] || ticket.status;
+        if (fieldSelections.supportStaff) rowData.supportStaff = supportStaff;
+        if (fieldSelections.createdAt) rowData.createdAt = format(new Date(ticket.created_at), 'yyyy-MM-dd HH:mm');
+        if (fieldSelections.updatedAt) rowData.updatedAt = ticket.updated_at ? format(new Date(ticket.updated_at), 'yyyy-MM-dd HH:mm') : '';
+        if (fieldSelections.responses) rowData.responses = responsesText;
+        
+        worksheet.addRow(rowData);
       });
       
       const statsSheet = workbook.addWorksheet('إحصائيات');
@@ -271,6 +296,8 @@ const ReportGenerator = () => {
         title: "تم بنجاح",
         description: "تم تصدير التقرير إلى Excel بنجاح",
       });
+      
+      setShowExportOptions(false);
     } catch (error) {
       console.error("Excel generation error:", error);
       toast({
@@ -396,15 +423,249 @@ const ReportGenerator = () => {
             <div className="flex justify-between items-center mb-4">
               <div>
                 <span className="text-sm text-gray-500">
-                  تم العثور ��لى {tickets.length} تذكرة خلال الفترة
+                  تم العثور على {tickets.length} تذكرة خلال الفترة
                 </span>
               </div>
               <div className="flex space-x-2 rtl:space-x-reverse">
                 {tickets.length > 0 && (
-                  <Button variant="outline" onClick={exportToExcel} className="flex items-center gap-2">
-                    <FileText size={16} />
-                    <span>تصدير Excel</span>
-                  </Button>
+                  <>
+                    <Dialog open={showExportOptions} onOpenChange={setShowExportOptions}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="flex items-center gap-2">
+                          <Settings size={16} />
+                          <span>تخصيص تصدير Excel</span>
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-md">
+                        <DialogHeader>
+                          <DialogTitle className="text-right">اختيار حقول التصدير</DialogTitle>
+                        </DialogHeader>
+                        <Form {...exportFieldsForm}>
+                          <div className="grid grid-cols-2 gap-4 mt-4 text-right">
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.ticketId"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    رقم التذكرة
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.employeeId"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    الرقم الوظيفي
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.branch"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    الفرع
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.anydeskNumber"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    رقم Anydesk
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.contactNumber"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    رقم التحويلة
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.description"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    الوصف
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.status"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    الحالة
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.supportStaff"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    موظف الدعم المسؤول
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.createdAt"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    تاريخ الإنشاء
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.updatedAt"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    تاريخ آخر تحديث
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                            <FormField
+                              control={exportFieldsForm.control}
+                              name="exportFields.responses"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center justify-end space-x-2 space-x-reverse space-y-0 rtl:space-x-reverse">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <FormLabel className="cursor-pointer font-normal">
+                                    الردود
+                                  </FormLabel>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          <div className="flex justify-between mt-8">
+                            <Button 
+                              variant="outline" 
+                              onClick={() => exportFieldsForm.reset()}
+                              type="button"
+                            >
+                              إعادة ضبط
+                            </Button>
+                            <Button 
+                              onClick={() => exportToExcel()}
+                              type="button"
+                              className="bg-company hover:bg-company-dark"
+                            >
+                              تصدير
+                            </Button>
+                          </div>
+                        </Form>
+                      </DialogContent>
+                    </Dialog>
+                    <Button variant="outline" onClick={() => exportToExcel({
+                      ticketId: true,
+                      employeeId: true,
+                      branch: true,
+                      anydeskNumber: true,
+                      contactNumber: true,
+                      description: true,
+                      status: true,
+                      supportStaff: true,
+                      createdAt: true,
+                      updatedAt: true,
+                      responses: true
+                    })} className="flex items-center gap-2">
+                      <FileText size={16} />
+                      <span>تصدير Excel</span>
+                    </Button>
+                  </>
                 )}
               </div>
             </div>
