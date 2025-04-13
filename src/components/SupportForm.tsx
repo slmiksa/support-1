@@ -1,3 +1,4 @@
+
 import { FormEvent } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket } from '../utils/ticketUtils';
@@ -50,6 +51,16 @@ const SupportForm = () => {
       }
     }
     
+    // التحقق من صحة البريد الإلكتروني إذا تم إدخاله
+    if (formData.customer_email && !/\S+@\S+\.\S+/.test(formData.customer_email as string)) {
+      toast.error('يرجى إدخال بريد إلكتروني صحيح', {
+        closeButton: true,
+        position: 'top-center',
+        duration: 5000
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -81,7 +92,8 @@ const SupportForm = () => {
         created_at: new Date().toISOString(),
         employee_id: formData['field_1743981608110'] as string || '',
         custom_fields: customFieldsData,
-        anydesk_number: formData.anydesk_number || ''  // Ensure it's a string
+        anydesk_number: formData.anydesk_number || '',
+        customer_email: formData.customer_email as string || null
       };
       
       const result = await saveTicket(newTicket);

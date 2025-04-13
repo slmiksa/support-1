@@ -10,7 +10,8 @@ import {
   DescriptionInput, 
   ImageUpload, 
   SubmitButton,
-  FormField 
+  FormField,
+  EmailInput
 } from './FormComponents';
 
 interface SupportFormCardProps {
@@ -85,6 +86,11 @@ const SupportFormCard = ({
             <DescriptionInput 
               value={formData.description} 
               onChange={handleChange} 
+            />
+            
+            <EmailInput
+              value={formData.customer_email as string}
+              onChange={handleChange}
             />
             
             <ImageUpload 

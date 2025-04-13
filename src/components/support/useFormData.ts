@@ -10,6 +10,7 @@ export interface FormData {
   description: string;
   imageFile: File | null;
   anydesk_number?: string;
+  customer_email?: string;
   [key: string]: string | File | null | PriorityType | undefined;
 }
 
@@ -18,7 +19,8 @@ export const useFormData = () => {
     branch: '',
     priority: 'normal',
     description: '',
-    imageFile: null
+    imageFile: null,
+    customer_email: ''
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,7 +69,8 @@ export const useFormData = () => {
           branch: '',
           priority: 'normal',
           description: '',
-          imageFile: null
+          imageFile: null,
+          customer_email: ''
         };
         
         activeCustomFields.forEach(field => {
@@ -129,7 +132,8 @@ export const useFormData = () => {
       branch: '',
       priority: 'normal',
       description: '',
-      imageFile: null
+      imageFile: null,
+      customer_email: ''
     };
     
     customFields.forEach(field => {

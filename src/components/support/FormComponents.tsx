@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { Branch, SiteField } from '@/utils/ticketUtils';
 import { PriorityType } from '@/integrations/supabase/client';
+import { Mail } from 'lucide-react';
 
 interface ImageUploadProps {
   imagePreview: string | null;
@@ -126,6 +127,36 @@ export const DescriptionInput = ({ value, onChange, placeholder = "اكتب وص
         value={value}
         onChange={onChange}
       />
+    </div>
+  );
+};
+
+interface EmailInputProps {
+  value: string;
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  required?: boolean;
+}
+
+export const EmailInput = ({ value, onChange, required = false }: EmailInputProps) => {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor="customer_email" className="text-right flex items-center gap-2">
+        البريد الإلكتروني (اختياري) <Mail size={16} className="text-muted-foreground" />
+      </Label>
+      <Input
+        id="customer_email"
+        name="customer_email"
+        type="email"
+        placeholder="أدخل بريدك الإلكتروني لاستلام التحديثات"
+        className="text-right ltr:text-left"
+        value={value || ''}
+        onChange={onChange}
+        required={required}
+        dir="ltr"
+      />
+      <p className="text-xs text-muted-foreground text-right">
+        سيتم استخدام هذا البريد لإرسال تحديثات حول حالة التذكرة
+      </p>
     </div>
   );
 };
