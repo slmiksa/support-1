@@ -57,7 +57,7 @@ export const useReportData = () => {
         setEndDate(endOfDay(now));
         break;
       case 'week':
-        setStartDate(sub(new Date(), { days: 6 }));
+        setStartDate(sub(now, { days: 6 }));
         setEndDate(endOfDay(now));
         break;
       case 'month':
@@ -65,11 +65,11 @@ export const useReportData = () => {
         setEndDate(endOfMonth(now));
         break;
       case 'quarter':
-        setStartDate(sub(new Date(), { months: 3 }));
+        setStartDate(sub(now, { months: 3 }));
         setEndDate(endOfDay(now));
         break;
       case 'year':
-        setStartDate(sub(new Date(), { years: 1 }));
+        setStartDate(sub(now, { years: 1 }));
         setEndDate(endOfDay(now));
         break;
       default:
