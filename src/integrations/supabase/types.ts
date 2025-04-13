@@ -198,6 +198,7 @@ export type Database = {
           image_url: string | null
           priority: string | null
           status: string
+          support_email: string | null
           ticket_id: string
           updated_at: string
         }
@@ -215,6 +216,7 @@ export type Database = {
           image_url?: string | null
           priority?: string | null
           status?: string
+          support_email?: string | null
           ticket_id: string
           updated_at?: string
         }
@@ -232,6 +234,7 @@ export type Database = {
           image_url?: string | null
           priority?: string | null
           status?: string
+          support_email?: string | null
           ticket_id?: string
           updated_at?: string
         }

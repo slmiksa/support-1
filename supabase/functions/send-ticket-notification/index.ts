@@ -20,7 +20,6 @@ interface TicketNotificationRequest {
   support_email?: string;
   customer_email?: string;
   status?: string;
-  update_message?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -70,8 +69,8 @@ const handler = async (req: Request): Promise<Response> => {
     const formattedPriority = priorityLabels[priority as keyof typeof priorityLabels] || 'عادية';
     const formattedStatus = statusLabels[status as keyof typeof statusLabels] || status;
 
-    // First, send notification to support email
-    const supportHtml = `
+    // Prepare the email HTML template
+    const emailHtml = `
       <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
           <h1 style="color: #ffffff; margin: 0; font-size: 24px;">تذكرة دعم فني جديدة</h1>
@@ -124,7 +123,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: `دعم الوصل <${support_email}>`,
       to: [support_email],
       subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
-      html: supportHtml,
+      html: emailHtml,
     });
 
     console.log("Support notification sent:", supportEmailResponse);
@@ -134,7 +133,7 @@ const handler = async (req: Request): Promise<Response> => {
       from: `دعم الوصل <${support_email}>`,
       to: [admin_email],
       subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
-      html: supportHtml,
+      html: emailHtml,
     });
 
     console.log("Admin notification sent:", adminEmailResponse);

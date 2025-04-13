@@ -94,7 +94,8 @@ const SupportForm = () => {
         custom_fields: customFieldsData,
         anydesk_number: formData.anydesk_number || '',
         customer_email: formData.customer_email ? (formData.customer_email as string) : null,
-        support_email: 'help@alwaslsaudi.com' // تأكد من تعيين بريد الدعم دائمًا
+        support_email: 'help@alwaslsaudi.com', // Always set the support email
+        extension_number: formData['extension_number'] || ''
       };
       
       console.log('Submitting ticket with data:', newTicket);
@@ -112,6 +113,12 @@ const SupportForm = () => {
         console.log('Notification result:', notificationResult);
       } catch (error) {
         console.error('Error sending notifications:', error);
+        // Notify user about notification failure, but don't block ticket creation
+        toast.warning('فشل إرسال الإشعارات، يرجى التواصل مع الدعم الفني', {
+          closeButton: true,
+          position: 'top-center',
+          duration: 5000
+        });
       }
       
       setTicketId(newTicketId);
