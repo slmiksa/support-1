@@ -190,6 +190,7 @@ export type Database = {
           branch: string
           created_at: string
           custom_fields: Json | null
+          customer_email: string | null
           description: string
           employee_id: string
           extension_number: string | null
@@ -206,6 +207,7 @@ export type Database = {
           branch: string
           created_at?: string
           custom_fields?: Json | null
+          customer_email?: string | null
           description: string
           employee_id: string
           extension_number?: string | null
@@ -222,6 +224,7 @@ export type Database = {
           branch?: string
           created_at?: string
           custom_fields?: Json | null
+          customer_email?: string | null
           description?: string
           employee_id?: string
           extension_number?: string | null
