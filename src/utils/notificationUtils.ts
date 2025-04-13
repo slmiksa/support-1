@@ -18,11 +18,14 @@ export const sendTicketNotification = async (
       description: ticket.description,
       admin_email: adminEmail,
       // Use the support_email from the ticket if available, otherwise use the default
-      support_email: ticket.support_email || 'help@alwaslsaudi.com'
+      support_email: ticket.support_email || 'help@alwaslsaudi.com',
+      // Add customer email if available
+      customer_email: ticket.customer_email || null
     };
 
     console.log('Sending notification for ticket', ticket.ticket_id, 'to', adminEmail);
     console.log('Using support email:', notificationData.support_email);
+    console.log('Customer email:', notificationData.customer_email);
 
     // Call the Supabase edge function to send the email
     const { data, error } = await supabase.functions.invoke(

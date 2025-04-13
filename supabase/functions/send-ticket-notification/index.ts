@@ -18,13 +18,13 @@ interface TicketNotificationRequest {
   priority?: string;
   admin_email: string;
   support_email?: string;
-  customer_email?: string; // إضافة حقل البريد الإلكتروني للعميل
-  status?: string; // إضافة حقل حالة التذكرة
-  update_message?: string; // رسالة التحديث الاختيارية
+  customer_email?: string;
+  status?: string;
+  update_message?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
-  // التعامل مع طلبات CORS المسبقة
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -38,28 +38,27 @@ const handler = async (req: Request): Promise<Response> => {
       priority, 
       admin_email, 
       support_email = 'help@alwaslsaudi.com',
-      customer_email, // بريد العميل الاختياري
-      status,
-      update_message
+      customer_email,
+      status = 'pending',
     }: TicketNotificationRequest = await req.json();
 
     console.log(`Sending notification for ticket ${ticket_id}`);
+    console.log(`Customer email: ${customer_email}`);
+    console.log(`Admin email: ${admin_email}`);
+    console.log(`Support email: ${support_email}`);
 
-    // التحقق من صحة الإدخالات الأساسية
-    if (!ticket_id || !employee_id || !branch || !admin_email) {
+    // Validate required fields
+    if (!ticket_id || !employee_id || !branch) {
       throw new Error("Missing required fields");
     }
 
-    // التحقق إذا كان هناك بريد إلكتروني للعميل
-    if (!customer_email) {
-      console.log("No customer email provided. Skipping customer notification.");
-      return new Response(JSON.stringify({ message: "No customer email" }), {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // Priority and status mapping for Arabic labels
+    const priorityLabels: Record<string, string> = {
+      'urgent': 'عاجلة',
+      'medium': 'متوسطة',
+      'normal': 'عادية'
+    };
 
-    // معالجة الحالات والأولويات
     const statusLabels: Record<string, string> = {
       'pending': 'قيد الانتظار',
       'open': 'مفتوحة',
@@ -68,24 +67,18 @@ const handler = async (req: Request): Promise<Response> => {
       'closed': 'مغلقة'
     };
 
-    const priorityLabels: Record<string, string> = {
-      'urgent': 'عاجلة',
-      'medium': 'متوسطة',
-      'normal': 'عادية'
-    };
-
-    const formattedStatus = statusLabels[status as keyof typeof statusLabels] || status;
     const formattedPriority = priorityLabels[priority as keyof typeof priorityLabels] || 'عادية';
+    const formattedStatus = statusLabels[status as keyof typeof statusLabels] || status;
 
-    // إنشاء محتوى البريد الإلكتروني
-    const emailHtml = `
+    // First, send notification to admin
+    const adminHtml = `
       <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">تحديث على طلب الدعم الفني</h1>
+          <h1 style="color: #ffffff; margin: 0; font-size: 24px;">تذكرة دعم فني جديدة</h1>
         </div>
         
         <div style="background-color: #ffffff; padding: 25px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-          <p style="font-size: 16px; margin-bottom: 25px; color: #555555;">تم تحديث طلب الدعم الخاص بك:</p>
+          <p style="font-size: 16px; margin-bottom: 25px; color: #555555;">تم إنشاء تذكرة دعم فني جديدة:</p>
           
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
             <tr>
@@ -93,48 +86,114 @@ const handler = async (req: Request): Promise<Response> => {
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${ticket_id}</td>
             </tr>
             <tr>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الحالة الجديدة:</td>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; color: #2e7d32;">${formattedStatus}</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الفرع:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${branch}</td>
             </tr>
-            ${update_message ? `
             <tr>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">ملاحظات التحديث:</td>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${update_message}</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الأولوية:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${formattedPriority}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الرقم الوظيفي:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${employee_id}</td>
+            </tr>
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">وصف المشكلة:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${description}</td>
+            </tr>
+            ${customer_email ? `
+            <tr>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">البريد الإلكتروني للعميل:</td>
+              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${customer_email}</td>
             </tr>
             ` : ''}
           </table>
 
-          <div style="background-color: #f5f7fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-            <p style="margin: 0;">يمكنك متابعة تفاصيل طلبك من خلال الدخول على نظام الدعم الفني وإدخال رقم التذكرة.</p>
-          </div>
-          
           <div style="text-align: center; margin-top: 30px;">
-            <a href="https://support.alwaslsaudi.com/ticket-status/${ticket_id}" 
+            <a href="https://support.alwaslsaudi.com/admin/tickets/${ticket_id}" 
                style="background-color: #D4AF37; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-              تتبع الطلب
+              مشاهدة التذكرة
             </a>
           </div>
         </div>
       </div>
     `;
 
-    // إرسال البريد الإلكتروني للعميل
-    const emailResponse = await resend.emails.send({
-      from: `نظام دعم الوصل <onboarding@resend.dev>`,
-      to: [customer_email],
-      subject: `تحديث طلب الدعم الفني رقم ${ticket_id}`,
-      html: emailHtml,
+    // Send email to admin
+    const adminEmailResponse = await resend.emails.send({
+      from: `دعم الوصل <${support_email}>`,
+      to: [admin_email],
+      subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
+      html: adminHtml,
     });
 
-    console.log("Customer notification sent successfully:", emailResponse);
+    console.log("Admin notification sent:", adminEmailResponse);
 
-    return new Response(JSON.stringify({ success: true, message: "Customer notification sent" }), {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...corsHeaders,
-      },
-    });
+    // If customer email is provided, send confirmation to customer
+    let customerEmailResponse = null;
+    if (customer_email) {
+      const customerHtml = `
+        <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">تم استلام طلب الدعم الفني</h1>
+          </div>
+          
+          <div style="background-color: #ffffff; padding: 25px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <p style="font-size: 16px; margin-bottom: 25px; color: #555555;">تم استلام طلب الدعم الفني الخاص بك وسيتم التواصل معك قريباً:</p>
+            
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+              <tr>
+                <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">رقم التذكرة:</td>
+                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${ticket_id}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الحالة:</td>
+                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${formattedStatus}</td>
+              </tr>
+              <tr>
+                <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الوصف:</td>
+                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${description}</td>
+              </tr>
+            </table>
+
+            <div style="background-color: #f5f7fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+              <p style="margin: 0;">يمكنك متابعة حالة طلبك من خلال الدخول على نظام الدعم الفني وإدخال رقم التذكرة.</p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+              <a href="https://support.alwaslsaudi.com/ticket-status/${ticket_id}" 
+                 style="background-color: #D4AF37; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                تتبع الطلب
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      customerEmailResponse = await resend.emails.send({
+        from: `دعم الوصل <${support_email}>`,
+        to: [customer_email],
+        subject: `تم استلام طلب الدعم الفني رقم ${ticket_id}`,
+        html: customerHtml,
+      });
+
+      console.log("Customer notification sent:", customerEmailResponse);
+    }
+
+    return new Response(
+      JSON.stringify({ 
+        success: true, 
+        adminNotification: adminEmailResponse,
+        customerNotification: customerEmailResponse 
+      }),
+      {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders,
+        },
+      }
+    );
 
   } catch (error: any) {
     console.error("Error in send-ticket-notification function:", error);
