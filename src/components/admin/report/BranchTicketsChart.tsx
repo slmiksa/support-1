@@ -19,7 +19,7 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
   const config = {
     value: {
       theme: {
-        light: "#2B5A97", // Changing to the blue color from the provided image
+        light: "#2B5A97",
         dark: "#2B5A97"
       }
     }
@@ -41,19 +41,21 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
                 bottom: 5,
                 left: 5,
               }}
-              layout="vertical"
-              barCategoryGap={2}
+              barCategoryGap={4}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} opacity={0.3} />
-              <XAxis type="number" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
-              <YAxis 
-                type="category" 
+              <XAxis 
                 dataKey="name" 
-                width={85}
-                tick={{ fontSize: 10 }}
+                tick={{ fontSize: 10 }} 
+                tickLine={false} 
+                axisLine={false}
+              />
+              <YAxis 
+                type="number"
+                tick={{ fontSize: 9 }}
                 tickLine={false}
                 axisLine={false}
-                textAnchor="end"
+                width={30}
               />
               <Tooltip 
                 content={({ active, payload }) => {
@@ -72,8 +74,8 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
                 dataKey="value" 
                 name="عدد التذاكر" 
                 fill="var(--color-value)" 
-                barSize={14} 
-                radius={[0, 0, 0, 0]} 
+                barSize={16} 
+                radius={[4, 4, 0, 0]} 
               />
             </BarChart>
           </ResponsiveContainer>
