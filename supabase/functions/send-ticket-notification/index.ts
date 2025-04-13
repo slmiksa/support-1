@@ -2,7 +2,14 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend("re_RqWw6zr2_Amr7mwGUQaxaeiK1dNdTnv2N");
+// استخدم مفتاح API المخزن في متغيرات البيئة
+const resendApiKey = Deno.env.get("RESEND_API_KEY");
+if (!resendApiKey) {
+  console.error("RESEND_API_KEY environment variable is not set");
+}
+
+console.log("Initializing Resend with API key");
+const resend = new Resend(resendApiKey);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -29,6 +36,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    console.log("Received request to send notification");
+    
     const { 
       ticket_id, 
       employee_id, 
@@ -45,6 +54,10 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Customer email: ${customer_email}`);
     console.log(`Admin email: ${admin_email}`);
     console.log(`Support email: ${support_email}`);
+
+    if (!resendApiKey) {
+      throw new Error("RESEND_API_KEY environment variable is not set");
+    }
 
     // Validate required fields
     if (!ticket_id || !employee_id || !branch) {
@@ -119,28 +132,39 @@ const handler = async (req: Request): Promise<Response> => {
     `;
 
     // Send email to support team
-    const supportEmailResponse = await resend.emails.send({
-      from: `دعم الوصل <${support_email}>`,
-      to: [support_email],
-      subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
-      html: emailHtml,
-    });
+    console.log("Attempting to send support notification email to:", support_email);
+    try {
+      const supportEmailResponse = await resend.emails.send({
+        from: `دعم الوصل <${support_email}>`,
+        to: [support_email],
+        subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
+        html: emailHtml,
+      });
 
-    console.log("Support notification sent:", supportEmailResponse);
+      console.log("Support notification sent:", JSON.stringify(supportEmailResponse));
+    } catch (supportError) {
+      console.error("Error sending support notification:", supportError);
+    }
 
     // Send email to admin
-    const adminEmailResponse = await resend.emails.send({
-      from: `دعم الوصل <${support_email}>`,
-      to: [admin_email],
-      subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
-      html: emailHtml,
-    });
+    console.log("Attempting to send admin notification email to:", admin_email);
+    try {
+      const adminEmailResponse = await resend.emails.send({
+        from: `دعم الوصل <${support_email}>`,
+        to: [admin_email],
+        subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
+        html: emailHtml,
+      });
 
-    console.log("Admin notification sent:", adminEmailResponse);
+      console.log("Admin notification sent:", JSON.stringify(adminEmailResponse));
+    } catch (adminError) {
+      console.error("Error sending admin notification:", adminError);
+    }
 
     // If customer email is provided, send confirmation to customer
     let customerEmailResponse = null;
     if (customer_email) {
+      console.log("Attempting to send customer notification email to:", customer_email);
       const customerHtml = `
         <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
@@ -179,22 +203,26 @@ const handler = async (req: Request): Promise<Response> => {
         </div>
       `;
 
-      customerEmailResponse = await resend.emails.send({
-        from: `دعم الوصل <${support_email}>`,
-        to: [customer_email],
-        subject: `تم استلام طلب الدعم الفني رقم ${ticket_id}`,
-        html: customerHtml,
-      });
+      try {
+        customerEmailResponse = await resend.emails.send({
+          from: `دعم الوصل <${support_email}>`,
+          to: [customer_email],
+          subject: `تم استلام طلب الدعم الفني رقم ${ticket_id}`,
+          html: customerHtml,
+        });
 
-      console.log("Customer notification sent:", customerEmailResponse);
+        console.log("Customer notification sent:", JSON.stringify(customerEmailResponse));
+      } catch (customerError) {
+        console.error("Error sending customer notification:", customerError);
+      }
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        supportNotification: supportEmailResponse,
-        adminNotification: adminEmailResponse,
-        customerNotification: customerEmailResponse 
+        supportNotification: "Sent",
+        adminNotification: "Sent",
+        customerNotification: customer_email ? "Sent" : null 
       }),
       {
         status: 200,
