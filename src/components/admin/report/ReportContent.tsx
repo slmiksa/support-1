@@ -33,7 +33,7 @@ const ReportContent: React.FC<ReportContentProps> = ({
         endDate={endDate}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
         {/* Staff performance comparison chart */}
         <StaffPerformanceChart
           adminStats={adminStats}
@@ -45,10 +45,13 @@ const ReportContent: React.FC<ReportContentProps> = ({
       </div>
       
       {/* Tickets table */}
-      <TicketsTable 
-        tickets={tickets} 
-        ticketResponses={ticketResponses} 
-      />
+      <div className="mt-6">
+        <h2 className="text-2xl font-bold mb-4 text-right">قائمة التذاكر</h2>
+        <TicketsTable 
+          tickets={tickets} 
+          ticketResponses={ticketResponses} 
+        />
+      </div>
     </>
   );
 };

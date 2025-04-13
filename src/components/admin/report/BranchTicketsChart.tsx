@@ -30,7 +30,7 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
       <CardHeader>
         <CardTitle className="text-right">توزيع التذاكر حسب الفروع</CardTitle>
       </CardHeader>
-      <CardContent className="h-[350px]">
+      <CardContent className="h-[300px]">
         <ChartContainer config={config}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
