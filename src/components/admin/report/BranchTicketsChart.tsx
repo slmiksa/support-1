@@ -19,36 +19,40 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
   const config = {
     value: {
       theme: {
-        light: "#D4AF37",
-        dark: "#B08C1A"
+        light: "#2B5A97", // Changing to the blue color from the provided image
+        dark: "#2B5A97"
       }
     }
   };
 
   return (
     <Card className="col-span-3">
-      <CardHeader>
-        <CardTitle className="text-right">توزيع التذاكر حسب الفروع</CardTitle>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-right text-sm">توزيع التذاكر حسب الفروع</CardTitle>
       </CardHeader>
-      <CardContent className="h-[250px]">
+      <CardContent className="h-[180px] px-2 py-1">
         <ChartContainer config={config}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
               margin={{
-                top: 10,
-                right: 10,
-                bottom: 10,
-                left: 10,
+                top: 5,
+                right: 5,
+                bottom: 5,
+                left: 5,
               }}
               layout="vertical"
+              barCategoryGap={2}
             >
-              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
-              <XAxis type="number" />
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} opacity={0.3} />
+              <XAxis type="number" tick={{ fontSize: 10 }} tickLine={false} axisLine={false} />
               <YAxis 
                 type="category" 
                 dataKey="name" 
-                width={120} 
+                width={85}
+                tick={{ fontSize: 10 }}
+                tickLine={false}
+                axisLine={false}
                 textAnchor="end"
               />
               <Tooltip 
@@ -64,7 +68,13 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
                   return null;
                 }}
               />
-              <Bar dataKey="value" name="عدد التذاكر" fill="var(--color-value)" barSize={20} radius={[4, 4, 4, 4]} />
+              <Bar 
+                dataKey="value" 
+                name="عدد التذاكر" 
+                fill="var(--color-value)" 
+                barSize={14} 
+                radius={[0, 0, 0, 0]} 
+              />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
