@@ -146,8 +146,8 @@ export const CustomFieldInput = ({
   numbersOnly = false,
   placeholder
 }: CustomFieldInputProps) => {
-  // Use the field's placeholder or generate one based on the display name
-  const fieldPlaceholder = placeholder || (field.placeholder ? field.placeholder : `أدخل ${field.display_name}`);
+  // استخدام النص التوضيحي من الحقل إذا كان موجودًا
+  const fieldPlaceholder = field.placeholder || placeholder || `أدخل ${field.display_name}`;
   
   return (
     <div className="grid gap-2">

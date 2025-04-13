@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,7 +32,22 @@ const AdminSettings = () => {
     }
     
     fetchAndUpdateFavicon();
+    
+    // عند تغيير علامة التبويب، تحديث العنوان في URL
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam && ['branches', 'fields', 'admins', 'reports', 'notifications', 'customization', 'settings'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
   }, [hasPermission, navigate, toast]);
+  
+  // تحديث URL عند تغيير علامة التبويب
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    const url = new URL(window.location.href);
+    url.searchParams.set('tab', tab);
+    window.history.pushState({}, '', url);
+  };
   
   const fetchAndUpdateFavicon = async () => {
     try {
@@ -73,7 +89,7 @@ const AdminSettings = () => {
             
             <Tabs 
               value={activeTab} 
-              onValueChange={setActiveTab}
+              onValueChange={handleTabChange}
               className="w-full"
             >
               <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full mb-8 dark:bg-muted/50">

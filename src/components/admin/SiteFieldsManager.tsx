@@ -187,8 +187,9 @@ const SiteFieldsManager = () => {
 
     try {
       const result = await createSiteField(newField);
+      console.log("Create field result:", result);
 
-      if (result.success && result.data) {
+      if (result && result.success && result.data) {
         setFields([...fields, result.data[0] as SiteField]);
         setFieldName('');
         setDisplayName('');
@@ -196,6 +197,7 @@ const SiteFieldsManager = () => {
         setIsRequired(false);
         toast.success('تم إنشاء الحقل بنجاح');
       } else {
+        console.error('Error in create field response:', result);
         toast.error('فشل في إنشاء الحقل');
       }
     } catch (error) {
@@ -296,16 +298,26 @@ const SiteFieldsManager = () => {
   };
 
   const updateSystemField = async (fieldName: string, displayName: string) => {
+    if (!displayName) {
+      toast.error('الرجاء إدخال اسم للحقل');
+      return;
+    }
+    
     try {
-      await updateSystemFieldName(fieldName, displayName);
+      const result = await updateSystemFieldName(fieldName, displayName);
+      
+      if (result && result.success) {
+        setFields(prevFields =>
+          prevFields.map(field =>
+            field.field_name === fieldName ? { ...field, display_name: displayName } : field
+          )
+        );
 
-      setFields(prevFields =>
-        prevFields.map(field =>
-          field.field_name === fieldName ? { ...field, display_name: displayName } : field
-        )
-      );
-
-      toast.success('تم تحديث الحقل النظامي بنجاح');
+        toast.success('تم تحديث الحقل النظامي بنجاح');
+        setEditingSystemField('');
+      } else {
+        throw new Error('فشل في تحديث الحقل النظامي');
+      }
     } catch (error) {
       console.error('Error updating system field:', error);
       toast.error('فشل في تحديث الحقل النظامي');
@@ -447,7 +459,6 @@ const SiteFieldsManager = () => {
                                       size="sm"
                                       onClick={() => {
                                         updateSystemField(field.field_name, newDisplayName);
-                                        setEditingSystemField('');
                                       }}
                                     >
                                       حفظ
