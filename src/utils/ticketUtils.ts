@@ -19,14 +19,16 @@ export type SupportTicket = {
   id?: string;
 };
 
-export type SiteField = {
-  id: string;
+export interface SiteField {
+  id: string | number;
   field_name: string;
   display_name: string;
+  placeholder?: string;
   is_required: boolean;
   is_active: boolean;
-  sort_order: number;
-};
+  created_at?: string;
+  sort_order?: number;
+}
 
 export type Branch = {
   id: string;
@@ -302,43 +304,39 @@ export const deleteAdmin = async (id: string): Promise<boolean> => {
   }
 };
 
-export const updateSiteField = async (id: string, fieldData: Partial<SiteField>): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('site_fields')
-      .update(fieldData)
-      .eq('id', id);
-    
-    if (error) {
-      console.error('Error updating site field:', error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error in updateSiteField:', error);
-    return false;
-  }
-};
-
-export const createSiteField = async (field: Omit<SiteField, 'id'>): Promise<{ success: boolean, error?: any, data?: SiteField[] }> => {
+export const updateSiteField = async (fieldId: string, updates: Partial<SiteField>) => {
   try {
     const { data, error } = await supabase
       .from('site_fields')
-      .insert({
-        field_name: field.field_name,
-        display_name: field.display_name,
-        is_required: field.is_required,
-        is_active: field.is_active,
-        sort_order: field.sort_order
-      })
+      .update(updates)
+      .eq('id', fieldId)
       .select();
-    
+
     if (error) {
+      console.error('Error updating site field:', error);
       return { success: false, error };
     }
-    
-    return { success: true, data: data as SiteField[] };
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error updating site field:', error);
+    return { success: false, error };
+  }
+};
+
+export const createSiteField = async (field: Partial<SiteField>) => {
+  try {
+    const { data, error } = await supabase
+      .from('site_fields')
+      .insert(field)
+      .select();
+
+    if (error) {
+      console.error('Error creating site field:', error);
+      return { success: false, error };
+    }
+
+    return { success: true, data };
   } catch (error) {
     console.error('Error creating site field:', error);
     return { success: false, error };

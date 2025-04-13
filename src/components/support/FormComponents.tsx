@@ -1,3 +1,4 @@
+
 import { ChangeEvent } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -110,9 +111,10 @@ export const BranchSelect = ({ value, branches, onChange }: BranchSelectProps) =
 interface DescriptionInputProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
 }
 
-export const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => {
+export const DescriptionInput = ({ value, onChange, placeholder = "اكتب وصف المشكلة هنا..." }: DescriptionInputProps) => {
   return (
     <div className="grid gap-2">
       <Label htmlFor="description" className="text-right">وصف المشكلة</Label>
@@ -120,7 +122,7 @@ export const DescriptionInput = ({ value, onChange }: DescriptionInputProps) => 
         id="description"
         name="description"
         required
-        placeholder="اكتب وصف المشكلة هنا..."
+        placeholder={placeholder}
         className="min-h-[120px] text-right"
         value={value}
         onChange={onChange}
@@ -134,14 +136,19 @@ interface CustomFieldInputProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   numbersOnly?: boolean;
+  placeholder?: string;
 }
 
 export const CustomFieldInput = ({ 
   field, 
   value, 
   onChange, 
-  numbersOnly = false 
+  numbersOnly = false,
+  placeholder
 }: CustomFieldInputProps) => {
+  // Use the field's placeholder or generate one based on the display name
+  const fieldPlaceholder = placeholder || (field.placeholder ? field.placeholder : `أدخل ${field.display_name}`);
+  
   return (
     <div className="grid gap-2">
       <Label htmlFor={field.field_name} className="text-right">
@@ -152,7 +159,7 @@ export const CustomFieldInput = ({
         name={field.field_name}
         type="text"
         required={field.is_required}
-        placeholder={`أدخل ${field.display_name}`}
+        placeholder={fieldPlaceholder}
         className="text-right"
         value={value || ''}
         onChange={onChange}

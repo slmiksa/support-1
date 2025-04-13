@@ -14,20 +14,34 @@ import { SYSTEM_FIELDS, SYSTEM_FIELD_LABELS } from '@/components/support/constan
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
-import { RefreshCw, Plus, Pencil, Trash, ArrowUp, ArrowDown } from 'lucide-react';
+import { RefreshCw, Plus, Pencil, Trash, ArrowUp, ArrowDown, Type } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
 
 const SiteFieldsManager = () => {
   const [fields, setFields] = useState<SiteField[]>([]);
   const [loading, setLoading] = useState(true);
   const [fieldName, setFieldName] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [placeholder, setPlaceholder] = useState('');
   const [isRequired, setIsRequired] = useState(false);
   const [isSystemField, setIsSystemField] = useState(false);
   const [editingSystemField, setEditingSystemField] = useState('');
   const [newDisplayName, setNewDisplayName] = useState('');
+  const [editingField, setEditingField] = useState<SiteField | null>(null);
+  const [editingPlaceholder, setEditingPlaceholder] = useState('');
 
   useEffect(() => {
     fetchFields();
@@ -118,6 +132,29 @@ const SiteFieldsManager = () => {
     }
   };
 
+  const handleUpdatePlaceholder = async () => {
+    if (!editingField) return;
+    
+    try {
+      await updateSiteField(String(editingField.id), { 
+        placeholder: editingPlaceholder 
+      });
+      
+      setFields(prevFields =>
+        prevFields.map(field =>
+          field.id === editingField.id ? { ...field, placeholder: editingPlaceholder } : field
+        )
+      );
+      
+      setEditingField(null);
+      setEditingPlaceholder('');
+      toast.success('تم تحديث وصف الحقل بنجاح');
+    } catch (error) {
+      console.error('Error updating field placeholder:', error);
+      toast.error('فشل في تحديث وصف الحقل');
+    }
+  };
+
   const handleDeleteField = async (id: string | number) => {
     const fieldId = String(id);
     if (window.confirm('هل أنت متأكد من رغبتك في حذف هذا الحقل؟')) {
@@ -142,9 +179,10 @@ const SiteFieldsManager = () => {
     const newField = {
       field_name: fieldName,
       display_name: displayName,
+      placeholder: placeholder,
       is_required: isRequired,
       is_active: true,
-      sort_order: fields.length + 1 // Add sort_order with a default value
+      sort_order: fields.length + 1
     };
 
     try {
@@ -154,6 +192,7 @@ const SiteFieldsManager = () => {
         setFields([...fields, result.data[0] as SiteField]);
         setFieldName('');
         setDisplayName('');
+        setPlaceholder('');
         setIsRequired(false);
         toast.success('تم إنشاء الحقل بنجاح');
       } else {
@@ -273,6 +312,11 @@ const SiteFieldsManager = () => {
     }
   };
 
+  const openPlaceholderDialog = (field: SiteField) => {
+    setEditingField(field);
+    setEditingPlaceholder(field.placeholder || '');
+  };
+
   return (
     <div className="container mx-auto p-4">
       <Card className="border-company/20 glass">
@@ -311,8 +355,52 @@ const SiteFieldsManager = () => {
                           <div>
                             <div className="font-semibold">{field.display_name}</div>
                             <div className="text-sm text-gray-500">{field.field_name}</div>
+                            {field.placeholder && (
+                              <div className="text-xs text-gray-400 mt-1">
+                                وصف: {field.placeholder}
+                              </div>
+                            )}
                           </div>
                           <div className="flex items-center space-x-2">
+                            {/* All fields (system & custom) can have placeholder text */}
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  size="icon" 
+                                  variant="outline" 
+                                  onClick={() => openPlaceholderDialog(field)} 
+                                  title="تحرير وصف الحقل"
+                                >
+                                  <Type className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="sm:max-w-[425px]">
+                                <DialogHeader>
+                                  <DialogTitle className="text-right">تحرير وصف الحقل</DialogTitle>
+                                  <DialogDescription className="text-right">
+                                    أضف نصًا توضيحيًا يظهر داخل الحقل لمساعدة المستخدم.
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                  <div className="grid gap-2">
+                                    <Label htmlFor="fieldPlaceholder" className="text-right">
+                                      نص توضيحي للحقل {field.display_name}
+                                    </Label>
+                                    <Textarea
+                                      id="fieldPlaceholder"
+                                      value={editingPlaceholder}
+                                      onChange={(e) => setEditingPlaceholder(e.target.value)}
+                                      placeholder="أدخل نصًا توضيحيًا يظهر داخل الحقل..."
+                                      className="text-right min-h-[100px]"
+                                    />
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button type="submit" onClick={handleUpdatePlaceholder}>حفظ</Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+
                             {!SYSTEM_FIELDS.includes(field.field_name) ? (
                               <>
                                 <Button size="icon" onClick={() => moveUp(index, field.id)} title="نقل لأعلى">
@@ -391,8 +479,9 @@ const SiteFieldsManager = () => {
             </Droppable>
           </DragDropContext>
 
-          <form onSubmit={handleCreateField} className="mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <form onSubmit={handleCreateField} className="mt-6 p-4 bg-muted/30 rounded-lg border border-border">
+            <h3 className="text-lg font-medium text-right mb-4">إضافة حقل جديد</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <Label htmlFor="fieldName" className="text-right block">اسم الحقل</Label>
                 <Input
@@ -415,14 +504,27 @@ const SiteFieldsManager = () => {
                   placeholder="الاسم الذي سيظهر للمستخدم"
                 />
               </div>
-              <div className="flex items-center justify-end">
-                <Label htmlFor="isRequired" className="ml-2">
-                  مطلوب
-                </Label>
-                <Switch id="isRequired" checked={isRequired} onCheckedChange={setIsRequired} />
-              </div>
             </div>
-            <Button type="submit" className="mt-4">
+            
+            <div className="mb-4">
+              <Label htmlFor="placeholder" className="text-right block">النص التوضيحي (Placeholder)</Label>
+              <Textarea
+                id="placeholder"
+                value={placeholder}
+                onChange={(e) => setPlaceholder(e.target.value)}
+                className="text-right"
+                placeholder="أدخل نصًا توضيحيًا يظهر داخل الحقل..."
+              />
+            </div>
+            
+            <div className="flex items-center justify-end mb-4">
+              <Label htmlFor="isRequired" className="ml-2">
+                مطلوب
+              </Label>
+              <Switch id="isRequired" checked={isRequired} onCheckedChange={setIsRequired} />
+            </div>
+            
+            <Button type="submit" className="w-full">
               <Plus className="ml-2 h-4 w-4" />
               إنشاء حقل
             </Button>
