@@ -3,6 +3,7 @@ import { AdminStats, TicketStats } from '@/hooks/useReportData';
 import StatisticsCards from './StatisticsCards';
 import StaffPerformanceChart from './StaffPerformanceChart';
 import TicketsTable from './TicketsTable';
+import BranchTicketsChart from './BranchTicketsChart';
 
 interface ReportContentProps {
   ticketStats: TicketStats;
@@ -32,11 +33,16 @@ const ReportContent: React.FC<ReportContentProps> = ({
         endDate={endDate}
       />
 
-      {/* Staff performance comparison chart */}
-      <StaffPerformanceChart
-        adminStats={adminStats}
-        prepareStaffComparativeData={prepareStaffComparativeData}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        {/* Staff performance comparison chart */}
+        <StaffPerformanceChart
+          adminStats={adminStats}
+          prepareStaffComparativeData={prepareStaffComparativeData}
+        />
+        
+        {/* Branch tickets chart */}
+        <BranchTicketsChart branchStats={ticketStats.byBranch} />
+      </div>
       
       {/* Tickets table */}
       <TicketsTable 

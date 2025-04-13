@@ -2,8 +2,6 @@
 import { format } from 'date-fns';
 import * as XLSX from 'exceljs';
 import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { getStatusLabel, priorityLabels } from '@/utils/ticketStatusUtils';
 
 interface ExportUtilsProps {
@@ -59,7 +57,7 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
           anydesk_number: ticket.anydesk_number || '-',
           description: ticket.description,
           admin_response: getFirstAdminResponse(ticket.ticket_id),
-          created_at: new Date(ticket.created_at).toLocaleString('ar-SA'),
+          created_at: new Date(ticket.created_at).toLocaleString('en-US'),
           first_responder: ticket.first_responder || 'لم يتم الرد',
         });
       });
@@ -75,78 +73,7 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
     }
   };
 
-  const exportToPDF = () => {
-    try {
-      const doc = new jsPDF({
-        orientation: 'landscape',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      // Add right-to-left support
-      doc.setR2L(true);
-      
-      // Add title
-      doc.setFontSize(18);
-      doc.text('تقرير نظام التذاكر', doc.internal.pageSize.width / 2, 15, { align: 'center' });
-      
-      // Add date range
-      doc.setFontSize(12);
-      doc.text(
-        `الفترة: ${format(startDate, 'yyyy-MM-dd')} إلى ${format(endDate, 'yyyy-MM-dd')}`,
-        doc.internal.pageSize.width / 2, 
-        25, 
-        { align: 'center' }
-      );
-      
-      // Add summary statistics
-      doc.text(`إجمالي التذاكر: ${ticketStats.total}`, 20, 35);
-      
-      // Add tickets table with description and admin response
-      const tableData = tickets.map(ticket => [
-        ticket.ticket_id,
-        ticket.employee_id,
-        ticket.branch,
-        priorityLabels[ticket.priority as keyof typeof priorityLabels] || ticket.priority,
-        getStatusLabel(ticket.status),
-        ticket.custom_fields?.Contact_Number || '-',
-        ticket.anydesk_number || '-',
-        ticket.description && ticket.description.length > 20 ? ticket.description.substring(0, 20) + '...' : ticket.description,
-        getFirstAdminResponse(ticket.ticket_id).length > 20 ? getFirstAdminResponse(ticket.ticket_id).substring(0, 20) + '...' : getFirstAdminResponse(ticket.ticket_id),
-        new Date(ticket.created_at).toLocaleString('ar-SA'),
-        ticket.first_responder || 'لم يتم الرد'
-      ]);
-      
-      autoTable(doc, {
-        head: [['رقم التذكرة', 'الرقم الوظيفي', 'الفرع', 'الأولوية', 'الحالة', 'رقم الاتصال', 'رقم AnyDesk', 'وصف المشكلة', 'رد الدعم الفني', 'تاريخ الإنشاء', 'موظف الدعم المسؤول']],
-        body: tableData,
-        startY: 45,
-        styles: { font: 'courier', halign: 'right', fontSize: 8 },
-        headStyles: { fillColor: [212, 175, 55], fontSize: 8 },
-        columnStyles: {
-          0: { cellWidth: 20 },
-          1: { cellWidth: 20 },
-          2: { cellWidth: 20 },
-          3: { cellWidth: 15 },
-          4: { cellWidth: 15 },
-          5: { cellWidth: 15 },
-          6: { cellWidth: 15 },
-          7: { cellWidth: 25 },
-          8: { cellWidth: 25 },
-          9: { cellWidth: 20 },
-          10: { cellWidth: 20 },
-        },
-      });
-      
-      // Save the PDF
-      doc.save(`تقرير_التذاكر_${format(new Date(), 'yyyy-MM-dd')}.pdf`);
-    } catch (error) {
-      console.error('Error exporting to PDF:', error);
-    }
-  };
-
   return {
-    exportToExcel,
-    exportToPDF
+    exportToExcel
   };
 };

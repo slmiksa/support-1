@@ -72,7 +72,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
                       <TableCell className="max-w-[200px] truncate" title={getFirstAdminResponse(ticket.ticket_id)}>
                         {getFirstAdminResponse(ticket.ticket_id)}
                       </TableCell>
-                      <TableCell>{new Date(ticket.created_at).toLocaleString('ar-SA')}</TableCell>
+                      <TableCell>{new Date(ticket.created_at).toLocaleString('en-US')}</TableCell>
                       <TableCell>{ticket.first_responder || 'لم يتم الرد'}</TableCell>
                     </TableRow>
                   ))
