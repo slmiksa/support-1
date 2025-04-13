@@ -74,7 +74,7 @@ const SupportForm = () => {
         }
       });
       
-      // Handle the imagePreview correctly based on its type
+      // Fixed: Ensure imageUrlToSave is explicitly typed as string | null
       let imageUrlToSave: string | null = null;
       
       // Check if imagePreview is a string (already uploaded image URL)
@@ -87,7 +87,7 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        image_url: imageUrlToSave, // We ensure this is of type string | null
+        image_url: imageUrlToSave, // Properly typed as string | null
         status: 'pending',
         created_at: new Date().toISOString(),
         employee_id: formData['field_1743981608110'] as string || '',
