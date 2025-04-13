@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
@@ -454,7 +453,6 @@ export const getTicketsWithResolutionDetails = async (startDate?: string, endDat
       
       // تحقق وتسجيل قيمة assigned_to
       const assignedTo = ticket.assigned_to || 'لم يتم التعيين';
-      console.log(`Ticket ${ticket.ticket_id} assigned to:`, assignedTo);
       
       return {
         ...ticket,

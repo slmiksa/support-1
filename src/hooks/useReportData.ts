@@ -1,5 +1,6 @@
+
 import { useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth, sub } from 'date-fns';
+import { format, startOfMonth, endOfMonth, sub, endOfDay, startOfDay } from 'date-fns';
 import { getTicketStats, getAdminStats, getTicketsWithResolutionDetails, getAllTicketResponses } from '@/utils/ticketUtils';
 
 export interface TicketStats {
@@ -50,12 +51,14 @@ export const useReportData = () => {
     
     switch (selectedPeriod) {
       case 'today':
-        setStartDate(new Date(now.setHours(0, 0, 0, 0)));
-        setEndDate(new Date());
+        // بداية اليوم (00:00:00)
+        setStartDate(startOfDay(now));
+        // نهاية اليوم (23:59:59)
+        setEndDate(endOfDay(now));
         break;
       case 'week':
         setStartDate(sub(new Date(), { days: 6 }));
-        setEndDate(new Date());
+        setEndDate(endOfDay(now));
         break;
       case 'month':
         setStartDate(startOfMonth(now));
@@ -63,11 +66,11 @@ export const useReportData = () => {
         break;
       case 'quarter':
         setStartDate(sub(new Date(), { months: 3 }));
-        setEndDate(new Date());
+        setEndDate(endOfDay(now));
         break;
       case 'year':
         setStartDate(sub(new Date(), { years: 1 }));
-        setEndDate(new Date());
+        setEndDate(endOfDay(now));
         break;
       default:
         break;
@@ -78,8 +81,11 @@ export const useReportData = () => {
     setIsGenerating(true);
     
     try {
-      const formattedStartDate = format(startDate, 'yyyy-MM-dd');
-      const formattedEndDate = format(endDate, 'yyyy-MM-dd');
+      // تنسيق التواريخ بشكل كامل بما في ذلك الوقت
+      const formattedStartDate = format(startDate, 'yyyy-MM-dd\'T\'HH:mm:ss');
+      const formattedEndDate = format(endDate, 'yyyy-MM-dd\'T\'HH:mm:ss');
+      
+      console.log(`Fetching tickets from ${formattedStartDate} to ${formattedEndDate}`);
       
       const ticketsData = await getTicketsWithResolutionDetails(formattedStartDate, formattedEndDate);
       
