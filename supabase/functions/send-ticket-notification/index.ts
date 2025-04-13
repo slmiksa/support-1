@@ -8,7 +8,7 @@ if (!resendApiKey) {
   console.error("RESEND_API_KEY environment variable is not set");
 }
 
-console.log("Initializing Resend with API key");
+console.log("Initializing Resend with API key length:", resendApiKey?.length);
 const resend = new Resend(resendApiKey);
 
 const corsHeaders = {
@@ -36,7 +36,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log("Received request to send notification");
+    console.log("Received request to send notification at:", new Date().toISOString());
     
     const { 
       ticket_id, 
@@ -51,7 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
     }: TicketNotificationRequest = await req.json();
 
     console.log(`Sending notification for ticket ${ticket_id}`);
-    console.log(`Customer email: ${customer_email}`);
+    console.log(`Customer email: ${customer_email || 'not provided'}`);
     console.log(`Admin email: ${admin_email}`);
     console.log(`Support email: ${support_email}`);
 
@@ -131,40 +131,46 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
+    let allEmails = [];
+    
     // Send email to support team
-    console.log("Attempting to send support notification email to:", support_email);
+    console.log(`[${new Date().toISOString()}] Attempting to send support notification email to:`, support_email);
     try {
       const supportEmailResponse = await resend.emails.send({
-        from: `دعم الوصل <${support_email}>`,
+        from: `دعم الوصل <help@alwaslsaudi.com>`,
         to: [support_email],
         subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
         html: emailHtml,
       });
 
-      console.log("Support notification sent:", JSON.stringify(supportEmailResponse));
+      console.log(`[${new Date().toISOString()}] Support notification sent:`, JSON.stringify(supportEmailResponse));
+      allEmails.push({ type: 'support', success: true, response: supportEmailResponse });
     } catch (supportError) {
-      console.error("Error sending support notification:", supportError);
+      console.error(`[${new Date().toISOString()}] Error sending support notification:`, supportError);
+      allEmails.push({ type: 'support', success: false, error: supportError });
     }
 
     // Send email to admin
-    console.log("Attempting to send admin notification email to:", admin_email);
+    console.log(`[${new Date().toISOString()}] Attempting to send admin notification email to:`, admin_email);
     try {
       const adminEmailResponse = await resend.emails.send({
-        from: `دعم الوصل <${support_email}>`,
+        from: `دعم الوصل <help@alwaslsaudi.com>`,
         to: [admin_email],
         subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
         html: emailHtml,
       });
 
-      console.log("Admin notification sent:", JSON.stringify(adminEmailResponse));
+      console.log(`[${new Date().toISOString()}] Admin notification sent:`, JSON.stringify(adminEmailResponse));
+      allEmails.push({ type: 'admin', success: true, response: adminEmailResponse });
     } catch (adminError) {
-      console.error("Error sending admin notification:", adminError);
+      console.error(`[${new Date().toISOString()}] Error sending admin notification:`, adminError);
+      allEmails.push({ type: 'admin', success: false, error: adminError });
     }
 
     // If customer email is provided, send confirmation to customer
-    let customerEmailResponse = null;
+    let customerEmailResult = null;
     if (customer_email) {
-      console.log("Attempting to send customer notification email to:", customer_email);
+      console.log(`[${new Date().toISOString()}] Attempting to send customer notification email to:`, customer_email);
       const customerHtml = `
         <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
@@ -204,22 +210,34 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       try {
-        customerEmailResponse = await resend.emails.send({
-          from: `دعم الوصل <${support_email}>`,
+        const customerEmailResponse = await resend.emails.send({
+          from: `دعم الوصل <help@alwaslsaudi.com>`,
           to: [customer_email],
           subject: `تم استلام طلب الدعم الفني رقم ${ticket_id}`,
           html: customerHtml,
         });
 
-        console.log("Customer notification sent:", JSON.stringify(customerEmailResponse));
+        console.log(`[${new Date().toISOString()}] Customer notification sent:`, JSON.stringify(customerEmailResponse));
+        customerEmailResult = { success: true, response: customerEmailResponse };
+        allEmails.push({ type: 'customer', success: true, response: customerEmailResponse });
       } catch (customerError) {
-        console.error("Error sending customer notification:", customerError);
+        console.error(`[${new Date().toISOString()}] Error sending customer notification:`, customerError);
+        customerEmailResult = { success: false, error: customerError };
+        allEmails.push({ type: 'customer', success: false, error: customerError });
       }
+    }
+
+    // Check if any emails were sent successfully
+    const anySent = allEmails.some(email => email.success);
+    
+    if (!anySent) {
+      throw new Error("Failed to send any notifications");
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
+        allEmails,
         supportNotification: "Sent",
         adminNotification: "Sent",
         customerNotification: customer_email ? "Sent" : null 
