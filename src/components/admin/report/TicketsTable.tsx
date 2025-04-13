@@ -40,6 +40,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
                   <TableHead className="font-medium">الأولوية</TableHead>
                   <TableHead className="font-medium">الحالة</TableHead>
                   <TableHead className="font-medium">رقم الاتصال</TableHead>
+                  <TableHead className="font-medium">رقم AnyDesk</TableHead>
                   <TableHead className="font-medium">وصف المشكلة</TableHead>
                   <TableHead className="font-medium">رد الدعم الفني</TableHead>
                   <TableHead className="font-medium">تاريخ الإنشاء</TableHead>
@@ -63,7 +64,8 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
                           {getStatusLabel(ticket.status)}
                         </span>
                       </TableCell>
-                      <TableCell>{ticket.custom_fields?.contact_number || ticket.extension_number || '-'}</TableCell>
+                      <TableCell>{ticket.custom_fields?.contact_number || '-'}</TableCell>
+                      <TableCell>{ticket.anydesk_number || '-'}</TableCell>
                       <TableCell className="max-w-[200px] truncate" title={ticket.description}>
                         {ticket.description}
                       </TableCell>
@@ -76,7 +78,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={10} className="p-4 text-center text-muted-foreground">
+                    <TableCell colSpan={11} className="p-4 text-center text-muted-foreground">
                       لا توجد تذاكر في الفترة المحددة
                     </TableCell>
                   </TableRow>

@@ -40,6 +40,7 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
         { header: 'الأولوية', key: 'priority', width: 15 },
         { header: 'الحالة', key: 'status', width: 15 },
         { header: 'رقم الاتصال', key: 'contact_number', width: 15 },
+        { header: 'رقم AnyDesk', key: 'anydesk_number', width: 15 },
         { header: 'وصف المشكلة', key: 'description', width: 30 },
         { header: 'رد الدعم الفني', key: 'admin_response', width: 30 },
         { header: 'تاريخ الإنشاء', key: 'created_at', width: 20 },
@@ -54,7 +55,8 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
           branch: ticket.branch,
           priority: priorityLabels[ticket.priority as keyof typeof priorityLabels] || ticket.priority,
           status: getStatusLabel(ticket.status),
-          contact_number: ticket.custom_fields?.contact_number || ticket.extension_number || '-',
+          contact_number: ticket.custom_fields?.contact_number || '-',
+          anydesk_number: ticket.anydesk_number || '-',
           description: ticket.description,
           admin_response: getFirstAdminResponse(ticket.ticket_id),
           created_at: new Date(ticket.created_at).toLocaleString('ar-SA'),
@@ -107,7 +109,8 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
         ticket.branch,
         priorityLabels[ticket.priority as keyof typeof priorityLabels] || ticket.priority,
         getStatusLabel(ticket.status),
-        ticket.custom_fields?.contact_number || ticket.extension_number || '-',
+        ticket.custom_fields?.contact_number || '-',
+        ticket.anydesk_number || '-',
         ticket.description && ticket.description.length > 20 ? ticket.description.substring(0, 20) + '...' : ticket.description,
         getFirstAdminResponse(ticket.ticket_id).length > 20 ? getFirstAdminResponse(ticket.ticket_id).substring(0, 20) + '...' : getFirstAdminResponse(ticket.ticket_id),
         new Date(ticket.created_at).toLocaleString('ar-SA'),
@@ -115,7 +118,7 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
       ]);
       
       autoTable(doc, {
-        head: [['رقم التذكرة', 'الرقم الوظيفي', 'الفرع', 'الأولوية', 'الحالة', 'رقم الاتصال', 'وصف المشكلة', 'رد الدعم الفني', 'تاريخ الإنشاء', 'موظف الدعم المسؤول']],
+        head: [['رقم التذكرة', 'الرقم الوظيفي', 'الفرع', 'الأولوية', 'الحالة', 'رقم الاتصال', 'رقم AnyDesk', 'وصف المشكلة', 'رد الدعم الفني', 'تاريخ الإنشاء', 'موظف الدعم المسؤول']],
         body: tableData,
         startY: 45,
         styles: { font: 'courier', halign: 'right', fontSize: 8 },
@@ -126,11 +129,12 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
           2: { cellWidth: 20 },
           3: { cellWidth: 15 },
           4: { cellWidth: 15 },
-          5: { cellWidth: 20 },
-          6: { cellWidth: 30 },
-          7: { cellWidth: 30 },
+          5: { cellWidth: 15 },
+          6: { cellWidth: 15 },
+          7: { cellWidth: 25 },
           8: { cellWidth: 25 },
-          9: { cellWidth: 25 },
+          9: { cellWidth: 20 },
+          10: { cellWidth: 20 },
         },
       });
       
