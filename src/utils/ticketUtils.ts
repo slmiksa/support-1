@@ -16,6 +16,7 @@ export type SupportTicket = {
   extension_number?: string;
   assigned_to?: string | null;
   support_email?: string;
+  customer_email?: string | null;
   id?: string;
 };
 
