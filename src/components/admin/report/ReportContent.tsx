@@ -33,19 +33,19 @@ const ReportContent: React.FC<ReportContentProps> = ({
         endDate={endDate}
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
         {/* Staff performance comparison chart */}
         <StaffPerformanceChart
           adminStats={adminStats}
           prepareStaffComparativeData={prepareStaffComparativeData}
         />
         
-        {/* Branch tickets chart - now a pie chart */}
+        {/* Branch tickets chart - gold themed pie chart */}
         <BranchTicketsChart branchStats={ticketStats.byBranch} />
       </div>
       
-      {/* Tickets table with clear separation from charts */}
-      <div className="mt-6">
+      {/* Tickets table with increased separation from charts */}
+      <div className="mt-8 border-t pt-4">
         <h2 className="text-2xl font-bold mb-3 text-right">قائمة التذاكر</h2>
         <TicketsTable 
           tickets={tickets} 

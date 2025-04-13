@@ -7,7 +7,8 @@ interface BranchTicketsChartProps {
   branchStats: Record<string, number>;
 }
 
-const COLORS = ['#2B5A97', '#4D7CC3', '#7399D1', '#9CB7DF', '#C5D5ED'];
+// Gold color palette
+const COLORS = ['#D4AF37', '#B08C1A', '#CFB53B', '#EADDCA', '#F0E68C'];
 
 const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) => {
   const data = Object.entries(branchStats).map(([branch, count]) => ({
@@ -21,18 +22,18 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
   const config = {
     value: {
       theme: {
-        light: "#2B5A97",
-        dark: "#2B5A97"
+        light: "#D4AF37",
+        dark: "#D4AF37"
       }
     }
   };
 
   return (
     <Card className="col-span-3">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1">
         <CardTitle className="text-right text-sm">توزيع التذاكر حسب الفروع</CardTitle>
       </CardHeader>
-      <CardContent className="h-[180px] px-2 py-1">
+      <CardContent className="h-[150px] px-2">
         <ChartContainer config={config}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -40,8 +41,8 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={25}
-                outerRadius={45}
+                innerRadius={20}
+                outerRadius={40}
                 paddingAngle={2}
                 dataKey="value"
                 nameKey="name"
