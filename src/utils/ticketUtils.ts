@@ -227,15 +227,61 @@ export const getAllSiteFields = async (): Promise<SiteField[]> => {
 };
 
 export const createBranch = async (name: string): Promise<{ success: boolean, error?: any }> => {
-  return { success: false, error: 'Not implemented' };
+  try {
+    const { data, error } = await supabase
+      .from('branches')
+      .insert({ name })
+      .select();
+    
+    if (error) {
+      console.error('Error creating branch:', error);
+      return { success: false, error };
+    }
+    
+    console.log('Branch created successfully:', data);
+    return { success: true };
+  } catch (error) {
+    console.error('Exception in createBranch:', error);
+    return { success: false, error };
+  }
 };
 
 export const deleteBranch = async (id: string): Promise<boolean> => {
-  return false;
+  try {
+    const { error } = await supabase
+      .from('branches')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting branch:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in deleteBranch:', error);
+    return false;
+  }
 };
 
 export const updateBranchName = async (id: string, name: string): Promise<boolean> => {
-  return false;
+  try {
+    const { error } = await supabase
+      .from('branches')
+      .update({ name })
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error updating branch name:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in updateBranchName:', error);
+    return false;
+  }
 };
 
 export const getAllAdmins = async (): Promise<Admin[]> => {
@@ -446,7 +492,7 @@ export const getTicketsWithResolutionDetails = async (startDate?: string, endDat
       return [];
     }
     
-    // تأكد من تحويل custom_fields بشكل صحيح وأن assigned_to موجود
+    // تأكد من تحويل custom_fields بشكل صحيح وأ�� assigned_to موجود
     const tickets = data.map(ticket => {
       console.log(`Ticket ${ticket.ticket_id} custom fields:`, ticket.custom_fields);
       
