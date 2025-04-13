@@ -1,8 +1,8 @@
 
-import { FormEvent } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket } from '../utils/ticketUtils';
-import { sendTicketNotificationsToAllAdmins } from '@/utils/notificationUtils';
+import { sendTicketNotificationsToAllAdmins, getCompanyEmailSettings } from '@/utils/notificationUtils';
 import LoadingForm from './support/LoadingForm';
 import SuccessCard from './support/SuccessCard';
 import SupportFormCard from './support/SupportFormCard';
@@ -10,6 +10,9 @@ import { useFormData } from './support/useFormData';
 import { SYSTEM_FIELDS } from './support/constants';
 
 const SupportForm = () => {
+  const [companySenderEmail, setCompanySenderEmail] = useState<string>('help@alwaslsaudi.com');
+  const [companySenderName, setCompanySenderName] = useState<string>('دعم الوصل');
+  
   const {
     formData,
     isSubmitting,
@@ -27,6 +30,22 @@ const SupportForm = () => {
     resetImage,
     resetForm
   } = useFormData();
+
+  useEffect(() => {
+    // استرجاع إعدادات البريد الإلكتروني للشركة عند تحميل النموذج
+    const fetchCompanyEmailSettings = async () => {
+      try {
+        const settings = await getCompanyEmailSettings();
+        setCompanySenderEmail(settings.senderEmail);
+        setCompanySenderName(settings.senderName);
+        console.log('Loaded company email settings:', settings);
+      } catch (error) {
+        console.error('Failed to load company email settings:', error);
+      }
+    };
+    
+    fetchCompanyEmailSettings();
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -99,6 +118,8 @@ const SupportForm = () => {
       };
       
       console.log('Submitting ticket with data:', newTicket);
+      console.log('Using company sender email:', companySenderEmail);
+      console.log('Using company sender name:', companySenderName);
       
       const result = await saveTicket(newTicket);
       
@@ -109,7 +130,11 @@ const SupportForm = () => {
       
       try {
         console.log('Sending notifications for new ticket:', newTicketId);
-        const notificationResult = await sendTicketNotificationsToAllAdmins(newTicket);
+        const notificationResult = await sendTicketNotificationsToAllAdmins(
+          newTicket, 
+          companySenderEmail, 
+          companySenderName
+        );
         console.log('Notification result:', notificationResult);
       } catch (error) {
         console.error('Error sending notifications:', error);

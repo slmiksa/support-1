@@ -27,6 +27,8 @@ interface TicketNotificationRequest {
   support_email?: string;
   customer_email?: string;
   status?: string;
+  company_sender_email?: string; // إضافة حقل البريد الإلكتروني الرسمي للشركة
+  company_sender_name?: string; // إضافة حقل اسم المرسل
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -48,12 +50,16 @@ const handler = async (req: Request): Promise<Response> => {
       support_email = 'help@alwaslsaudi.com',
       customer_email,
       status = 'pending',
+      company_sender_email = 'help@alwaslsaudi.com', // استخدام البريد الافتراضي إذا لم يتم تحديد بريد الشركة
+      company_sender_name = 'دعم الوصل' // استخدام الاسم الافتراضي إذا لم يتم تحديد اسم المرسل
     }: TicketNotificationRequest = await req.json();
 
     console.log(`Sending notification for ticket ${ticket_id}`);
     console.log(`Customer email: ${customer_email || 'not provided'}`);
     console.log(`Admin email: ${admin_email}`);
     console.log(`Support email: ${support_email}`);
+    console.log(`Company sender email: ${company_sender_email}`);
+    console.log(`Company sender name: ${company_sender_name}`);
 
     if (!resendApiKey) {
       throw new Error("RESEND_API_KEY environment variable is not set");
@@ -137,7 +143,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${new Date().toISOString()}] Attempting to send support notification email to:`, support_email);
     try {
       const supportEmailResponse = await resend.emails.send({
-        from: `دعم الوصل <help@alwaslsaudi.com>`,
+        from: `${company_sender_name} <${company_sender_email}>`,
         to: [support_email],
         subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
         html: emailHtml,
@@ -154,7 +160,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[${new Date().toISOString()}] Attempting to send admin notification email to:`, admin_email);
     try {
       const adminEmailResponse = await resend.emails.send({
-        from: `دعم الوصل <help@alwaslsaudi.com>`,
+        from: `${company_sender_name} <${company_sender_email}>`,
         to: [admin_email],
         subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
         html: emailHtml,
@@ -211,7 +217,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       try {
         const customerEmailResponse = await resend.emails.send({
-          from: `دعم الوصل <help@alwaslsaudi.com>`,
+          from: `${company_sender_name} <${company_sender_email}>`,
           to: [customer_email],
           subject: `تم استلام طلب الدعم الفني رقم ${ticket_id}`,
           html: customerHtml,

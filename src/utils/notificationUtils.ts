@@ -1,4 +1,3 @@
-
 import { supabase, PriorityType } from '@/integrations/supabase/client';
 import { SupportTicket } from './ticketUtils';
 import { toast } from 'sonner';
@@ -6,7 +5,9 @@ import { toast } from 'sonner';
 // Send email notification to admin when a new ticket is created
 export const sendTicketNotification = async (
   ticket: SupportTicket, 
-  adminEmail: string
+  adminEmail: string,
+  companySenderEmail?: string,
+  companySenderName?: string
 ): Promise<boolean> => {
   try {
     // Prepare the notification data
@@ -20,12 +21,17 @@ export const sendTicketNotification = async (
       // Always use the fixed support email for consistent notifications
       support_email: 'help@alwaslsaudi.com',
       // Add customer email if available
-      customer_email: ticket.customer_email || null
+      customer_email: ticket.customer_email || null,
+      // Add company sender email and name if provided
+      company_sender_email: companySenderEmail || 'help@alwaslsaudi.com',
+      company_sender_name: companySenderName || 'دعم الوصل'
     };
 
     console.log('Sending notification for ticket', ticket.ticket_id, 'to', adminEmail);
     console.log('Using support email:', notificationData.support_email);
     console.log('Customer email:', notificationData.customer_email);
+    console.log('Company sender email:', notificationData.company_sender_email);
+    console.log('Company sender name:', notificationData.company_sender_name);
 
     // Call the Supabase edge function to send the email
     const { data, error } = await supabase.functions.invoke(
@@ -53,7 +59,9 @@ export const sendTicketNotification = async (
 
 // Send email notifications to all admins when a new ticket is created
 export const sendTicketNotificationsToAllAdmins = async (
-  ticket: SupportTicket
+  ticket: SupportTicket,
+  companySenderEmail?: string,
+  companySenderName?: string
 ): Promise<boolean> => {
   try {
     // Get all admin emails
@@ -65,10 +73,12 @@ export const sendTicketNotificationsToAllAdmins = async (
     }
     
     console.log('Sending notifications to admins:', adminEmails);
+    console.log('Using company sender email:', companySenderEmail || 'help@alwaslsaudi.com');
+    console.log('Using company sender name:', companySenderName || 'دعم الوصل');
     
     // Send notifications to all admins
     const results = await Promise.allSettled(
-      adminEmails.map(email => sendTicketNotification(ticket, email))
+      adminEmails.map(email => sendTicketNotification(ticket, email, companySenderEmail, companySenderName))
     );
     
     // Check if at least one notification was sent successfully
@@ -128,6 +138,61 @@ export const saveAdminNotificationEmail = async (
     return true;
   } catch (error) {
     console.error('Error saving notification email:', error);
+    return false;
+  }
+};
+
+// Get company email settings
+export const getCompanyEmailSettings = async (): Promise<{
+  senderEmail: string;
+  senderName: string;
+}> => {
+  try {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('company_sender_email, company_sender_name')
+      .single();
+
+    if (error) {
+      console.error('Error fetching company email settings:', error);
+      throw error;
+    }
+
+    return {
+      senderEmail: data?.company_sender_email || 'help@alwaslsaudi.com',
+      senderName: data?.company_sender_name || 'دعم الوصل'
+    };
+  } catch (error) {
+    console.error('Error fetching company email settings:', error);
+    return {
+      senderEmail: 'help@alwaslsaudi.com',
+      senderName: 'دعم الوصل'
+    };
+  }
+};
+
+// Save company email settings
+export const saveCompanyEmailSettings = async (
+  senderEmail: string,
+  senderName: string
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('site_settings')
+      .update({
+        company_sender_email: senderEmail,
+        company_sender_name: senderName
+      })
+      .eq('id', 1); // بافتراض أن لديك سجل واحد فقط في جدول site_settings
+
+    if (error) {
+      console.error('Error saving company email settings:', error);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error saving company email settings:', error);
     return false;
   }
 };

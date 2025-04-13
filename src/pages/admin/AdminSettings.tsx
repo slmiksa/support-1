@@ -8,8 +8,9 @@ import SiteFieldsManager from '@/components/admin/SiteFieldsManager';
 import AdminManager from '@/components/admin/AdminManager';
 import ReportGenerator from '@/components/admin/ReportGenerator';
 import NotificationSettings from '@/components/admin/NotificationSettings';
+import CompanyEmailSettings from '@/components/admin/CompanyEmailSettings';
 import SiteCustomizationManager from '@/components/admin/SiteCustomizationManager';
-import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket } from 'lucide-react';
+import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket, Mail } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -36,7 +37,7 @@ const AdminSettings = () => {
     // عند تغيير علامة التبويب، تحديث العنوان في URL
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['branches', 'fields', 'admins', 'reports', 'notifications', 'customization', 'settings'].includes(tabParam)) {
+    if (tabParam && ['branches', 'fields', 'admins', 'reports', 'notifications', 'customization', 'settings', 'email'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [hasPermission, navigate, toast]);
@@ -92,7 +93,7 @@ const AdminSettings = () => {
               onValueChange={handleTabChange}
               className="w-full"
             >
-              <TabsList className="grid grid-cols-2 md:grid-cols-7 w-full mb-8 dark:bg-muted/50">
+              <TabsList className="grid grid-cols-2 md:grid-cols-8 w-full mb-8 dark:bg-muted/50">
                 <TabsTrigger value="branches" className="flex items-center gap-2">
                   <Building size={16} />
                   <span>الفروع</span>
@@ -116,6 +117,10 @@ const AdminSettings = () => {
                 <TabsTrigger value="notifications" className="flex items-center gap-2">
                   <Bell size={16} />
                   <span>الإشعارات</span>
+                </TabsTrigger>
+                <TabsTrigger value="email" className="flex items-center gap-2">
+                  <Mail size={16} />
+                  <span>البريد</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="customization" 
@@ -153,6 +158,10 @@ const AdminSettings = () => {
               
               <TabsContent value="notifications">
                 <NotificationSettings />
+              </TabsContent>
+              
+              <TabsContent value="email">
+                <CompanyEmailSettings />
               </TabsContent>
               
               <TabsContent value="customization">
