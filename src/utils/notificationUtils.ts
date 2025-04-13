@@ -17,8 +17,8 @@ export const sendTicketNotification = async (
       priority: ticket.priority,
       description: ticket.description,
       admin_email: adminEmail,
-      // Use the support_email from the ticket if available, otherwise use the default
-      support_email: ticket.support_email || 'help@alwaslsaudi.com',
+      // Always use the fixed support email for consistent notifications
+      support_email: 'help@alwaslsaudi.com',
       // Add customer email if available
       customer_email: ticket.customer_email || null
     };

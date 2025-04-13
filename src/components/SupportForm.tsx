@@ -93,7 +93,8 @@ const SupportForm = () => {
         employee_id: formData['field_1743981608110'] as string || '',
         custom_fields: customFieldsData,
         anydesk_number: formData.anydesk_number || '',
-        customer_email: formData.customer_email ? (formData.customer_email as string) : null
+        customer_email: formData.customer_email ? (formData.customer_email as string) : null,
+        support_email: 'help@alwaslsaudi.com' // تأكد من تعيين بريد الدعم دائمًا
       };
       
       console.log('Submitting ticket with data:', newTicket);
@@ -106,7 +107,9 @@ const SupportForm = () => {
       }
       
       try {
-        await sendTicketNotificationsToAllAdmins(newTicket);
+        console.log('Sending notifications for new ticket:', newTicketId);
+        const notificationResult = await sendTicketNotificationsToAllAdmins(newTicket);
+        console.log('Notification result:', notificationResult);
       } catch (error) {
         console.error('Error sending notifications:', error);
       }

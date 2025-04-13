@@ -70,8 +70,8 @@ const handler = async (req: Request): Promise<Response> => {
     const formattedPriority = priorityLabels[priority as keyof typeof priorityLabels] || 'عادية';
     const formattedStatus = statusLabels[status as keyof typeof statusLabels] || status;
 
-    // First, send notification to admin
-    const adminHtml = `
+    // First, send notification to support email
+    const supportHtml = `
       <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
           <h1 style="color: #ffffff; margin: 0; font-size: 24px;">تذكرة دعم فني جديدة</h1>
@@ -119,12 +119,22 @@ const handler = async (req: Request): Promise<Response> => {
       </div>
     `;
 
+    // Send email to support team
+    const supportEmailResponse = await resend.emails.send({
+      from: `دعم الوصل <${support_email}>`,
+      to: [support_email],
+      subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
+      html: supportHtml,
+    });
+
+    console.log("Support notification sent:", supportEmailResponse);
+
     // Send email to admin
     const adminEmailResponse = await resend.emails.send({
       from: `دعم الوصل <${support_email}>`,
       to: [admin_email],
       subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
-      html: adminHtml,
+      html: supportHtml,
     });
 
     console.log("Admin notification sent:", adminEmailResponse);
@@ -183,6 +193,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         success: true, 
+        supportNotification: supportEmailResponse,
         adminNotification: adminEmailResponse,
         customerNotification: customerEmailResponse 
       }),
