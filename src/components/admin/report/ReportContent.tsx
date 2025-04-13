@@ -8,6 +8,7 @@ interface ReportContentProps {
   ticketStats: TicketStats;
   adminStats: AdminStats;
   tickets: any[];
+  ticketResponses: Record<string, any[]>;
   startDate: Date;
   endDate: Date;
   prepareStaffComparativeData: () => any[];
@@ -17,6 +18,7 @@ const ReportContent: React.FC<ReportContentProps> = ({
   ticketStats,
   adminStats,
   tickets,
+  ticketResponses,
   startDate,
   endDate,
   prepareStaffComparativeData
@@ -37,7 +39,10 @@ const ReportContent: React.FC<ReportContentProps> = ({
       />
       
       {/* Tickets table */}
-      <TicketsTable tickets={tickets} />
+      <TicketsTable 
+        tickets={tickets} 
+        ticketResponses={ticketResponses} 
+      />
     </>
   );
 };

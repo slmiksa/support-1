@@ -15,6 +15,7 @@ const ReportGenerator = () => {
     tickets,
     ticketStats,
     adminStats,
+    ticketResponses,
     prepareStaffComparativeData
   } = useReportData();
 
@@ -22,7 +23,8 @@ const ReportGenerator = () => {
     tickets,
     ticketStats,
     startDate,
-    endDate
+    endDate,
+    ticketResponses
   });
 
   return (
@@ -44,6 +46,7 @@ const ReportGenerator = () => {
         ticketStats={ticketStats}
         adminStats={adminStats}
         tickets={tickets}
+        ticketResponses={ticketResponses}
         startDate={startDate}
         endDate={endDate}
         prepareStaffComparativeData={prepareStaffComparativeData}
