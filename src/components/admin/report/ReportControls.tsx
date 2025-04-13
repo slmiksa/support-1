@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DatePicker } from '@/components/ui/date-picker';
-import { Download, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 
 interface ReportControlsProps {
   startDate: Date;
@@ -15,7 +15,6 @@ interface ReportControlsProps {
   setEndDate: (date: Date) => void;
   setPeriod: (period: string) => void;
   exportToExcel: () => void;
-  exportToPDF: () => void;
 }
 
 const ReportControls: React.FC<ReportControlsProps> = ({
@@ -25,8 +24,7 @@ const ReportControls: React.FC<ReportControlsProps> = ({
   setStartDate,
   setEndDate,
   setPeriod,
-  exportToExcel,
-  exportToPDF
+  exportToExcel
 }) => {
   return (
     <Card>
@@ -79,14 +77,6 @@ const ReportControls: React.FC<ReportControlsProps> = ({
           >
             <FileText className="h-4 w-4" />
             <span>تصدير Excel</span>
-          </Button>
-          <Button
-            variant="outline"
-            className="flex items-center gap-2"
-            onClick={exportToPDF}
-          >
-            <Download className="h-4 w-4" />
-            <span>تصدير PDF</span>
           </Button>
         </div>
       </CardContent>

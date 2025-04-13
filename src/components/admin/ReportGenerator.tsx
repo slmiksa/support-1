@@ -19,7 +19,7 @@ const ReportGenerator = () => {
     prepareStaffComparativeData
   } = useReportData();
 
-  const { exportToExcel, exportToPDF } = useExportUtils({
+  const { exportToExcel } = useExportUtils({
     tickets,
     ticketStats,
     startDate,
@@ -29,7 +29,6 @@ const ReportGenerator = () => {
 
   return (
     <div className="space-y-6">
-      {/* Controls for generating reports */}
       <ReportControls
         startDate={startDate}
         endDate={endDate}
@@ -38,10 +37,8 @@ const ReportGenerator = () => {
         setEndDate={setEndDate}
         setPeriod={setPeriod}
         exportToExcel={exportToExcel}
-        exportToPDF={exportToPDF}
       />
       
-      {/* Report content - statistics, charts, and tables */}
       <ReportContent 
         ticketStats={ticketStats}
         adminStats={adminStats}
