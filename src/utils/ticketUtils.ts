@@ -26,8 +26,7 @@ export interface SiteField {
   placeholder?: string;
   is_required: boolean;
   is_active: boolean;
-  created_at?: string;
-  sort_order?: number;
+  sort_order: number;
 }
 
 export type Branch = {
@@ -324,21 +323,23 @@ export const updateSiteField = async (fieldId: string, updates: Partial<SiteFiel
   }
 };
 
-export const createSiteField = async (field: Partial<SiteField>) => {
+export const createSiteField = async (fieldData: Partial<SiteField>): Promise<{ success: boolean; data?: SiteField[]; error?: any }> => {
   try {
+    console.log("Creating site field with data:", fieldData);
     const { data, error } = await supabase
       .from('site_fields')
-      .insert(field)
+      .insert([fieldData])
       .select();
 
     if (error) {
-      console.error('Error creating site field:', error);
+      console.error("Error creating site field:", error);
       return { success: false, error };
     }
 
+    console.log("Site field created successfully:", data);
     return { success: true, data };
   } catch (error) {
-    console.error('Error creating site field:', error);
+    console.error("Exception creating site field:", error);
     return { success: false, error };
   }
 };
@@ -389,15 +390,15 @@ export const updateSystemFieldName = async (fieldName: string, displayName: stri
       .from('site_fields')
       .update({ display_name: displayName })
       .eq('field_name', fieldName);
-    
+
     if (error) {
-      console.error('Error updating system field name:', error);
+      console.error("Error updating system field name:", error);
       return false;
     }
-    
+
     return true;
   } catch (error) {
-    console.error('Error in updateSystemFieldName:', error);
+    console.error("Exception updating system field name:", error);
     return false;
   }
 };

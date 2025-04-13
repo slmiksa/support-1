@@ -1,4 +1,3 @@
-
 import { ChangeEvent } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -146,7 +145,6 @@ export const CustomFieldInput = ({
   numbersOnly = false,
   placeholder
 }: CustomFieldInputProps) => {
-  // استخدام النص التوضيحي من الحقل إذا كان موجودًا
   const fieldPlaceholder = field.placeholder || placeholder || `أدخل ${field.display_name}`;
   
   return (
@@ -183,5 +181,145 @@ export const SubmitButton = ({ isSubmitting }: SubmitButtonProps) => {
         </div>
       ) : 'إرسال الطلب'}
     </Button>
+  );
+};
+
+interface FormFieldProps {
+  field: SiteField;
+  data: Record<string, any>;
+  onChange: (name: string, value: any) => void;
+}
+
+export const FormField = ({ 
+  field, 
+  data, 
+  onChange 
+}: { 
+  field: SiteField; 
+  data: Record<string, any>; 
+  onChange: (name: string, value: any) => void 
+}) => {
+  const isRequired = field.is_required;
+  
+  if (field.field_name === 'description') {
+    return (
+      <div className="py-2">
+        <Label htmlFor="description" className="text-right block font-bold mb-2">
+          {field.display_name} {isRequired && <span className="text-destructive">*</span>}
+        </Label>
+        <Textarea
+          id="description"
+          name="description"
+          placeholder={field.placeholder || "يرجى وصف المشكلة بالتفصيل..."}
+          value={data.description || ''}
+          onChange={(e) => onChange('description', e.target.value)}
+          className="min-h-[100px] text-right"
+          required={isRequired}
+        />
+      </div>
+    );
+  }
+  
+  if (field.field_name === 'branch') {
+    return (
+      <div className="grid gap-2">
+        <Label htmlFor="branch" className="text-right">الفرع</Label>
+        <Select
+          value={data.branch || ''}
+          onValueChange={(val) => onChange('branch', val)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="اختر الفرع" />
+          </SelectTrigger>
+          <SelectContent>
+            {field.branches.length > 0 ? (
+              field.branches.map(branch => (
+                <SelectItem key={branch.id} value={branch.name}>
+                  {branch.name}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="no-branches" disabled>لا توجد فروع متاحة</SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+    );
+  }
+  
+  if (field.field_name === 'employee_id') {
+    return (
+      <div className="py-2">
+        <Label htmlFor="employee_id" className="text-right block font-bold mb-2">
+          {field.display_name} {isRequired && <span className="text-destructive">*</span>}
+        </Label>
+        <Input
+          id="employee_id"
+          name="employee_id"
+          placeholder={field.placeholder || "أدخل الرقم الوظيفي..."}
+          value={data.employee_id || ''}
+          onChange={(e) => onChange('employee_id', e.target.value)}
+          className="text-right"
+          required={isRequired}
+        />
+      </div>
+    );
+  }
+  
+  if (field.field_name === 'anydesk_number') {
+    return (
+      <div className="py-2">
+        <Label htmlFor="anydesk_number" className="text-right block font-bold mb-2">
+          {field.display_name} {isRequired && <span className="text-destructive">*</span>}
+        </Label>
+        <Input
+          id="anydesk_number"
+          name="anydesk_number"
+          placeholder={field.placeholder || "أدخل رقم AnyDesk..."}
+          value={data.anydesk_number || ''}
+          onChange={(e) => onChange('anydesk_number', e.target.value)}
+          className="text-right"
+          required={isRequired}
+          numbersOnly
+        />
+      </div>
+    );
+  }
+  
+  if (field.field_name === 'extension_number') {
+    return (
+      <div className="py-2">
+        <Label htmlFor="extension_number" className="text-right block font-bold mb-2">
+          {field.display_name} {isRequired && <span className="text-destructive">*</span>}
+        </Label>
+        <Input
+          id="extension_number"
+          name="extension_number"
+          placeholder={field.placeholder || "أدخل رقم التحويلة..."}
+          value={data.extension_number || ''}
+          onChange={(e) => onChange('extension_number', e.target.value)}
+          className="text-right"
+          required={isRequired}
+          numbersOnly
+        />
+      </div>
+    );
+  }
+  
+  return (
+    <div className="py-2">
+      <Label htmlFor={field.field_name} className="text-right block font-bold mb-2">
+        {field.display_name} {isRequired && <span className="text-destructive">*</span>}
+      </Label>
+      <Input
+        id={field.field_name}
+        name={field.field_name}
+        placeholder={field.placeholder || `أدخل ${field.display_name}...`}
+        value={data[field.field_name] || ''}
+        onChange={(e) => onChange(field.field_name, e.target.value)}
+        className="text-right"
+        required={isRequired}
+      />
+    </div>
   );
 };

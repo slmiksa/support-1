@@ -1,4 +1,3 @@
-
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'sonner';
 import {
@@ -186,10 +185,11 @@ const SiteFieldsManager = () => {
     };
 
     try {
+      console.log("Submitting new field:", newField);
       const result = await createSiteField(newField);
       console.log("Create field result:", result);
 
-      if (result && result.success && result.data) {
+      if (result && result.success && result.data && result.data.length > 0) {
         setFields([...fields, result.data[0] as SiteField]);
         setFieldName('');
         setDisplayName('');
@@ -198,11 +198,11 @@ const SiteFieldsManager = () => {
         toast.success('تم إنشاء الحقل بنجاح');
       } else {
         console.error('Error in create field response:', result);
-        toast.error('فشل في إنشاء الحقل');
+        toast.error(result.error?.message || 'فشل في إنشاء الحقل');
       }
     } catch (error) {
-      console.error('Error creating field:', error);
-      toast.error('فشل في إنشاء الحقل');
+      console.error('Exception in handleCreateField:', error);
+      toast.error('فشل في إنشاء الحقل: خطأ غير متوقع');
     }
   };
 
@@ -306,7 +306,6 @@ const SiteFieldsManager = () => {
     try {
       const result = await updateSystemFieldName(fieldName, displayName);
       
-      // Fix: Check if result is truthy/success without assuming it has a success property
       if (result) {
         setFields(prevFields =>
           prevFields.map(field =>
@@ -375,7 +374,6 @@ const SiteFieldsManager = () => {
                             )}
                           </div>
                           <div className="flex items-center space-x-2">
-                            {/* All fields (system & custom) can have placeholder text */}
                             <Dialog>
                               <DialogTrigger asChild>
                                 <Button 
