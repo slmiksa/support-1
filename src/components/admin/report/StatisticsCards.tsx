@@ -46,6 +46,35 @@ const StatisticsCards: React.FC<StatisticsCardsProps> = ({
         </CardContent>
       </Card>
       
+      {/* Tickets by branch */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-right text-base">التذاكر حسب الفرع</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-2">
+          <div className="space-y-4">
+            {Object.entries(ticketStats.byBranch).map(([branch, count]) => (
+              <div key={branch} className="flex items-center justify-between">
+                <div className="w-full">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm font-medium">{count}</span>
+                    <span className="text-sm font-medium">{branch}</span>
+                  </div>
+                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary" 
+                      style={{ 
+                        width: `${Math.round((count / ticketStats.total) * 100)}%` 
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+      
       {/* Total tickets card */}
       <Card>
         <CardHeader className="pb-2">
