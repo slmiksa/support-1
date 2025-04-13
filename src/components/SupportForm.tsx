@@ -87,7 +87,7 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        image_url: imageUrlToSave, // Ensuring this is string | null type
+        image_url: imageUrlToSave, // We ensure this is of type string | null
         status: 'pending',
         created_at: new Date().toISOString(),
         employee_id: formData['field_1743981608110'] as string || '',
