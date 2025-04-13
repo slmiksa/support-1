@@ -2,6 +2,7 @@
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { TicketStats } from '@/hooks/useReportData';
+import { getStatusLabel } from '@/utils/ticketStatusUtils';
 
 interface StatisticsCardsProps {
   ticketStats: TicketStats;
@@ -27,7 +28,7 @@ const StatisticsCards: React.FC<StatisticsCardsProps> = ({
               <div key={status} className="flex items-center justify-between">
                 <div className="w-full">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">{status}</span>
+                    <span className="text-sm font-medium">{getStatusLabel(status)}</span>
                     <span className="text-sm font-medium">{count}</span>
                   </div>
                   <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -44,37 +45,6 @@ const StatisticsCards: React.FC<StatisticsCardsProps> = ({
           </div>
         </CardContent>
       </Card>
-      
-      {/* Tickets by branch */}
-      {Object.keys(ticketStats.byBranch).length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-right text-base">التذاكر حسب الفرع</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-2">
-            <div className="space-y-4">
-              {Object.entries(ticketStats.byBranch).map(([branch, count]) => (
-                <div key={branch} className="flex items-center justify-between">
-                  <div className="w-full">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium">{branch}</span>
-                      <span className="text-sm font-medium">{count}</span>
-                    </div>
-                    <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-secondary" 
-                        style={{ 
-                          width: `${Math.round((count / ticketStats.total) * 100)}%` 
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
       
       {/* Total tickets card */}
       <Card>
