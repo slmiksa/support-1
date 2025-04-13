@@ -1,3 +1,4 @@
+
 import { useState, useEffect, FormEvent } from 'react';
 import { toast } from 'sonner';
 import {
@@ -189,7 +190,22 @@ const SiteFieldsManager = () => {
       const result = await createSiteField(newField);
       console.log("Create field result:", result);
 
-      if (result && result.success && result.data && result.data.length > 0) {
+      // Check if the result is a boolean or an object
+      if (typeof result === 'boolean') {
+        if (result) {
+          // Success case for boolean result
+          toast.success('تم إنشاء الحقل بنجاح');
+          // Refresh fields after creation
+          fetchFields();
+          setFieldName('');
+          setDisplayName('');
+          setPlaceholder('');
+          setIsRequired(false);
+        } else {
+          toast.error('فشل في إنشاء الحقل');
+        }
+      } else if (result && result.success && result.data && result.data.length > 0) {
+        // Success case for object result
         setFields([...fields, result.data[0] as SiteField]);
         setFieldName('');
         setDisplayName('');
@@ -198,7 +214,7 @@ const SiteFieldsManager = () => {
         toast.success('تم إنشاء الحقل بنجاح');
       } else {
         console.error('Error in create field response:', result);
-        toast.error(result.error?.message || 'فشل في إنشاء الحقل');
+        toast.error((result as any)?.error?.message || 'فشل في إنشاء الحقل');
       }
     } catch (error) {
       console.error('Exception in handleCreateField:', error);
