@@ -33,7 +33,7 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
       <CardHeader className="pb-1">
         <CardTitle className="text-right text-sm">توزيع التذاكر حسب الفروع</CardTitle>
       </CardHeader>
-      <CardContent className="h-[120px] px-2">
+      <CardContent className="h-[100px] px-2">
         <ChartContainer config={config}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -41,8 +41,8 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={15}
-                outerRadius={35}
+                innerRadius={10}
+                outerRadius={30}
                 paddingAngle={2}
                 dataKey="value"
                 nameKey="name"
