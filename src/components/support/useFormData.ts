@@ -1,3 +1,4 @@
+
 import { useState, useEffect, ChangeEvent } from 'react';
 import { toast } from 'sonner';
 import { getAllBranches, getAllSiteFields, SiteField, Branch } from '@/utils/ticketUtils';
@@ -25,6 +26,7 @@ export const useFormData = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ticketId, setTicketId] = useState<string | null>(null);
+  // Explicitly type imagePreview to be string | null
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [branches, setBranches] = useState<Branch[]>([]);
   const [customFields, setCustomFields] = useState<SiteField[]>([]);
@@ -116,6 +118,7 @@ export const useFormData = () => {
       
       const reader = new FileReader();
       reader.onloadend = () => {
+        // Ensure we're setting a string value to imagePreview
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);

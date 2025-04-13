@@ -74,7 +74,7 @@ const SupportForm = () => {
         }
       });
       
-      // Fixed: Ensure imageUrlToSave is explicitly typed as string | null
+      // Ensure imageUrlToSave is explicitly typed as string | null
       let imageUrlToSave: string | null = null;
       
       // Check if imagePreview is a string (already uploaded image URL)
@@ -87,15 +87,15 @@ const SupportForm = () => {
         branch: formData.branch,
         priority: formData.priority,
         description: formData.description,
-        image_url: imageUrlToSave, // Properly typed as string | null
+        image_url: imageUrlToSave,
         status: 'pending',
         created_at: new Date().toISOString(),
         employee_id: formData['field_1743981608110'] as string || '',
         custom_fields: customFieldsData,
-        anydesk_number: formData.anydesk_number || '',
+        anydesk_number: formData.anydesk_number as string || '',
         customer_email: formData.customer_email ? (formData.customer_email as string) : null,
         support_email: 'help@alwaslsaudi.com', // Always set the support email
-        extension_number: formData['extension_number'] || ''
+        extension_number: formData['extension_number'] as string || ''
       };
       
       console.log('Submitting ticket with data:', newTicket);
