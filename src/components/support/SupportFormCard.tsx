@@ -9,7 +9,8 @@ import {
   CustomFieldInput, 
   DescriptionInput, 
   ImageUpload, 
-  SubmitButton 
+  SubmitButton,
+  FormField 
 } from './FormComponents';
 
 interface SupportFormCardProps {
@@ -101,4 +102,3 @@ const SupportFormCard = ({
 };
 
 export default SupportFormCard;
-

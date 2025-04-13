@@ -188,17 +188,15 @@ interface FormFieldProps {
   field: SiteField;
   data: Record<string, any>;
   onChange: (name: string, value: any) => void;
+  branches?: Branch[];
 }
 
 export const FormField = ({ 
   field, 
   data, 
-  onChange 
-}: { 
-  field: SiteField; 
-  data: Record<string, any>; 
-  onChange: (name: string, value: any) => void 
-}) => {
+  onChange,
+  branches = []
+}: FormFieldProps) => {
   const isRequired = field.is_required;
   
   if (field.field_name === 'description') {
@@ -232,8 +230,8 @@ export const FormField = ({
             <SelectValue placeholder="اختر الفرع" />
           </SelectTrigger>
           <SelectContent>
-            {field.branches.length > 0 ? (
-              field.branches.map(branch => (
+            {branches.length > 0 ? (
+              branches.map(branch => (
                 <SelectItem key={branch.id} value={branch.name}>
                   {branch.name}
                 </SelectItem>
