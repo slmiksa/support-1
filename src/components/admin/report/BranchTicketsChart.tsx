@@ -30,16 +30,16 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
       <CardHeader>
         <CardTitle className="text-right">توزيع التذاكر حسب الفروع</CardTitle>
       </CardHeader>
-      <CardContent className="h-[300px]">
+      <CardContent className="h-[250px]">
         <ChartContainer config={config}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
               margin={{
-                top: 16,
-                right: 16,
-                bottom: 16,
-                left: 16,
+                top: 10,
+                right: 10,
+                bottom: 10,
+                left: 10,
               }}
               layout="vertical"
             >
@@ -64,7 +64,7 @@ const BranchTicketsChart: React.FC<BranchTicketsChartProps> = ({ branchStats }) 
                   return null;
                 }}
               />
-              <Bar dataKey="value" name="عدد التذاكر" fill="var(--color-value)" barSize={24} radius={[4, 4, 4, 4]} />
+              <Bar dataKey="value" name="عدد التذاكر" fill="var(--color-value)" barSize={20} radius={[4, 4, 4, 4]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartContainer>
