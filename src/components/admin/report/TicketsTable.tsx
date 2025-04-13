@@ -34,9 +34,11 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
               <TableHeader>
                 <TableRow className="bg-muted/50 text-right">
                   <TableHead className="font-medium">رقم التذكرة</TableHead>
+                  <TableHead className="font-medium">الرقم الوظيفي</TableHead>
                   <TableHead className="font-medium">الفرع</TableHead>
                   <TableHead className="font-medium">الأولوية</TableHead>
                   <TableHead className="font-medium">الحالة</TableHead>
+                  <TableHead className="font-medium">رقم الاتصال</TableHead>
                   <TableHead className="font-medium">وصف المشكلة</TableHead>
                   <TableHead className="font-medium">رد الدعم الفني</TableHead>
                   <TableHead className="font-medium">تاريخ الإنشاء</TableHead>
@@ -48,9 +50,15 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
                   tickets.map((ticket) => (
                     <TableRow key={ticket.ticket_id} className="border-b text-right">
                       <TableCell>{ticket.ticket_id}</TableCell>
+                      <TableCell>{ticket.employee_id}</TableCell>
                       <TableCell>{ticket.branch}</TableCell>
-                      <TableCell>{ticket.priority}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded ${ticket.priority === 'عاجلة' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                          {ticket.priority}
+                        </span>
+                      </TableCell>
                       <TableCell>{ticket.status}</TableCell>
+                      <TableCell>{ticket.extension_number || ticket.custom_fields?.contact_number || '-'}</TableCell>
                       <TableCell className="max-w-[200px] truncate" title={ticket.description}>
                         {ticket.description}
                       </TableCell>
@@ -63,7 +71,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={8} className="p-4 text-center text-muted-foreground">
+                    <TableCell colSpan={10} className="p-4 text-center text-muted-foreground">
                       لا توجد تذاكر في الفترة المحددة
                     </TableCell>
                   </TableRow>
