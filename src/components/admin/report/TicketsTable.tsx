@@ -22,7 +22,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets }) => {
                   <th className="p-2 font-medium">الأولوية</th>
                   <th className="p-2 font-medium">الحالة</th>
                   <th className="p-2 font-medium">تاريخ الإنشاء</th>
-                  <th className="p-2 font-medium">الموظف المعين</th>
+                  <th className="p-2 font-medium">موظف الدعم المسؤول</th>
                 </tr>
               </thead>
               <tbody>
@@ -34,7 +34,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets }) => {
                       <td className="p-2">{ticket.priority}</td>
                       <td className="p-2">{ticket.status}</td>
                       <td className="p-2">{new Date(ticket.created_at).toLocaleString('ar-SA')}</td>
-                      <td className="p-2">{ticket.assigned_to || 'لم يتم التعيين'}</td>
+                      <td className="p-2">{ticket.first_responder || 'لم يتم الرد'}</td>
                     </tr>
                   ))
                 ) : (

@@ -30,7 +30,7 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate }: Exp
         { header: 'الأولوية', key: 'priority', width: 15 },
         { header: 'الحالة', key: 'status', width: 15 },
         { header: 'تاريخ الإنشاء', key: 'created_at', width: 20 },
-        { header: 'الموظف المعين', key: 'assigned_to', width: 20 },
+        { header: 'موظف الدعم المسؤول', key: 'first_responder', width: 20 },
       ];
       
       // Add data
@@ -41,7 +41,7 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate }: Exp
           priority: ticket.priority,
           status: ticket.status,
           created_at: new Date(ticket.created_at).toLocaleString('ar-SA'),
-          assigned_to: ticket.assigned_to || 'لم يتم التعيين',
+          first_responder: ticket.first_responder || 'لم يتم الرد',
         });
       });
       
@@ -90,11 +90,11 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate }: Exp
         ticket.priority,
         ticket.status,
         new Date(ticket.created_at).toLocaleString('ar-SA'),
-        ticket.assigned_to || 'لم يتم التعيين'
+        ticket.first_responder || 'لم يتم الرد'
       ]);
       
       autoTable(doc, {
-        head: [['رقم التذكرة', 'الفرع', 'الأولوية', 'الحالة', 'تاريخ الإنشاء', 'الموظف المعين']],
+        head: [['رقم التذكرة', 'الفرع', 'الأولوية', 'الحالة', 'تاريخ الإنشاء', 'موظف الدعم المسؤول']],
         body: tableData,
         startY: 45,
         styles: { font: 'courier', halign: 'right' },

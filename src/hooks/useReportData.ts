@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { format, startOfMonth, endOfMonth, sub } from 'date-fns';
-import { getTicketStats, getAdminStats, getTicketsWithResolutionDetails } from '@/utils/ticketUtils';
+import { getTicketStats, getAdminStats, getTicketsWithResolutionDetails, getAllTicketResponses } from '@/utils/ticketUtils';
 
 export interface TicketStats {
   total: number;
@@ -35,6 +35,7 @@ export const useReportData = () => {
   });
   const [adminStats, setAdminStats] = useState<AdminStats>({ staffDetails: [] });
   const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const [ticketResponses, setTicketResponses] = useState<Record<string, any[]>>({});
 
   useEffect(() => {
     updateDateRange(period);
@@ -53,7 +54,6 @@ export const useReportData = () => {
         setEndDate(new Date());
         break;
       case 'week':
-        // Last 7 days
         setStartDate(sub(new Date(), { days: 6 }));
         setEndDate(new Date());
         break;
@@ -62,17 +62,14 @@ export const useReportData = () => {
         setEndDate(endOfMonth(now));
         break;
       case 'quarter':
-        // Last 3 months
         setStartDate(sub(new Date(), { months: 3 }));
         setEndDate(new Date());
         break;
       case 'year':
-        // Last year
         setStartDate(sub(new Date(), { years: 1 }));
         setEndDate(new Date());
         break;
       default:
-        // Keep current selection for 'custom'
         break;
     }
   };
@@ -81,19 +78,30 @@ export const useReportData = () => {
     setIsGenerating(true);
     
     try {
-      // Format dates for API
       const formattedStartDate = format(startDate, 'yyyy-MM-dd');
       const formattedEndDate = format(endDate, 'yyyy-MM-dd');
       
-      // Get tickets
       const ticketsData = await getTicketsWithResolutionDetails(formattedStartDate, formattedEndDate);
-      setTickets(ticketsData);
       
-      // Get statistics
+      const ticketIds = ticketsData.map(ticket => ticket.ticket_id);
+      const responses = await getAllTicketResponses(ticketIds);
+      setTicketResponses(responses);
+      
+      const enhancedTickets = ticketsData.map(ticket => {
+        const ticketResponses = responses[ticket.ticket_id] || [];
+        const firstAdminResponse = ticketResponses.find(resp => resp.is_admin);
+        
+        return {
+          ...ticket,
+          first_responder: firstAdminResponse ? firstAdminResponse.admin_name : 'لم يتم الرد'
+        };
+      });
+      
+      setTickets(enhancedTickets);
+      
       const stats = await getTicketStats(formattedStartDate, formattedEndDate);
       setTicketStats(stats);
       
-      // Get admin performance data
       const adminData = await getAdminStats(formattedStartDate, formattedEndDate);
       setAdminStats(adminData);
     } catch (error) {
@@ -126,6 +134,7 @@ export const useReportData = () => {
     ticketStats,
     adminStats,
     isGenerating,
+    ticketResponses,
     updateDateRange,
     generateReport,
     prepareStaffComparativeData
