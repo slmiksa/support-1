@@ -64,7 +64,7 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
                           {getStatusLabel(ticket.status)}
                         </span>
                       </TableCell>
-                      <TableCell>{ticket.custom_fields?.contact_number || '-'}</TableCell>
+                      <TableCell>{ticket.custom_fields?.Contact_Number || '-'}</TableCell>
                       <TableCell>{ticket.anydesk_number || '-'}</TableCell>
                       <TableCell className="max-w-[200px] truncate" title={ticket.description}>
                         {ticket.description}
