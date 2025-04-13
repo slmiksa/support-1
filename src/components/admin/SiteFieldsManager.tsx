@@ -306,7 +306,8 @@ const SiteFieldsManager = () => {
     try {
       const result = await updateSystemFieldName(fieldName, displayName);
       
-      if (result && result.success) {
+      // Fix: Check if result is truthy/success without assuming it has a success property
+      if (result) {
         setFields(prevFields =>
           prevFields.map(field =>
             field.field_name === fieldName ? { ...field, display_name: displayName } : field
