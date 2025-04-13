@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { getStatusLabel, priorityLabels, getStatusColorClass, priorityColorMap } from '@/utils/ticketStatusUtils';
 
 interface TicketsTableProps {
   tickets: any[];
@@ -53,12 +54,16 @@ const TicketsTable: React.FC<TicketsTableProps> = ({ tickets, ticketResponses = 
                       <TableCell>{ticket.employee_id}</TableCell>
                       <TableCell>{ticket.branch}</TableCell>
                       <TableCell>
-                        <span className={`px-2 py-1 rounded ${ticket.priority === 'عاجلة' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
-                          {ticket.priority}
+                        <span className={`px-2 py-1 rounded ${priorityColorMap[ticket.priority] || 'bg-blue-100 text-blue-800'}`}>
+                          {priorityLabels[ticket.priority as keyof typeof priorityLabels] || ticket.priority}
                         </span>
                       </TableCell>
-                      <TableCell>{ticket.status}</TableCell>
-                      <TableCell>{ticket.extension_number || ticket.custom_fields?.contact_number || '-'}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded ${getStatusColorClass(ticket.status)}`}>
+                          {getStatusLabel(ticket.status)}
+                        </span>
+                      </TableCell>
+                      <TableCell>{ticket.custom_fields?.contact_number || ticket.extension_number || '-'}</TableCell>
                       <TableCell className="max-w-[200px] truncate" title={ticket.description}>
                         {ticket.description}
                       </TableCell>

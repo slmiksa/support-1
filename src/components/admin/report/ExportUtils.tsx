@@ -4,6 +4,7 @@ import * as XLSX from 'exceljs';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { getStatusLabel, priorityLabels } from '@/utils/ticketStatusUtils';
 
 interface ExportUtilsProps {
   tickets: any[];
@@ -51,9 +52,9 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
           ticket_id: ticket.ticket_id,
           employee_id: ticket.employee_id,
           branch: ticket.branch,
-          priority: ticket.priority,
-          status: ticket.status,
-          contact_number: ticket.extension_number || (ticket.custom_fields?.contact_number) || '-',
+          priority: priorityLabels[ticket.priority as keyof typeof priorityLabels] || ticket.priority,
+          status: getStatusLabel(ticket.status),
+          contact_number: ticket.custom_fields?.contact_number || ticket.extension_number || '-',
           description: ticket.description,
           admin_response: getFirstAdminResponse(ticket.ticket_id),
           created_at: new Date(ticket.created_at).toLocaleString('ar-SA'),
@@ -104,9 +105,9 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
         ticket.ticket_id,
         ticket.employee_id,
         ticket.branch,
-        ticket.priority,
-        ticket.status,
-        ticket.extension_number || (ticket.custom_fields?.contact_number) || '-',
+        priorityLabels[ticket.priority as keyof typeof priorityLabels] || ticket.priority,
+        getStatusLabel(ticket.status),
+        ticket.custom_fields?.contact_number || ticket.extension_number || '-',
         ticket.description && ticket.description.length > 20 ? ticket.description.substring(0, 20) + '...' : ticket.description,
         getFirstAdminResponse(ticket.ticket_id).length > 20 ? getFirstAdminResponse(ticket.ticket_id).substring(0, 20) + '...' : getFirstAdminResponse(ticket.ticket_id),
         new Date(ticket.created_at).toLocaleString('ar-SA'),
