@@ -93,12 +93,15 @@ const SupportForm = () => {
         employee_id: formData['field_1743981608110'] as string || '',
         custom_fields: customFieldsData,
         anydesk_number: formData.anydesk_number || '',
-        customer_email: formData.customer_email as string || null
+        customer_email: formData.customer_email ? (formData.customer_email as string) : null
       };
+      
+      console.log('Submitting ticket with data:', newTicket);
       
       const result = await saveTicket(newTicket);
       
       if (!result.success) {
+        console.error('Failed to save ticket:', result.error);
         throw new Error('Failed to save ticket');
       }
       
