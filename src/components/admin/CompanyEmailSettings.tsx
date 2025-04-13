@@ -27,6 +27,11 @@ const CompanyEmailSettings = () => {
       setInitialName(settings.senderName);
     } catch (error) {
       console.error('Error fetching email settings:', error);
+      // Use default values if there's an error
+      setSenderEmail('help@alwaslsaudi.com');
+      setSenderName('دعم الوصل');
+      setInitialEmail('help@alwaslsaudi.com');
+      setInitialName('دعم الوصل');
     }
   };
 

@@ -1,3 +1,4 @@
+
 import { supabase, PriorityType } from '@/integrations/supabase/client';
 import { SupportTicket } from './ticketUtils';
 import { toast } from 'sonner';
@@ -22,9 +23,9 @@ export const sendTicketNotification = async (
       support_email: 'help@alwaslsaudi.com',
       // Add customer email if available
       customer_email: ticket.customer_email || null,
-      // Add company sender email and name if provided
-      company_sender_email: companySenderEmail || 'help@alwaslsaudi.com',
-      company_sender_name: companySenderName || 'دعم الوصل'
+      // Use default values if not provided
+      company_sender_email: null, // By setting to null, we'll use onboarding@resend.dev
+      company_sender_name: 'دعم الوصل'
     };
 
     console.log('Sending notification for ticket', ticket.ticket_id, 'to', adminEmail);
@@ -73,12 +74,12 @@ export const sendTicketNotificationsToAllAdmins = async (
     }
     
     console.log('Sending notifications to admins:', adminEmails);
-    console.log('Using company sender email:', companySenderEmail || 'help@alwaslsaudi.com');
+    console.log('Using company sender email:', companySenderEmail || 'default Resend sender');
     console.log('Using company sender name:', companySenderName || 'دعم الوصل');
     
     // Send notifications to all admins
     const results = await Promise.allSettled(
-      adminEmails.map(email => sendTicketNotification(ticket, email, companySenderEmail, companySenderName))
+      adminEmails.map(email => sendTicketNotification(ticket, email, null, companySenderName))
     );
     
     // Check if at least one notification was sent successfully
@@ -148,19 +149,44 @@ export const getCompanyEmailSettings = async (): Promise<{
   senderName: string;
 }> => {
   try {
-    const { data, error } = await supabase
-      .from('site_settings')
-      .select('company_sender_email, company_sender_name')
-      .single();
-
-    if (error) {
-      console.error('Error fetching company email settings:', error);
-      throw error;
+    // Check if the required columns exist in the site_settings table
+    const { data: columnsData, error: columnsError } = await supabase
+      .rpc('check_column_exists', { 
+        table_name: 'site_settings', 
+        column_name: 'company_sender_email' 
+      });
+    
+    // If columns don't exist or there's an error, return default values
+    if (columnsError || !columnsData) {
+      console.log('Company email settings columns do not exist yet. Using defaults.');
+      return {
+        senderEmail: 'help@alwaslsaudi.com',
+        senderName: 'دعم الوصل'
+      };
     }
+    
+    // If columns exist, fetch the data
+    if (columnsData) {
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('company_sender_email, company_sender_name')
+        .single();
 
+      if (error) {
+        console.error('Error fetching company email settings:', error);
+        throw error;
+      }
+
+      return {
+        senderEmail: data?.company_sender_email || 'help@alwaslsaudi.com',
+        senderName: data?.company_sender_name || 'دعم الوصل'
+      };
+    }
+    
+    // Default fallback
     return {
-      senderEmail: data?.company_sender_email || 'help@alwaslsaudi.com',
-      senderName: data?.company_sender_name || 'دعم الوصل'
+      senderEmail: 'help@alwaslsaudi.com',
+      senderName: 'دعم الوصل'
     };
   } catch (error) {
     console.error('Error fetching company email settings:', error);
@@ -177,13 +203,31 @@ export const saveCompanyEmailSettings = async (
   senderName: string
 ): Promise<boolean> => {
   try {
+    // Check if columns exist
+    const { data: columnsExist, error: columnsError } = await supabase
+      .rpc('check_column_exists', { 
+        table_name: 'site_settings', 
+        column_name: 'company_sender_email' 
+      });
+    
+    // If the columns don't exist yet, add them
+    if (!columnsExist || columnsError) {
+      // Create a function to add the columns if they don't exist
+      const { error: addColumnError } = await supabase.rpc('add_company_email_columns');
+      if (addColumnError) {
+        console.error('Error adding company email columns:', addColumnError);
+        return false;
+      }
+    }
+    
+    // Now update the settings
     const { error } = await supabase
       .from('site_settings')
       .update({
         company_sender_email: senderEmail,
         company_sender_name: senderName
       })
-      .eq('id', 1); // بافتراض أن لديك سجل واحد فقط في جدول site_settings
+      .eq('id', 1); // Assuming there's only one record in site_settings
 
     if (error) {
       console.error('Error saving company email settings:', error);

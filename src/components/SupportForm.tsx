@@ -10,7 +10,7 @@ import { useFormData } from './support/useFormData';
 import { SYSTEM_FIELDS } from './support/constants';
 
 const SupportForm = () => {
-  const [companySenderEmail, setCompanySenderEmail] = useState<string>('help@alwaslsaudi.com');
+  const [companySenderEmail, setCompanySenderEmail] = useState<string | null>(null); // Changed to null to use default Resend sender
   const [companySenderName, setCompanySenderName] = useState<string>('دعم الوصل');
   
   const {
@@ -32,15 +32,18 @@ const SupportForm = () => {
   } = useFormData();
 
   useEffect(() => {
-    // استرجاع إعدادات البريد الإلكتروني للشركة عند تحميل النموذج
+    // Fetch company email settings for future use, but we'll use default Resend sender for now
     const fetchCompanyEmailSettings = async () => {
       try {
         const settings = await getCompanyEmailSettings();
-        setCompanySenderEmail(settings.senderEmail);
+        // Store settings but don't use them yet
+        setCompanySenderEmail(null); // Use null to trigger default Resend sender
         setCompanySenderName(settings.senderName);
-        console.log('Loaded company email settings:', settings);
+        console.log('Loaded company email settings (not using custom sender):', settings);
       } catch (error) {
         console.error('Failed to load company email settings:', error);
+        setCompanySenderEmail(null);
+        setCompanySenderName('دعم الوصل');
       }
     };
     
@@ -118,7 +121,7 @@ const SupportForm = () => {
       };
       
       console.log('Submitting ticket with data:', newTicket);
-      console.log('Using company sender email:', companySenderEmail);
+      console.log('Using default Resend sender email (not custom sender)');
       console.log('Using company sender name:', companySenderName);
       
       const result = await saveTicket(newTicket);
@@ -130,9 +133,10 @@ const SupportForm = () => {
       
       try {
         console.log('Sending notifications for new ticket:', newTicketId);
+        // Pass null for companySenderEmail to use default Resend sender
         const notificationResult = await sendTicketNotificationsToAllAdmins(
           newTicket, 
-          companySenderEmail, 
+          null, 
           companySenderName
         );
         console.log('Notification result:', notificationResult);
