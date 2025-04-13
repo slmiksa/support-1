@@ -2,7 +2,7 @@
 import { FormEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormData } from './useFormData';
-import { SiteField } from '@/utils/ticketUtils';
+import { SiteField, Branch } from '@/utils/ticketUtils';
 import { 
   PrioritySelect, 
   BranchSelect, 
@@ -16,7 +16,7 @@ import {
 interface SupportFormCardProps {
   formData: FormData;
   customFields: SiteField[];
-  branches: any[];
+  branches: Branch[];
   imagePreview: string | null;
   isSubmitting: boolean;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
