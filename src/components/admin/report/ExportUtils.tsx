@@ -25,6 +25,21 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
     return firstAdminResponse ? firstAdminResponse.response : 'لم يتم الرد بعد';
   };
 
+  // دالة للحصول على توقيت أول رد من الدعم الفني
+  const getFirstResponseTime = (ticketId: string) => {
+    const responses = ticketResponses[ticketId] || [];
+    const firstAdminResponse = responses.find(resp => resp.is_admin);
+    return firstAdminResponse ? 
+      format(new Date(firstAdminResponse.created_at), 'yyyy-MM-dd HH:mm:ss') : 
+      'لم يتم الرد بعد';
+  };
+
+  // دالة لتنسيق التاريخ والوقت
+  const formatDateTime = (dateTimeString: string) => {
+    if (!dateTimeString) return '-';
+    return format(new Date(dateTimeString), 'yyyy-MM-dd HH:mm:ss');
+  };
+
   const exportToExcel = async () => {
     try {
       const workbook = new XLSX.Workbook();
@@ -42,6 +57,8 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
         { header: 'وصف المشكلة', key: 'description', width: 30 },
         { header: 'رد الدعم الفني', key: 'admin_response', width: 30 },
         { header: 'تاريخ الإنشاء', key: 'created_at', width: 20 },
+        { header: 'وقت فتح التذكرة من الدعم', key: 'first_response_time', width: 20 },
+        { header: 'آخر تحديث للحالة', key: 'updated_at', width: 20 },
         { header: 'موظف الدعم المسؤول', key: 'first_responder', width: 20 },
       ];
       
@@ -58,6 +75,8 @@ export const useExportUtils = ({ tickets, ticketStats, startDate, endDate, ticke
           description: ticket.description,
           admin_response: getFirstAdminResponse(ticket.ticket_id),
           created_at: new Date(ticket.created_at).toLocaleString('en-US'),
+          first_response_time: getFirstResponseTime(ticket.ticket_id),
+          updated_at: ticket.updated_at ? formatDateTime(ticket.updated_at) : '-',
           first_responder: ticket.first_responder || 'لم يتم الرد',
         });
       });
