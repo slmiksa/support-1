@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 export const sendTicketNotification = async (
   ticket: SupportTicket, 
   adminEmail: string,
-  companySenderEmail?: string,
+  companySenderEmail?: string | null,
   companySenderName?: string
 ): Promise<boolean> => {
   try {
@@ -23,15 +23,15 @@ export const sendTicketNotification = async (
       support_email: 'help@alwaslsaudi.com',
       // Add customer email if available
       customer_email: ticket.customer_email || null,
-      // Use default values if not provided
-      company_sender_email: null, // By setting to null, we'll use onboarding@resend.dev
-      company_sender_name: 'دعم الوصل'
+      // Always set to null to use default Resend sender (onboarding@resend.dev)
+      company_sender_email: null,
+      company_sender_name: companySenderName || 'دعم الوصل'
     };
 
     console.log('Sending notification for ticket', ticket.ticket_id, 'to', adminEmail);
     console.log('Using support email:', notificationData.support_email);
     console.log('Customer email:', notificationData.customer_email);
-    console.log('Company sender email:', notificationData.company_sender_email);
+    console.log('Company sender email: null (using default Resend sender)');
     console.log('Company sender name:', notificationData.company_sender_name);
 
     // Call the Supabase edge function to send the email
@@ -61,7 +61,7 @@ export const sendTicketNotification = async (
 // Send email notifications to all admins when a new ticket is created
 export const sendTicketNotificationsToAllAdmins = async (
   ticket: SupportTicket,
-  companySenderEmail?: string,
+  companySenderEmail?: string | null,
   companySenderName?: string
 ): Promise<boolean> => {
   try {
@@ -74,7 +74,7 @@ export const sendTicketNotificationsToAllAdmins = async (
     }
     
     console.log('Sending notifications to admins:', adminEmails);
-    console.log('Using company sender email:', companySenderEmail || 'default Resend sender');
+    console.log('Using company sender email: null (using default Resend sender)');
     console.log('Using company sender name:', companySenderName || 'دعم الوصل');
     
     // Send notifications to all admins

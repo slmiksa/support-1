@@ -87,6 +87,9 @@ const CompanyEmailSettings = () => {
           <p className="text-sm text-muted-foreground text-right">
             يجب التحقق من هذا النطاق في حساب Resend الخاص بك
           </p>
+          <p className="text-sm text-amber-500 text-right font-semibold">
+            ملاحظة: حالياً يتم استخدام المرسل الافتراضي (onboarding@resend.dev)
+          </p>
         </div>
 
         <div className="space-y-2">

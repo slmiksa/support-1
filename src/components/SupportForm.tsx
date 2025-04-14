@@ -10,7 +10,8 @@ import { useFormData } from './support/useFormData';
 import { SYSTEM_FIELDS } from './support/constants';
 
 const SupportForm = () => {
-  const [companySenderEmail, setCompanySenderEmail] = useState<string | null>(null); // Changed to null to use default Resend sender
+  // Always use null to trigger the default Resend sender
+  const [companySenderEmail, setCompanySenderEmail] = useState<string | null>(null);
   const [companySenderName, setCompanySenderName] = useState<string>('دعم الوصل');
   
   const {
@@ -32,14 +33,14 @@ const SupportForm = () => {
   } = useFormData();
 
   useEffect(() => {
-    // Fetch company email settings for future use, but we'll use default Resend sender for now
+    // Fetch company email settings but always use the default Resend sender
     const fetchCompanyEmailSettings = async () => {
       try {
         const settings = await getCompanyEmailSettings();
-        // Store settings but don't use them yet
-        setCompanySenderEmail(null); // Use null to trigger default Resend sender
+        // Always set to null to use the default Resend sender
+        setCompanySenderEmail(null);
         setCompanySenderName(settings.senderName);
-        console.log('Loaded company email settings (not using custom sender):', settings);
+        console.log('Loaded company email settings (using default Resend sender):', settings);
       } catch (error) {
         console.error('Failed to load company email settings:', error);
         setCompanySenderEmail(null);
@@ -121,7 +122,7 @@ const SupportForm = () => {
       };
       
       console.log('Submitting ticket with data:', newTicket);
-      console.log('Using default Resend sender email (not custom sender)');
+      console.log('Using default Resend sender email (onboarding@resend.dev)');
       console.log('Using company sender name:', companySenderName);
       
       const result = await saveTicket(newTicket);
@@ -133,7 +134,7 @@ const SupportForm = () => {
       
       try {
         console.log('Sending notifications for new ticket:', newTicketId);
-        // Pass null for companySenderEmail to use default Resend sender
+        // Always pass null for companySenderEmail to use default Resend sender
         const notificationResult = await sendTicketNotificationsToAllAdmins(
           newTicket, 
           null, 

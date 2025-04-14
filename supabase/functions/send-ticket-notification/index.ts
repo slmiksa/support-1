@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -50,7 +49,7 @@ const handler = async (req: Request): Promise<Response> => {
       support_email = 'help@alwaslsaudi.com',
       customer_email,
       status = 'pending',
-      company_sender_email = null, // Default to null to use Resend's default sender
+      company_sender_email = null, // Always use null to ensure default sender is used
       company_sender_name = 'دعم الوصل' // استخدام الاسم الافتراضي إذا لم يتم تحديد اسم المرسل
     }: TicketNotificationRequest = await req.json();
 
@@ -58,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`Customer email: ${customer_email || 'not provided'}`);
     console.log(`Admin email: ${admin_email}`);
     console.log(`Support email: ${support_email}`);
-    console.log(`Company sender email: ${company_sender_email || 'using default Resend sender (onboarding@resend.dev)'}`);
+    console.log(`Company sender email: null (using default Resend sender: onboarding@resend.dev)`);
     console.log(`Company sender name: ${company_sender_name}`);
 
     if (!resendApiKey) {
@@ -142,10 +141,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to support team
     console.log(`[${new Date().toISOString()}] Attempting to send support notification email to:`, support_email);
     try {
-      // Use the default Resend sender if company_sender_email is null
-      const emailConfig = company_sender_email 
-        ? { from: `${company_sender_name} <${company_sender_email}>` }
-        : { from: `${company_sender_name} <onboarding@resend.dev>` };
+      // Always use the default Resend sender
+      const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
 
       const supportEmailResponse = await resend.emails.send({
         ...emailConfig,
@@ -164,10 +161,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to admin
     console.log(`[${new Date().toISOString()}] Attempting to send admin notification email to:`, admin_email);
     try {
-      // Use the default Resend sender if company_sender_email is null
-      const emailConfig = company_sender_email 
-        ? { from: `${company_sender_name} <${company_sender_email}>` }
-        : { from: `${company_sender_name} <onboarding@resend.dev>` };
+      // Always use the default Resend sender
+      const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
 
       const adminEmailResponse = await resend.emails.send({
         ...emailConfig,
@@ -187,6 +182,7 @@ const handler = async (req: Request): Promise<Response> => {
     let customerEmailResult = null;
     if (customer_email) {
       console.log(`[${new Date().toISOString()}] Attempting to send customer notification email to:`, customer_email);
+      
       const customerHtml = `
         <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
           <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
@@ -226,10 +222,8 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       try {
-        // Use the default Resend sender if company_sender_email is null
-        const emailConfig = company_sender_email 
-          ? { from: `${company_sender_name} <${company_sender_email}>` }
-          : { from: `${company_sender_name} <onboarding@resend.dev>` };
+        // Always use the default Resend sender for customer emails
+        const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
 
         const customerEmailResponse = await resend.emails.send({
           ...emailConfig,
