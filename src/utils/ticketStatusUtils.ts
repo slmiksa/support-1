@@ -5,7 +5,8 @@ export const statusOptions = [
   { value: 'open', label: 'مفتوحة' },
   { value: 'inprogress', label: 'جاري المعالجة' },
   { value: 'resolved', label: 'تم الحل' },
-  { value: 'closed', label: 'مغلقة' }
+  { value: 'closed', label: 'مغلقة' },
+  { value: 'pending', label: 'قيد الانتظار' }
 ];
 
 export const priorityLabels = {
