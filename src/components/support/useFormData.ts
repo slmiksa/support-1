@@ -12,7 +12,8 @@ export interface FormData {
   imageFile: File | null;
   anydesk_number?: string;
   customer_email?: string;
-  [key: string]: string | File | null | PriorityType | undefined;
+  showEmailField?: boolean;
+  [key: string]: string | File | null | PriorityType | boolean | undefined;
 }
 
 export const useFormData = () => {
@@ -21,7 +22,8 @@ export const useFormData = () => {
     priority: 'normal',
     description: '',
     imageFile: null,
-    customer_email: ''
+    customer_email: '',
+    showEmailField: false
   });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,7 +138,8 @@ export const useFormData = () => {
       priority: 'normal',
       description: '',
       imageFile: null,
-      customer_email: ''
+      customer_email: '',
+      showEmailField: false
     };
     
     customFields.forEach(field => {

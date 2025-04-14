@@ -1,4 +1,3 @@
-
 import { FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { SupportTicket, generateTicketId, saveTicket } from '../utils/ticketUtils';
@@ -74,14 +73,16 @@ const SupportForm = () => {
       }
     }
     
-    // التحقق من صحة البريد الإلكتروني إذا تم إدخاله
-    if (formData.customer_email && !/\S+@\S+\.\S+/.test(formData.customer_email as string)) {
-      toast.error('يرجى إدخال بريد إلكتروني صحيح', {
-        closeButton: true,
-        position: 'top-center',
-        duration: 5000
-      });
-      return;
+    // Additional validation for email field
+    if (formData.showEmailField) {
+      if (formData.customer_email && !/\S+@\S+\.\S+/.test(formData.customer_email as string)) {
+        toast.error('يرجى إدخال بريد إلكتروني صحيح', {
+          closeButton: true,
+          position: 'top-center',
+          duration: 5000
+        });
+        return;
+      }
     }
     
     setIsSubmitting(true);
@@ -116,7 +117,9 @@ const SupportForm = () => {
         employee_id: formData['field_1743981608110'] as string || '',
         custom_fields: customFieldsData,
         anydesk_number: formData.anydesk_number as string || '',
-        customer_email: formData.customer_email ? (formData.customer_email as string) : null,
+        customer_email: formData.showEmailField 
+          ? (formData.customer_email as string || null) 
+          : null,
         support_email: 'help@alwaslsaudi.com', // Always set the support email
         extension_number: formData['extension_number'] as string || ''
       };
