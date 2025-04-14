@@ -1,3 +1,4 @@
+
 import { FormEvent } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FormData } from './useFormData';
@@ -8,12 +9,8 @@ import {
   CustomFieldInput, 
   DescriptionInput, 
   ImageUpload, 
-  SubmitButton,
-  FormField,
-  EmailInput
+  SubmitButton 
 } from './FormComponents';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
 
 interface SupportFormCardProps {
   formData: FormData;
@@ -44,20 +41,6 @@ const SupportFormCard = ({
   const sortedCustomFields = [...customFields].sort((a, b) => 
     (a.sort_order ?? 0) - (b.sort_order ?? 0)
   );
-  
-  const handleShowEmailToggle = () => {
-    const updatedShowEmailField = !formData.showEmailField;
-    
-    // Reset email if hiding the field
-    if (!updatedShowEmailField) {
-      handleChange({
-        target: {
-          name: 'customer_email',
-          value: ''
-        }
-      } as React.ChangeEvent<HTMLInputElement>);
-    }
-  };
   
   return (
     <Card className="border-company/20 glass">
@@ -102,27 +85,6 @@ const SupportFormCard = ({
               value={formData.description} 
               onChange={handleChange} 
             />
-            
-            <div className="flex items-center space-x-2 mb-4">
-              <Checkbox 
-                id="show-email-field"
-                checked={formData.showEmailField}
-                onCheckedChange={handleShowEmailToggle}
-              />
-              <Label 
-                htmlFor="show-email-field" 
-                className="text-sm font-medium"
-              >
-                إضافة البريد الإلكتروني لاستلام التحديثات
-              </Label>
-            </div>
-            
-            {formData.showEmailField && (
-              <EmailInput
-                value={formData.customer_email as string}
-                onChange={handleChange}
-              />
-            )}
             
             <ImageUpload 
               imagePreview={imagePreview} 
