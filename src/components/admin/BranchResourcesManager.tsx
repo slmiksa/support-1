@@ -257,8 +257,8 @@ const BranchResourcesManager = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">اسم الفرع</TableHead>
-                  <TableHead className="text-right">الهواتف المتوفرة</TableHead>
-                  <TableHead className="text-right">الهواتف المستخدمة</TableHead>
+                  <TableHead className="text-right">عدد التلفونات المتاحة</TableHead>
+                  <TableHead className="text-right">عدد التلفونات المستخدمة</TableHead>
                   <TableHead className="text-right">أجهزة الكمبيوتر المتوفرة</TableHead>
                   <TableHead className="text-right">أجهزة الكمبيوتر المستخدمة</TableHead>
                   <TableHead className="text-right">إجراءات</TableHead>
@@ -302,3 +302,4 @@ const BranchResourcesManager = () => {
 };
 
 export default BranchResourcesManager;
+
