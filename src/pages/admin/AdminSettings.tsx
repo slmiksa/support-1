@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,6 +9,7 @@ import ReportGenerator from '@/components/admin/ReportGenerator';
 import NotificationSettings from '@/components/admin/NotificationSettings';
 import CompanyEmailSettings from '@/components/admin/CompanyEmailSettings';
 import SiteCustomizationManager from '@/components/admin/SiteCustomizationManager';
+import BranchResourcesManager from '@/components/admin/BranchResourcesManager';
 import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket, Mail } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -98,6 +98,10 @@ const AdminSettings = () => {
                   <Building size={16} />
                   <span>الفروع</span>
                 </TabsTrigger>
+                <TabsTrigger value="branch-resources" className="flex items-center gap-2">
+                  <Settings size={16} />
+                  <span>أجهزة الفروع</span>
+                </TabsTrigger>
                 <TabsTrigger value="fields" className="flex items-center gap-2">
                   <ListFilter size={16} />
                   <span>حقول الموقع</span>
@@ -142,6 +146,10 @@ const AdminSettings = () => {
               
               <TabsContent value="branches">
                 <BranchesManager />
+              </TabsContent>
+              
+              <TabsContent value="branch-resources">
+                <BranchResourcesManager />
               </TabsContent>
               
               <TabsContent value="fields">

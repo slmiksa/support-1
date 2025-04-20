@@ -39,6 +39,47 @@ export type Database = {
         }
         Relationships: []
       }
+      branch_resources: {
+        Row: {
+          branch_id: string | null
+          created_at: string | null
+          id: string
+          pcs_available: number
+          pcs_in_use: number
+          phones_available: number
+          phones_in_use: number
+          updated_at: string | null
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string | null
+          id?: string
+          pcs_available?: number
+          pcs_in_use?: number
+          phones_available?: number
+          phones_in_use?: number
+          updated_at?: string | null
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string | null
+          id?: string
+          pcs_available?: number
+          pcs_in_use?: number
+          phones_available?: number
+          phones_in_use?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_resources_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branches: {
         Row: {
           created_at: string
