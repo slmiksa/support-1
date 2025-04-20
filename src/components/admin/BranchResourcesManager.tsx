@@ -56,7 +56,6 @@ const BranchResourcesManager = () => {
     try {
       setLoading(true);
       
-      // Fetch branches
       const { data: branchesData, error: branchesError } = await supabase
         .from('branches')
         .select('*');
@@ -64,7 +63,6 @@ const BranchResourcesManager = () => {
       if (branchesError) throw branchesError;
       setBranches(branchesData || []);
 
-      // Fetch resources
       const { data: resourcesData, error: resourcesError } = await supabase
         .from('branch_resources')
         .select('*');
@@ -90,7 +88,6 @@ const BranchResourcesManager = () => {
       const existingResource = resources.find(r => r.branch_id === selectedBranch);
       
       if (editMode && existingResource) {
-        // Update existing resource
         const { error } = await supabase
           .from('branch_resources')
           .update({
@@ -107,13 +104,9 @@ const BranchResourcesManager = () => {
           })
           .eq('branch_id', selectedBranch);
 
-        if (error) {
-          console.error('Update error:', error);
-          throw error;
-        }
+        if (error) throw error;
         toast.success('تم تحديث موارد الفرع بنجاح');
       } else {
-        // Create new resource
         const { error } = await supabase
           .from('branch_resources')
           .insert({
@@ -130,10 +123,7 @@ const BranchResourcesManager = () => {
             pc_cameras_in_use: formData.pc_cameras_in_use
           });
 
-        if (error) {
-          console.error('Insert error:', error);
-          throw error;
-        }
+        if (error) throw error;
         toast.success('تم إضافة موارد الفرع بنجاح');
       }
 
@@ -187,7 +177,7 @@ const BranchResourcesManager = () => {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-right text-xl font-bold text-company">إدارة أجهزة الفروع</CardTitle>
+        <CardTitle className="text-right text-xl font-bold text-company">موارد الفروع</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex justify-end mb-4">
@@ -257,7 +247,7 @@ const BranchResourcesManager = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-right mb-2">أجهزة الكمبيوتر المتوفرة</label>
+                    <label className="block text-right mb-2">أجهزة الكومبيوتر المتوفرة</label>
                     <Input
                       type="number"
                       value={formData.pcs_available}
@@ -267,7 +257,7 @@ const BranchResourcesManager = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-right mb-2">أجهزة الكمبيوتر المستخدمة</label>
+                    <label className="block text-right mb-2">أجهزة الكومبيوتر المستخدمة</label>
                     <Input
                       type="number"
                       value={formData.pcs_in_use}
@@ -277,7 +267,7 @@ const BranchResourcesManager = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-right mb-2">شاشات الكمبيوتر المتوفرة</label>
+                    <label className="block text-right mb-2">شاشات الكومبيوتر المتوفرة</label>
                     <Input
                       type="number"
                       value={formData.pc_screens_available}
@@ -287,7 +277,7 @@ const BranchResourcesManager = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-right mb-2">شاشات الكمبيوتر المستخدمة</label>
+                    <label className="block text-right mb-2">شاشات الكومبيوتر المستخدمة</label>
                     <Input
                       type="number"
                       value={formData.pc_screens_in_use}
@@ -317,7 +307,7 @@ const BranchResourcesManager = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-right mb-2">كاميرات الكمبيوتر المتوفرة</label>
+                    <label className="block text-right mb-2">كاميرات الكومبيوتر المتوفرة</label>
                     <Input
                       type="number"
                       value={formData.pc_cameras_available}
@@ -327,7 +317,7 @@ const BranchResourcesManager = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-right mb-2">كاميرات الكمبيوتر المستخدمة</label>
+                    <label className="block text-right mb-2">كاميرات الكومبيوتر المستخدمة</label>
                     <Input
                       type="number"
                       value={formData.pc_cameras_in_use}
@@ -360,14 +350,14 @@ const BranchResourcesManager = () => {
                   <TableHead className="text-right">اسم الفرع</TableHead>
                   <TableHead className="text-right">الهواتف المتوفرة</TableHead>
                   <TableHead className="text-right">الهواتف المستخدمة</TableHead>
-                  <TableHead className="text-right">أجهزة الكمبيوتر المتوفرة</TableHead>
-                  <TableHead className="text-right">أجهزة الكمبيوتر المستخدمة</TableHead>
-                  <TableHead className="text-right">شاشات الكمبيوتر المتوفرة</TableHead>
-                  <TableHead className="text-right">شاشات الكمبيوتر المستخدمة</TableHead>
+                  <TableHead className="text-right">أجهزة الكومبيوتر المتوفرة</TableHead>
+                  <TableHead className="text-right">أجهزة الكومبيوتر المستخدمة</TableHead>
+                  <TableHead className="text-right">شاشات الكومبيوتر المتوفرة</TableHead>
+                  <TableHead className="text-right">شاشات الكومبيوتر المستخدمة</TableHead>
                   <TableHead className="text-right">الطابعات المتوفرة</TableHead>
                   <TableHead className="text-right">الطابعات المستخدمة</TableHead>
-                  <TableHead className="text-right">كاميرات الكمبيوتر المتوفرة</TableHead>
-                  <TableHead className="text-right">كاميرات الكمبيوتر المستخدمة</TableHead>
+                  <TableHead className="text-right">كاميرات الكومبيوتر المتوفرة</TableHead>
+                  <TableHead className="text-right">كاميرات الكومبيوتر المستخدمة</TableHead>
                   <TableHead className="text-right">إجراءات</TableHead>
                 </TableRow>
               </TableHeader>

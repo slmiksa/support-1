@@ -44,30 +44,48 @@ export type Database = {
           branch_id: string | null
           created_at: string | null
           id: string
+          pc_cameras_available: number
+          pc_cameras_in_use: number
+          pc_screens_available: number
+          pc_screens_in_use: number
           pcs_available: number
           pcs_in_use: number
           phones_available: number
           phones_in_use: number
+          printers_available: number
+          printers_in_use: number
           updated_at: string | null
         }
         Insert: {
           branch_id?: string | null
           created_at?: string | null
           id?: string
+          pc_cameras_available?: number
+          pc_cameras_in_use?: number
+          pc_screens_available?: number
+          pc_screens_in_use?: number
           pcs_available?: number
           pcs_in_use?: number
           phones_available?: number
           phones_in_use?: number
+          printers_available?: number
+          printers_in_use?: number
           updated_at?: string | null
         }
         Update: {
           branch_id?: string | null
           created_at?: string | null
           id?: string
+          pc_cameras_available?: number
+          pc_cameras_in_use?: number
+          pc_screens_available?: number
+          pc_screens_in_use?: number
           pcs_available?: number
           pcs_in_use?: number
           phones_available?: number
           phones_in_use?: number
+          printers_available?: number
+          printers_in_use?: number
           updated_at?: string | null
         }
         Relationships: [
