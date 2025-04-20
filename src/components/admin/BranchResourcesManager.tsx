@@ -90,7 +90,10 @@ const BranchResourcesManager = () => {
           })
           .eq('branch_id', selectedBranch);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Update error:', error);
+          throw error;
+        }
         toast.success('تم تحديث موارد الفرع بنجاح');
       } else {
         // Create new resource
@@ -104,7 +107,10 @@ const BranchResourcesManager = () => {
             pcs_in_use: formData.pcs_in_use
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Insert error:', error);
+          throw error;
+        }
         toast.success('تم إضافة موارد الفرع بنجاح');
       }
 

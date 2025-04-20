@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -10,7 +11,7 @@ import NotificationSettings from '@/components/admin/NotificationSettings';
 import CompanyEmailSettings from '@/components/admin/CompanyEmailSettings';
 import SiteCustomizationManager from '@/components/admin/SiteCustomizationManager';
 import BranchResourcesManager from '@/components/admin/BranchResourcesManager';
-import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket, Mail } from 'lucide-react';
+import { Settings, Users, Building, FileText, ListFilter, Bell, PaintBucket, Mail, Laptop } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
@@ -37,7 +38,7 @@ const AdminSettings = () => {
     // عند تغيير علامة التبويب، تحديث العنوان في URL
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
-    if (tabParam && ['branches', 'fields', 'admins', 'reports', 'notifications', 'customization', 'settings', 'email'].includes(tabParam)) {
+    if (tabParam && ['branches', 'branch-resources', 'fields', 'admins', 'reports', 'notifications', 'customization', 'settings', 'email'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [hasPermission, navigate, toast]);
@@ -93,13 +94,13 @@ const AdminSettings = () => {
               onValueChange={handleTabChange}
               className="w-full"
             >
-              <TabsList className="grid grid-cols-2 md:grid-cols-8 w-full mb-8 dark:bg-muted/50">
+              <TabsList className="grid grid-cols-2 md:grid-cols-9 w-full mb-8 dark:bg-muted/50">
                 <TabsTrigger value="branches" className="flex items-center gap-2">
                   <Building size={16} />
                   <span>الفروع</span>
                 </TabsTrigger>
                 <TabsTrigger value="branch-resources" className="flex items-center gap-2">
-                  <Settings size={16} />
+                  <Laptop size={16} />
                   <span>أجهزة الفروع</span>
                 </TabsTrigger>
                 <TabsTrigger value="fields" className="flex items-center gap-2">
