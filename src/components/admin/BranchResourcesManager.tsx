@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -16,6 +15,12 @@ interface BranchResource {
   phones_in_use: number;
   pcs_available: number;
   pcs_in_use: number;
+  pc_screens_available: number;
+  pc_screens_in_use: number;
+  printers_available: number;
+  printers_in_use: number;
+  pc_cameras_available: number;
+  pc_cameras_in_use: number;
 }
 
 interface Branch {
@@ -34,7 +39,13 @@ const BranchResourcesManager = () => {
     phones_available: 0,
     phones_in_use: 0,
     pcs_available: 0,
-    pcs_in_use: 0
+    pcs_in_use: 0,
+    pc_screens_available: 0,
+    pc_screens_in_use: 0,
+    printers_available: 0,
+    printers_in_use: 0,
+    pc_cameras_available: 0,
+    pc_cameras_in_use: 0
   });
 
   useEffect(() => {
@@ -86,7 +97,13 @@ const BranchResourcesManager = () => {
             phones_available: formData.phones_available,
             phones_in_use: formData.phones_in_use,
             pcs_available: formData.pcs_available,
-            pcs_in_use: formData.pcs_in_use
+            pcs_in_use: formData.pcs_in_use,
+            pc_screens_available: formData.pc_screens_available,
+            pc_screens_in_use: formData.pc_screens_in_use,
+            printers_available: formData.printers_available,
+            printers_in_use: formData.printers_in_use,
+            pc_cameras_available: formData.pc_cameras_available,
+            pc_cameras_in_use: formData.pc_cameras_in_use
           })
           .eq('branch_id', selectedBranch);
 
@@ -104,7 +121,13 @@ const BranchResourcesManager = () => {
             phones_available: formData.phones_available,
             phones_in_use: formData.phones_in_use,
             pcs_available: formData.pcs_available,
-            pcs_in_use: formData.pcs_in_use
+            pcs_in_use: formData.pcs_in_use,
+            pc_screens_available: formData.pc_screens_available,
+            pc_screens_in_use: formData.pc_screens_in_use,
+            printers_available: formData.printers_available,
+            printers_in_use: formData.printers_in_use,
+            pc_cameras_available: formData.pc_cameras_available,
+            pc_cameras_in_use: formData.pc_cameras_in_use
           });
 
         if (error) {
@@ -121,7 +144,13 @@ const BranchResourcesManager = () => {
         phones_available: 0,
         phones_in_use: 0,
         pcs_available: 0,
-        pcs_in_use: 0
+        pcs_in_use: 0,
+        pc_screens_available: 0,
+        pc_screens_in_use: 0,
+        printers_available: 0,
+        printers_in_use: 0,
+        pc_cameras_available: 0,
+        pc_cameras_in_use: 0
       });
       fetchData();
     } catch (error) {
@@ -138,7 +167,13 @@ const BranchResourcesManager = () => {
         phones_available: resource.phones_available,
         phones_in_use: resource.phones_in_use,
         pcs_available: resource.pcs_available,
-        pcs_in_use: resource.pcs_in_use
+        pcs_in_use: resource.pcs_in_use,
+        pc_screens_available: resource.pc_screens_available,
+        pc_screens_in_use: resource.pc_screens_in_use,
+        printers_available: resource.printers_available,
+        printers_in_use: resource.printers_in_use,
+        pc_cameras_available: resource.pc_cameras_available,
+        pc_cameras_in_use: resource.pc_cameras_in_use
       });
       setEditMode(true);
       setDialogOpen(true);
@@ -167,7 +202,13 @@ const BranchResourcesManager = () => {
                     phones_available: 0,
                     phones_in_use: 0,
                     pcs_available: 0,
-                    pcs_in_use: 0
+                    pcs_in_use: 0,
+                    pc_screens_available: 0,
+                    pc_screens_in_use: 0,
+                    printers_available: 0,
+                    printers_in_use: 0,
+                    pc_cameras_available: 0,
+                    pc_cameras_in_use: 0
                   });
                 }}
               >
@@ -235,6 +276,66 @@ const BranchResourcesManager = () => {
                       dir="rtl"
                     />
                   </div>
+                  <div>
+                    <label className="block text-right mb-2">شاشات الكمبيوتر المتوفرة</label>
+                    <Input
+                      type="number"
+                      value={formData.pc_screens_available}
+                      onChange={(e) => setFormData(prev => ({ ...prev, pc_screens_available: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-right mb-2">شاشات الكمبيوتر المستخدمة</label>
+                    <Input
+                      type="number"
+                      value={formData.pc_screens_in_use}
+                      onChange={(e) => setFormData(prev => ({ ...prev, pc_screens_in_use: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-right mb-2">الطابعات المتوفرة</label>
+                    <Input
+                      type="number"
+                      value={formData.printers_available}
+                      onChange={(e) => setFormData(prev => ({ ...prev, printers_available: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-right mb-2">الطابعات المستخدمة</label>
+                    <Input
+                      type="number"
+                      value={formData.printers_in_use}
+                      onChange={(e) => setFormData(prev => ({ ...prev, printers_in_use: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-right mb-2">كاميرات الكمبيوتر المتوفرة</label>
+                    <Input
+                      type="number"
+                      value={formData.pc_cameras_available}
+                      onChange={(e) => setFormData(prev => ({ ...prev, pc_cameras_available: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-right mb-2">كاميرات الكمبيوتر المستخدمة</label>
+                    <Input
+                      type="number"
+                      value={formData.pc_cameras_in_use}
+                      onChange={(e) => setFormData(prev => ({ ...prev, pc_cameras_in_use: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
                 </div>
               </div>
               <DialogFooter>
@@ -257,10 +358,16 @@ const BranchResourcesManager = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">اسم الفرع</TableHead>
-                  <TableHead className="text-right">عدد التلفونات المتاحة</TableHead>
-                  <TableHead className="text-right">عدد التلفونات المستخدمة</TableHead>
+                  <TableHead className="text-right">الهواتف المتوفرة</TableHead>
+                  <TableHead className="text-right">الهواتف المستخدمة</TableHead>
                   <TableHead className="text-right">أجهزة الكمبيوتر المتوفرة</TableHead>
                   <TableHead className="text-right">أجهزة الكمبيوتر المستخدمة</TableHead>
+                  <TableHead className="text-right">شاشات الكمبيوتر المتوفرة</TableHead>
+                  <TableHead className="text-right">شاشات الكمبيوتر المستخدمة</TableHead>
+                  <TableHead className="text-right">الطابعات المتوفرة</TableHead>
+                  <TableHead className="text-right">الطابعات المستخدمة</TableHead>
+                  <TableHead className="text-right">كاميرات الكمبيوتر المتوفرة</TableHead>
+                  <TableHead className="text-right">كاميرات الكمبيوتر المستخدمة</TableHead>
                   <TableHead className="text-right">إجراءات</TableHead>
                 </TableRow>
               </TableHeader>
@@ -273,6 +380,12 @@ const BranchResourcesManager = () => {
                       <TableCell className="text-right">{resource.phones_in_use}</TableCell>
                       <TableCell className="text-right">{resource.pcs_available}</TableCell>
                       <TableCell className="text-right">{resource.pcs_in_use}</TableCell>
+                      <TableCell className="text-right">{resource.pc_screens_available}</TableCell>
+                      <TableCell className="text-right">{resource.pc_screens_in_use}</TableCell>
+                      <TableCell className="text-right">{resource.printers_available}</TableCell>
+                      <TableCell className="text-right">{resource.printers_in_use}</TableCell>
+                      <TableCell className="text-right">{resource.pc_cameras_available}</TableCell>
+                      <TableCell className="text-right">{resource.pc_cameras_in_use}</TableCell>
                       <TableCell>
                         <Button
                           variant="ghost"
@@ -287,7 +400,7 @@ const BranchResourcesManager = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">
+                    <TableCell colSpan={12} className="text-center h-24">
                       <p>لا توجد موارد مسجلة للفروع</p>
                     </TableCell>
                   </TableRow>
@@ -302,4 +415,3 @@ const BranchResourcesManager = () => {
 };
 
 export default BranchResourcesManager;
-
