@@ -53,7 +53,7 @@ const Index = () => {
     };
     fetchSupportStatus();
   }, []);
-  return <div className="min-h-screen bg-gray-50 pb-16">
+  return <div className="min-h-screen pb-16 bg-white">
       <Header />
       <main className="container px-4 py-4 mx-auto mb-20">
         <div className="bg-white rounded-lg p-6 shadow-sm mb-8">
