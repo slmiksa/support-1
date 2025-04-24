@@ -125,7 +125,7 @@ const TicketStatus = () => {
       <Header />
       <main className="container px-4 py-8">
         <div className="flex flex-col items-center mb-8 bg-white rounded-lg p-4 shadow-md">
-          <h2 className="text-2xl font-semibold mb-4 text-center text-[#222222]">متابعة طلب الدعم الفني ( FixDesk)</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-center text-[#222222]">متابعة طلبات الدعم الفني ( FixDesk)</h2>
           <DateTimeDisplay />
         </div>
 
