@@ -2,8 +2,27 @@
 import * as XLSX from 'exceljs';
 import { saveAs } from 'file-saver';
 import { format } from 'date-fns';
-import { Branch } from '@/types';
-import { BranchResourceType } from '@/types';
+
+// Define types directly in this file instead of importing from @/types
+export interface Branch {
+  id: string;
+  name: string;
+  created_at?: string;
+}
+
+export interface BranchResourceType {
+  id: string;
+  branch_id: string;
+  resource_type_id: string;
+  available: number;
+  in_use: number;
+  created_at?: string;
+  updated_at?: string;
+  resource_type?: {
+    id: string;
+    name: string;
+  };
+}
 
 export const exportBranchResourcesToExcel = async (
   branches: Branch[],

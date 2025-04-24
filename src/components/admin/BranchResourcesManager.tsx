@@ -14,6 +14,7 @@ import {
   TableHeader,
   TableRow
 } from '@/components/ui/table';
+import { exportBranchResourcesToExcel, Branch, BranchResourceType } from './BranchResourcesExport';
 
 interface ResourceType {
   id: string;
@@ -62,7 +63,6 @@ const BranchResourcesManager = () => {
     try {
       setLoading(true);
       
-      // Fetch branches
       const { data: branchesData, error: branchesError } = await supabase
         .from('branches')
         .select('*');
@@ -70,7 +70,6 @@ const BranchResourcesManager = () => {
       if (branchesError) throw branchesError;
       setBranches(branchesData || []);
 
-      // Fetch resource types
       const { data: resourceTypesData, error: resourceTypesError } = await supabase
         .from('resource_types')
         .select('*');
@@ -78,7 +77,6 @@ const BranchResourcesManager = () => {
       if (resourceTypesError) throw resourceTypesError;
       setResourceTypes(resourceTypesData || []);
 
-      // Fetch branch resource types with their resource type names
       const { data: branchResourceTypesData, error: branchResourceTypesError } = await supabase
         .from('branch_resource_types')
         .select(`
@@ -111,7 +109,6 @@ const BranchResourcesManager = () => {
 
       let resourceTypeId = selectedResourceType;
 
-      // إذا كان المستخدم أدخل اسم مورد جديد، أضفه إلى قاعدة البيانات
       if (newResourceName && !selectedResourceType) {
         const { data: newResourceType, error: newResourceError } = await supabase
           .from('resource_types')
@@ -122,11 +119,9 @@ const BranchResourcesManager = () => {
         if (newResourceError) throw newResourceError;
         resourceTypeId = newResourceType.id;
         
-        // تحديث قائمة أنواع الموارد
         setResourceTypes([...resourceTypes, newResourceType]);
       }
 
-      // التحقق مما إذا كان المورد موجودًا بالفعل لهذا الفرع
       const existingResource = branchResourceTypes.find(
         r => r.branch_id === selectedBranch.id && r.resource_type_id === resourceTypeId
       );
@@ -136,7 +131,6 @@ const BranchResourcesManager = () => {
         return;
       }
 
-      // إضافة المورد إلى الفرع
       const { data: newBranchResource, error: addError } = await supabase
         .from('branch_resource_types')
         .insert({
@@ -153,10 +147,8 @@ const BranchResourcesManager = () => {
 
       if (addError) throw addError;
 
-      // تحديث قائمة موارد الفروع
       setBranchResourceTypes([...branchResourceTypes, newBranchResource]);
       
-      // إعادة تعيين النموذج
       setFormData({ available: 0, in_use: 0 });
       setSelectedResourceType('');
       setNewResourceName('');
@@ -177,7 +169,6 @@ const BranchResourcesManager = () => {
       }
 
       if (editMode && selectedResourceType) {
-        // تحديث المورد الموجود
         const resourceToEdit = branchResourceTypes.find(
           r => r.branch_id === selectedBranch.id && r.resource_type_id === selectedResourceType
         );
@@ -197,7 +188,6 @@ const BranchResourcesManager = () => {
 
         if (error) throw error;
         
-        // تحديث القائمة المحلية
         setBranchResourceTypes(prevResources =>
           prevResources.map(r => 
             r.id === resourceToEdit.id 
@@ -246,7 +236,6 @@ const BranchResourcesManager = () => {
 
         if (error) throw error;
         
-        // تحديث القائمة المحلية
         setBranchResourceTypes(prevResources => 
           prevResources.filter(r => r.id !== resourceId)
         );
