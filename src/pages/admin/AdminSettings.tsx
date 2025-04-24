@@ -109,7 +109,7 @@ const AdminSettings = () => {
                   <Bell size={16} />
                   <span>الإشعارات</span>
                 </TabsTrigger>
-                <TabsTrigger value="email" className="flex items-center gap-2">
+                <TabsTrigger value="email" className="flex items-center gap-2 font-thin">
                   <Mail size={16} />
                   <span>البريد</span>
                 </TabsTrigger>
