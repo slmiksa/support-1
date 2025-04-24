@@ -1,25 +1,36 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Edit } from 'lucide-react';
+import { Plus, Edit, Trash, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
 
-interface BranchResource {
+interface ResourceType {
+  id: string;
+  name: string;
+  created_at?: string;
+}
+
+interface BranchResourceType {
   id: string;
   branch_id: string;
-  phones_available: number;
-  phones_in_use: number;
-  pcs_available: number;
-  pcs_in_use: number;
-  pc_screens_available: number;
-  pc_screens_in_use: number;
-  printers_available: number;
-  printers_in_use: number;
-  pc_cameras_available: number;
-  pc_cameras_in_use: number;
+  resource_type_id: string;
+  available: number;
+  in_use: number;
+  created_at?: string;
+  updated_at?: string;
+  resource_type?: ResourceType;
 }
 
 interface Branch {
@@ -30,22 +41,19 @@ interface Branch {
 const BranchResourcesManager = () => {
   const [loading, setLoading] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
-  const [resources, setResources] = useState<BranchResource[]>([]);
-  const [selectedBranch, setSelectedBranch] = useState<string | null>(null);
+  const [resourceTypes, setResourceTypes] = useState<ResourceType[]>([]);
+  const [branchResourceTypes, setBranchResourceTypes] = useState<BranchResourceType[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
-  const [formData, setFormData] = useState<Partial<BranchResource>>({
-    phones_available: 0,
-    phones_in_use: 0,
-    pcs_available: 0,
-    pcs_in_use: 0,
-    pc_screens_available: 0,
-    pc_screens_in_use: 0,
-    printers_available: 0,
-    printers_in_use: 0,
-    pc_cameras_available: 0,
-    pc_cameras_in_use: 0
+  const [selectedResourceType, setSelectedResourceType] = useState<string>('');
+  const [newResourceName, setNewResourceName] = useState('');
+  const [formData, setFormData] = useState({
+    available: 0,
+    in_use: 0
   });
+  const [addResourceDialogOpen, setAddResourceDialogOpen] = useState(false);
+  const [resourceManagementDialog, setResourceManagementDialog] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -55,6 +63,7 @@ const BranchResourcesManager = () => {
     try {
       setLoading(true);
       
+      // Fetch branches
       const { data: branchesData, error: branchesError } = await supabase
         .from('branches')
         .select('*');
@@ -62,18 +71,102 @@ const BranchResourcesManager = () => {
       if (branchesError) throw branchesError;
       setBranches(branchesData || []);
 
-      const { data: resourcesData, error: resourcesError } = await supabase
-        .from('branch_resources')
+      // Fetch resource types
+      const { data: resourceTypesData, error: resourceTypesError } = await supabase
+        .from('resource_types')
         .select('*');
 
-      if (resourcesError) throw resourcesError;
-      setResources(resourcesData || []);
+      if (resourceTypesError) throw resourceTypesError;
+      setResourceTypes(resourceTypesData || []);
+
+      // Fetch branch resource types with their resource type names
+      const { data: branchResourceTypesData, error: branchResourceTypesError } = await supabase
+        .from('branch_resource_types')
+        .select(`
+          *,
+          resource_type:resource_type_id (id, name)
+        `);
+
+      if (branchResourceTypesError) throw branchResourceTypesError;
+      setBranchResourceTypes(branchResourceTypesData || []);
 
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('حدث خطأ أثناء تحميل البيانات');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleAddResource = async () => {
+    try {
+      if (!selectedBranch) {
+        toast.error('الرجاء اختيار الفرع');
+        return;
+      }
+
+      if (!selectedResourceType && !newResourceName) {
+        toast.error('الرجاء اختيار نوع المورد أو إدخال اسم مورد جديد');
+        return;
+      }
+
+      let resourceTypeId = selectedResourceType;
+
+      // إذا كان المستخدم أدخل اسم مورد جديد، أضفه إلى قاعدة البيانات
+      if (newResourceName && !selectedResourceType) {
+        const { data: newResourceType, error: newResourceError } = await supabase
+          .from('resource_types')
+          .insert({ name: newResourceName })
+          .select()
+          .single();
+
+        if (newResourceError) throw newResourceError;
+        resourceTypeId = newResourceType.id;
+        
+        // تحديث قائمة أنواع الموارد
+        setResourceTypes([...resourceTypes, newResourceType]);
+      }
+
+      // التحقق مما إذا كان المورد موجودًا بالفعل لهذا الفرع
+      const existingResource = branchResourceTypes.find(
+        r => r.branch_id === selectedBranch.id && r.resource_type_id === resourceTypeId
+      );
+
+      if (existingResource) {
+        toast.error('هذا المورد موجود بالفعل لهذا الفرع');
+        return;
+      }
+
+      // إضافة المورد إلى الفرع
+      const { data: newBranchResource, error: addError } = await supabase
+        .from('branch_resource_types')
+        .insert({
+          branch_id: selectedBranch.id,
+          resource_type_id: resourceTypeId,
+          available: formData.available,
+          in_use: formData.in_use
+        })
+        .select(`
+          *,
+          resource_type:resource_type_id (id, name)
+        `)
+        .single();
+
+      if (addError) throw addError;
+
+      // تحديث قائمة موارد الفروع
+      setBranchResourceTypes([...branchResourceTypes, newBranchResource]);
+      
+      // إعادة تعيين النموذج
+      setFormData({ available: 0, in_use: 0 });
+      setSelectedResourceType('');
+      setNewResourceName('');
+      setAddResourceDialogOpen(false);
+      
+      toast.success('تمت إضافة المورد بنجاح');
+    } catch (error) {
+      console.error('Error adding resource:', error);
+      toast.error('حدث خطأ أثناء إضافة المورد');
     }
   };
 
@@ -84,88 +177,111 @@ const BranchResourcesManager = () => {
         return;
       }
 
-      const existingResource = resources.find(r => r.branch_id === selectedBranch);
-      
-      if (editMode && existingResource) {
+      if (editMode && selectedResourceType) {
+        // تحديث المورد الموجود
+        const resourceToEdit = branchResourceTypes.find(
+          r => r.branch_id === selectedBranch.id && r.resource_type_id === selectedResourceType
+        );
+        
+        if (!resourceToEdit) {
+          toast.error('لم يتم العثور على المورد');
+          return;
+        }
+
         const { error } = await supabase
-          .from('branch_resources')
+          .from('branch_resource_types')
           .update({
-            phones_available: formData.phones_available,
-            phones_in_use: formData.phones_in_use,
-            pcs_available: formData.pcs_available,
-            pcs_in_use: formData.pcs_in_use,
-            pc_screens_available: formData.pc_screens_available,
-            pc_screens_in_use: formData.pc_screens_in_use,
-            printers_available: formData.printers_available,
-            printers_in_use: formData.printers_in_use,
-            pc_cameras_available: formData.pc_cameras_available,
-            pc_cameras_in_use: formData.pc_cameras_in_use
+            available: formData.available,
+            in_use: formData.in_use
           })
-          .eq('branch_id', selectedBranch);
+          .eq('id', resourceToEdit.id);
 
         if (error) throw error;
-        toast.success('تم تحديث موارد الفرع بنجاح');
-      } else {
-        const { error } = await supabase
-          .from('branch_resources')
-          .insert({
-            branch_id: selectedBranch,
-            phones_available: formData.phones_available,
-            phones_in_use: formData.phones_in_use,
-            pcs_available: formData.pcs_available,
-            pcs_in_use: formData.pcs_in_use,
-            pc_screens_available: formData.pc_screens_available,
-            pc_screens_in_use: formData.pc_screens_in_use,
-            printers_available: formData.printers_available,
-            printers_in_use: formData.printers_in_use,
-            pc_cameras_available: formData.pc_cameras_available,
-            pc_cameras_in_use: formData.pc_cameras_in_use
-          });
-
-        if (error) throw error;
-        toast.success('تم إضافة موارد الفرع بنجاح');
-      }
+        
+        // تحديث القائمة المحلية
+        setBranchResourceTypes(prevResources =>
+          prevResources.map(r => 
+            r.id === resourceToEdit.id 
+              ? { ...r, available: formData.available, in_use: formData.in_use }
+              : r
+          )
+        );
+        
+        toast.success('تم تحديث المورد بنجاح');
+      } 
 
       setDialogOpen(false);
       setEditMode(false);
-      setSelectedBranch(null);
-      setFormData({
-        phones_available: 0,
-        phones_in_use: 0,
-        pcs_available: 0,
-        pcs_in_use: 0,
-        pc_screens_available: 0,
-        pc_screens_in_use: 0,
-        printers_available: 0,
-        printers_in_use: 0,
-        pc_cameras_available: 0,
-        pc_cameras_in_use: 0
-      });
-      fetchData();
+      setSelectedResourceType('');
+      setFormData({ available: 0, in_use: 0 });
     } catch (error) {
       console.error('Error submitting data:', error);
       toast.error('حدث خطأ أثناء حفظ البيانات');
     }
   };
 
-  const handleEditResource = (branchId: string) => {
-    const resource = resources.find(r => r.branch_id === branchId);
+  const handleEditResource = (branchId: string, resourceTypeId: string) => {
+    const resource = branchResourceTypes.find(
+      r => r.branch_id === branchId && r.resource_type_id === resourceTypeId
+    );
+    
     if (resource) {
-      setSelectedBranch(branchId);
+      setSelectedBranch(branches.find(b => b.id === branchId) || null);
+      setSelectedResourceType(resourceTypeId);
       setFormData({
-        phones_available: resource.phones_available,
-        phones_in_use: resource.phones_in_use,
-        pcs_available: resource.pcs_available,
-        pcs_in_use: resource.pcs_in_use,
-        pc_screens_available: resource.pc_screens_available,
-        pc_screens_in_use: resource.pc_screens_in_use,
-        printers_available: resource.printers_available,
-        printers_in_use: resource.printers_in_use,
-        pc_cameras_available: resource.pc_cameras_available,
-        pc_cameras_in_use: resource.pc_cameras_in_use
+        available: resource.available,
+        in_use: resource.in_use
       });
       setEditMode(true);
       setDialogOpen(true);
+    }
+  };
+
+  const handleDeleteResource = async (resourceId: string) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا المورد من الفرع؟')) {
+      try {
+        const { error } = await supabase
+          .from('branch_resource_types')
+          .delete()
+          .eq('id', resourceId);
+
+        if (error) throw error;
+        
+        // تحديث القائمة المحلية
+        setBranchResourceTypes(prevResources => 
+          prevResources.filter(r => r.id !== resourceId)
+        );
+        
+        toast.success('تم حذف المورد بنجاح');
+      } catch (error) {
+        console.error('Error deleting resource:', error);
+        toast.error('حدث خطأ أثناء حذف المورد');
+      }
+    }
+  };
+
+  const handleCreateResourceType = async () => {
+    if (!newResourceName.trim()) {
+      toast.error('الرجاء إدخال اسم للمورد');
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase
+        .from('resource_types')
+        .insert({ name: newResourceName })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      setResourceTypes([...resourceTypes, data]);
+      toast.success('تم إنشاء نوع مورد جديد بنجاح');
+      setNewResourceName('');
+      setResourceManagementDialog(false);
+    } catch (error) {
+      console.error('Error creating resource type:', error);
+      toast.error('حدث خطأ أثناء إنشاء نوع المورد');
     }
   };
 
@@ -173,66 +289,86 @@ const BranchResourcesManager = () => {
     return branches.find(b => b.id === branchId)?.name || 'غير معروف';
   };
 
-  const ResourceRow = ({ label, available, inUse }: { label: string; available: number; inUse: number }) => (
+  const getResourceTypeName = (resourceTypeId: string) => {
+    return resourceTypes.find(rt => rt.id === resourceTypeId)?.name || 'غير معروف';
+  };
+
+  const getResourcesForBranch = (branchId: string) => {
+    return branchResourceTypes.filter(r => r.branch_id === branchId);
+  };
+
+  const BranchResourceRow = ({ resource }: { resource: BranchResourceType }) => (
     <div className="flex justify-between items-center py-2 border-b last:border-0">
-      <span className="text-right font-medium text-gray-600">{label}</span>
+      <span className="text-right font-medium text-gray-600">
+        {resource.resource_type?.name || getResourceTypeName(resource.resource_type_id)}
+      </span>
       <div className="flex gap-4">
         <div className="text-center">
           <span className="text-sm text-gray-500 block">المتوفر</span>
-          <span className="font-semibold">{available}</span>
+          <span className="font-semibold">{resource.available}</span>
         </div>
         <div className="text-center">
           <span className="text-sm text-gray-500 block">المستخدم</span>
-          <span className="font-semibold">{inUse}</span>
+          <span className="font-semibold">{resource.in_use}</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleEditResource(resource.branch_id, resource.resource_type_id)}
+            title="تعديل"
+          >
+            <Edit className="h-4 w-4 text-blue-500" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => handleDeleteResource(resource.id)}
+            title="حذف"
+          >
+            <Trash className="h-4 w-4 text-red-500" />
+          </Button>
         </div>
       </div>
     </div>
   );
 
-  const BranchCard = ({ resource, branchName }: { resource: BranchResource; branchName: string }) => (
-    <Card className="mb-4">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl font-bold text-company">{branchName}</CardTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleEditResource(resource.branch_id)}
-          title="تعديل"
-        >
-          <Edit className="h-4 w-4 text-blue-500" />
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-1">
-          <ResourceRow 
-            label="الهواتف" 
-            available={resource.phones_available} 
-            inUse={resource.phones_in_use} 
-          />
-          <ResourceRow 
-            label="أجهزة الكومبيوتر" 
-            available={resource.pcs_available} 
-            inUse={resource.pcs_in_use} 
-          />
-          <ResourceRow 
-            label="شاشات الكومبيوتر" 
-            available={resource.pc_screens_available} 
-            inUse={resource.pc_screens_in_use} 
-          />
-          <ResourceRow 
-            label="الطابعات" 
-            available={resource.printers_available} 
-            inUse={resource.printers_in_use} 
-          />
-          <ResourceRow 
-            label="كاميرات الكومبيوتر" 
-            available={resource.pc_cameras_available} 
-            inUse={resource.pc_cameras_in_use} 
-          />
-        </div>
-      </CardContent>
-    </Card>
-  );
+  const BranchCard = ({ branch }: { branch: Branch }) => {
+    const resources = getResourcesForBranch(branch.id);
+    
+    return (
+      <Card className="mb-4">
+        <CardHeader className="flex flex-row items-center justify-between pb-2">
+          <CardTitle className="text-xl font-bold text-company">{branch.name}</CardTitle>
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-xs flex items-center gap-1"
+            onClick={() => {
+              setSelectedBranch(branch);
+              setAddResourceDialogOpen(true);
+            }}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            إضافة مورد
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1">
+            {resources.length > 0 ? (
+              resources.map((resource) => (
+                <BranchResourceRow key={resource.id} resource={resource} />
+              ))
+            ) : (
+              <div className="text-center py-3 text-gray-500">
+                لا توجد موارد مسجلة لهذا الفرع
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <Card>
@@ -240,162 +376,180 @@ const BranchResourcesManager = () => {
         <CardTitle className="text-right text-xl font-bold text-company">موارد الفروع</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-end mb-4">
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <div className="flex justify-between items-center mb-4">
+          <Dialog open={resourceManagementDialog} onOpenChange={setResourceManagementDialog}>
             <DialogTrigger asChild>
-              <Button 
-                className="flex items-center gap-2"
-                onClick={() => {
-                  setEditMode(false);
-                  setSelectedBranch(null);
-                  setFormData({
-                    phones_available: 0,
-                    phones_in_use: 0,
-                    pcs_available: 0,
-                    pcs_in_use: 0,
-                    pc_screens_available: 0,
-                    pc_screens_in_use: 0,
-                    printers_available: 0,
-                    printers_in_use: 0,
-                    pc_cameras_available: 0,
-                    pc_cameras_in_use: 0
-                  });
-                }}
-              >
-                <Plus size={16} />
-                <span>إضافة موارد فرع</span>
+              <Button variant="outline" className="ml-2">
+                إدارة أنواع الموارد
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle className="text-right">
-                  {editMode ? 'تعديل موارد الفرع' : 'إضافة موارد فرع جديد'}
-                </DialogTitle>
+                <DialogTitle className="text-right">إدارة أنواع الموارد</DialogTitle>
               </DialogHeader>
-              <div className="grid gap-4 py-4">
-                {!editMode && (
-                  <select
-                    className="w-full p-2 border rounded-md text-right"
-                    value={selectedBranch || ''}
-                    onChange={(e) => setSelectedBranch(e.target.value)}
-                  >
-                    <option value="">اختر الفرع</option>
-                    {branches.map((branch) => (
-                      <option key={branch.id} value={branch.id}>{branch.name}</option>
+              <div className="mt-4">
+                <h4 className="text-right mb-2 font-medium">أنواع الموارد الحالية</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">اسم المورد</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {resourceTypes.map(type => (
+                      <TableRow key={type.id}>
+                        <TableCell className="text-right">{type.name}</TableCell>
+                      </TableRow>
                     ))}
-                  </select>
-                )}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-right mb-2">الهواتف المتوفرة</label>
-                    <Input
-                      type="number"
-                      value={formData.phones_available}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phones_available: parseInt(e.target.value) || 0 }))}
+                  </TableBody>
+                </Table>
+                <div className="mt-6">
+                  <h4 className="text-right mb-2 font-medium">إضافة نوع مورد جديد</h4>
+                  <div className="flex gap-2">
+                    <Button onClick={handleCreateResourceType}>إضافة</Button>
+                    <Input 
+                      value={newResourceName} 
+                      onChange={(e) => setNewResourceName(e.target.value)} 
+                      placeholder="اسم المورد الجديد"
                       className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">الهواتف المستخدمة</label>
-                    <Input
-                      type="number"
-                      value={formData.phones_in_use}
-                      onChange={(e) => setFormData(prev => ({ ...prev, phones_in_use: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">أجهزة الكومبيوتر المتوفرة</label>
-                    <Input
-                      type="number"
-                      value={formData.pcs_available}
-                      onChange={(e) => setFormData(prev => ({ ...prev, pcs_available: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">أجهزة الكومبيوتر المستخدمة</label>
-                    <Input
-                      type="number"
-                      value={formData.pcs_in_use}
-                      onChange={(e) => setFormData(prev => ({ ...prev, pcs_in_use: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">شاشات الكومبيوتر المتوفرة</label>
-                    <Input
-                      type="number"
-                      value={formData.pc_screens_available}
-                      onChange={(e) => setFormData(prev => ({ ...prev, pc_screens_available: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">شاشات الكومبيوتر المستخدمة</label>
-                    <Input
-                      type="number"
-                      value={formData.pc_screens_in_use}
-                      onChange={(e) => setFormData(prev => ({ ...prev, pc_screens_in_use: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">الطابعات المتوفرة</label>
-                    <Input
-                      type="number"
-                      value={formData.printers_available}
-                      onChange={(e) => setFormData(prev => ({ ...prev, printers_available: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">الطابعات المستخدمة</label>
-                    <Input
-                      type="number"
-                      value={formData.printers_in_use}
-                      onChange={(e) => setFormData(prev => ({ ...prev, printers_in_use: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">كاميرات الكومبيوتر المتوفرة</label>
-                    <Input
-                      type="number"
-                      value={formData.pc_cameras_available}
-                      onChange={(e) => setFormData(prev => ({ ...prev, pc_cameras_available: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-right mb-2">كاميرات الكومبيوتر المستخدمة</label>
-                    <Input
-                      type="number"
-                      value={formData.pc_cameras_in_use}
-                      onChange={(e) => setFormData(prev => ({ ...prev, pc_cameras_in_use: parseInt(e.target.value) || 0 }))}
-                      className="text-right"
-                      dir="rtl"
                     />
                   </div>
                 </div>
               </div>
-              <DialogFooter>
-                <Button type="submit" onClick={handleSubmit}>
-                  {editMode ? 'تحديث' : 'إضافة'}
-                </Button>
-              </DialogFooter>
             </DialogContent>
           </Dialog>
+
+          <Button onClick={fetchData} disabled={loading}>
+            {loading ? (
+              <>
+                <RefreshCw className="ml-2 h-4 w-4 animate-spin" />
+                جاري التحميل...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="ml-2 h-4 w-4" />
+                تحديث البيانات
+              </>
+            )}
+          </Button>
         </div>
+
+        {/* مربع حوار إضافة مورد لفرع محدد */}
+        <Dialog open={addResourceDialogOpen} onOpenChange={setAddResourceDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-right">
+                إضافة مورد لفرع {selectedBranch?.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div>
+                <h4 className="text-right mb-2">اختيار نوع المورد</h4>
+                <select
+                  className="w-full p-2 border rounded-md text-right"
+                  value={selectedResourceType}
+                  onChange={(e) => {
+                    setSelectedResourceType(e.target.value);
+                    setNewResourceName('');
+                  }}
+                >
+                  <option value="">اختر نوع المورد</option>
+                  {resourceTypes.map((type) => (
+                    <option key={type.id} value={type.id}>{type.name}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <h4 className="text-right mb-2">أو إضافة نوع مورد جديد</h4>
+                <Input
+                  type="text"
+                  value={newResourceName}
+                  onChange={(e) => {
+                    setNewResourceName(e.target.value);
+                    setSelectedResourceType('');
+                  }}
+                  placeholder="اسم المورد الجديد"
+                  className="text-right"
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-right mb-2">العدد المتوفر</label>
+                  <Input
+                    type="number"
+                    value={formData.available}
+                    onChange={(e) => setFormData(prev => ({ ...prev, available: parseInt(e.target.value) || 0 }))}
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-right mb-2">العدد المستخدم</label>
+                  <Input
+                    type="number"
+                    value={formData.in_use}
+                    onChange={(e) => setFormData(prev => ({ ...prev, in_use: parseInt(e.target.value) || 0 }))}
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleAddResource}>
+                إضافة
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* مربع حوار تعديل مورد لفرع محدد */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="text-right">
+                {editMode ? 'تعديل مورد' : 'إضافة مورد جديد'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              {editMode && (
+                <div className="text-right font-medium">
+                  نوع المورد: {getResourceTypeName(selectedResourceType)}
+                </div>
+              )}
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-right mb-2">العدد المتوفر</label>
+                  <Input
+                    type="number"
+                    value={formData.available}
+                    onChange={(e) => setFormData(prev => ({ ...prev, available: parseInt(e.target.value) || 0 }))}
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-right mb-2">العدد المستخدم</label>
+                  <Input
+                    type="number"
+                    value={formData.in_use}
+                    onChange={(e) => setFormData(prev => ({ ...prev, in_use: parseInt(e.target.value) || 0 }))}
+                    className="text-right"
+                    dir="rtl"
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleSubmit}>
+                {editMode ? 'تحديث' : 'إضافة'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {loading ? (
           <div className="text-center py-10">
@@ -403,18 +557,14 @@ const BranchResourcesManager = () => {
             <p className="mt-2">جاري تحميل البيانات...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {resources.length > 0 ? (
-              resources.map((resource) => (
-                <BranchCard
-                  key={resource.id}
-                  resource={resource}
-                  branchName={getBranchName(resource.branch_id)}
-                />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {branches.length > 0 ? (
+              branches.map((branch) => (
+                <BranchCard key={branch.id} branch={branch} />
               ))
             ) : (
               <div className="col-span-full text-center py-8">
-                <p>لا توجد موارد مسجلة للفروع</p>
+                <p>لا توجد فروع مسجلة</p>
               </div>
             )}
           </div>

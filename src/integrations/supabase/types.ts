@@ -39,6 +39,51 @@ export type Database = {
         }
         Relationships: []
       }
+      branch_resource_types: {
+        Row: {
+          available: number
+          branch_id: string
+          created_at: string
+          id: string
+          in_use: number
+          resource_type_id: string
+          updated_at: string
+        }
+        Insert: {
+          available?: number
+          branch_id: string
+          created_at?: string
+          id?: string
+          in_use?: number
+          resource_type_id: string
+          updated_at?: string
+        }
+        Update: {
+          available?: number
+          branch_id?: string
+          created_at?: string
+          id?: string
+          in_use?: number
+          resource_type_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_resource_types_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branch_resource_types_resource_type_id_fkey"
+            columns: ["resource_type_id"]
+            isOneToOne: false
+            referencedRelation: "resource_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branch_resources: {
         Row: {
           branch_id: string | null
@@ -99,6 +144,24 @@ export type Database = {
         ]
       }
       branches: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      resource_types: {
         Row: {
           created_at: string
           id: string
