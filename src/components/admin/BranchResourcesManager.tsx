@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash, RefreshCw } from 'lucide-react';
+import { Plus, Edit, Trash, RefreshCw, FileDown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   Table,
@@ -370,207 +369,227 @@ const BranchResourcesManager = () => {
     );
   };
 
+  const handleExportToExcel = async () => {
+    try {
+      await exportBranchResourcesToExcel(branches, branchResourceTypes);
+      toast.success('تم تصدير البيانات بنجاح');
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      toast.error('حدث خطأ أثناء تصدير البيانات');
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-right text-xl font-bold text-company">موارد الفروع</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-between items-center mb-4">
-          <Dialog open={resourceManagementDialog} onOpenChange={setResourceManagementDialog}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="ml-2">
-                إدارة أنواع الموارد
-              </Button>
-            </DialogTrigger>
+    <div className="container mx-auto p-4">
+      <Card className="border-company/20 glass">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <Button
+              onClick={handleExportToExcel}
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <FileDown className="h-4 w-4" />
+              تصدير إلى Excel
+            </Button>
+            <CardTitle className="text-2xl text-right">موارد الفروع</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between items-center mb-4">
+            <Dialog open={resourceManagementDialog} onOpenChange={setResourceManagementDialog}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="ml-2">
+                  إدارة أنواع الموارد
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle className="text-right">إدارة أنواع الموارد</DialogTitle>
+                </DialogHeader>
+                <div className="mt-4">
+                  <h4 className="text-right mb-2 font-medium">أنواع الموارد الحالية</h4>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">اسم المورد</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {resourceTypes.map(type => (
+                        <TableRow key={type.id}>
+                          <TableCell className="text-right">{type.name}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <div className="mt-6">
+                    <h4 className="text-right mb-2 font-medium">إضافة نوع مورد جديد</h4>
+                    <div className="flex gap-2">
+                      <Button onClick={handleCreateResourceType}>إضافة</Button>
+                      <Input 
+                        value={newResourceName} 
+                        onChange={(e) => setNewResourceName(e.target.value)} 
+                        placeholder="اسم المورد الجديد"
+                        className="text-right"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Button onClick={fetchData} disabled={loading}>
+              {loading ? (
+                <>
+                  <RefreshCw className="ml-2 h-4 w-4 animate-spin" />
+                  جاري التحميل...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="ml-2 h-4 w-4" />
+                  تحديث البيانات
+                </>
+              )}
+            </Button>
+          </div>
+
+          <Dialog open={addResourceDialogOpen} onOpenChange={setAddResourceDialogOpen}>
             <DialogContent className="sm:max-w-[500px]">
               <DialogHeader>
-                <DialogTitle className="text-right">إدارة أنواع الموارد</DialogTitle>
+                <DialogTitle className="text-right">
+                  إضافة مورد لفرع {selectedBranch?.name}
+                </DialogTitle>
               </DialogHeader>
-              <div className="mt-4">
-                <h4 className="text-right mb-2 font-medium">أنواع الموارد الحالية</h4>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="text-right">اسم المورد</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {resourceTypes.map(type => (
-                      <TableRow key={type.id}>
-                        <TableCell className="text-right">{type.name}</TableCell>
-                      </TableRow>
+              <div className="grid gap-4 py-4">
+                <div>
+                  <h4 className="text-right mb-2">اختيار نوع المورد</h4>
+                  <select
+                    className="w-full p-2 border rounded-md text-right"
+                    value={selectedResourceType}
+                    onChange={(e) => {
+                      setSelectedResourceType(e.target.value);
+                      setNewResourceName('');
+                    }}
+                  >
+                    <option value="">اختر نوع المورد</option>
+                    {resourceTypes.map((type) => (
+                      <option key={type.id} value={type.id}>{type.name}</option>
                     ))}
-                  </TableBody>
-                </Table>
-                <div className="mt-6">
-                  <h4 className="text-right mb-2 font-medium">إضافة نوع مورد جديد</h4>
-                  <div className="flex gap-2">
-                    <Button onClick={handleCreateResourceType}>إضافة</Button>
-                    <Input 
-                      value={newResourceName} 
-                      onChange={(e) => setNewResourceName(e.target.value)} 
-                      placeholder="اسم المورد الجديد"
+                  </select>
+                </div>
+                
+                <div>
+                  <h4 className="text-right mb-2">أو إضافة نوع مورد جديد</h4>
+                  <Input
+                    type="text"
+                    value={newResourceName}
+                    onChange={(e) => {
+                      setNewResourceName(e.target.value);
+                      setSelectedResourceType('');
+                    }}
+                    placeholder="اسم المورد الجديد"
+                    className="text-right"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-right mb-2">العدد المتوفر</label>
+                    <Input
+                      type="number"
+                      value={formData.available}
+                      onChange={(e) => setFormData(prev => ({ ...prev, available: parseInt(e.target.value) || 0 }))}
                       className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-right mb-2">العدد المستخدم</label>
+                    <Input
+                      type="number"
+                      value={formData.in_use}
+                      onChange={(e) => setFormData(prev => ({ ...prev, in_use: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
                     />
                   </div>
                 </div>
               </div>
+              <DialogFooter>
+                <Button type="submit" onClick={handleAddResource}>
+                  إضافة
+                </Button>
+              </DialogFooter>
             </DialogContent>
           </Dialog>
 
-          <Button onClick={fetchData} disabled={loading}>
-            {loading ? (
-              <>
-                <RefreshCw className="ml-2 h-4 w-4 animate-spin" />
-                جاري التحميل...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="ml-2 h-4 w-4" />
-                تحديث البيانات
-              </>
-            )}
-          </Button>
-        </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogContent className="sm:max-w-[500px]">
+              <DialogHeader>
+                <DialogTitle className="text-right">
+                  {editMode ? 'تعديل مورد' : 'إضافة مورد جديد'}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                {editMode && (
+                  <div className="text-right font-medium">
+                    نوع المورد: {getResourceTypeName(selectedResourceType)}
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-right mb-2">العدد المتوفر</label>
+                    <Input
+                      type="number"
+                      value={formData.available}
+                      onChange={(e) => setFormData(prev => ({ ...prev, available: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-right mb-2">العدد المستخدم</label>
+                    <Input
+                      type="number"
+                      value={formData.in_use}
+                      onChange={(e) => setFormData(prev => ({ ...prev, in_use: parseInt(e.target.value) || 0 }))}
+                      className="text-right"
+                      dir="rtl"
+                    />
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="submit" onClick={handleSubmit}>
+                  {editMode ? 'تحديث' : 'إضافة'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
 
-        {/* مربع حوار إضافة مورد لفرع محدد */}
-        <Dialog open={addResourceDialogOpen} onOpenChange={setAddResourceDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="text-right">
-                إضافة مورد لفرع {selectedBranch?.name}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div>
-                <h4 className="text-right mb-2">اختيار نوع المورد</h4>
-                <select
-                  className="w-full p-2 border rounded-md text-right"
-                  value={selectedResourceType}
-                  onChange={(e) => {
-                    setSelectedResourceType(e.target.value);
-                    setNewResourceName('');
-                  }}
-                >
-                  <option value="">اختر نوع المورد</option>
-                  {resourceTypes.map((type) => (
-                    <option key={type.id} value={type.id}>{type.name}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <h4 className="text-right mb-2">أو إضافة نوع مورد جديد</h4>
-                <Input
-                  type="text"
-                  value={newResourceName}
-                  onChange={(e) => {
-                    setNewResourceName(e.target.value);
-                    setSelectedResourceType('');
-                  }}
-                  placeholder="اسم المورد الجديد"
-                  className="text-right"
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-right mb-2">العدد المتوفر</label>
-                  <Input
-                    type="number"
-                    value={formData.available}
-                    onChange={(e) => setFormData(prev => ({ ...prev, available: parseInt(e.target.value) || 0 }))}
-                    className="text-right"
-                    dir="rtl"
-                  />
-                </div>
-                <div>
-                  <label className="block text-right mb-2">العدد المستخدم</label>
-                  <Input
-                    type="number"
-                    value={formData.in_use}
-                    onChange={(e) => setFormData(prev => ({ ...prev, in_use: parseInt(e.target.value) || 0 }))}
-                    className="text-right"
-                    dir="rtl"
-                  />
-                </div>
-              </div>
+          {loading ? (
+            <div className="text-center py-10">
+              <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
+              <p className="mt-2">جاري تحميل البيانات...</p>
             </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleAddResource}>
-                إضافة
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* مربع حوار تعديل مورد لفرع محدد */}
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="text-right">
-                {editMode ? 'تعديل مورد' : 'إضافة مورد جديد'}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              {editMode && (
-                <div className="text-right font-medium">
-                  نوع المورد: {getResourceTypeName(selectedResourceType)}
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {branches.length > 0 ? (
+                branches.map((branch) => (
+                  <BranchCard key={branch.id} branch={branch} />
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p>لا توجد فروع مسجلة</p>
                 </div>
               )}
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-right mb-2">العدد المتوفر</label>
-                  <Input
-                    type="number"
-                    value={formData.available}
-                    onChange={(e) => setFormData(prev => ({ ...prev, available: parseInt(e.target.value) || 0 }))}
-                    className="text-right"
-                    dir="rtl"
-                  />
-                </div>
-                <div>
-                  <label className="block text-right mb-2">العدد المستخدم</label>
-                  <Input
-                    type="number"
-                    value={formData.in_use}
-                    onChange={(e) => setFormData(prev => ({ ...prev, in_use: parseInt(e.target.value) || 0 }))}
-                    className="text-right"
-                    dir="rtl"
-                  />
-                </div>
-              </div>
             </div>
-            <DialogFooter>
-              <Button type="submit" onClick={handleSubmit}>
-                {editMode ? 'تحديث' : 'إضافة'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {loading ? (
-          <div className="text-center py-10">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-            <p className="mt-2">جاري تحميل البيانات...</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {branches.length > 0 ? (
-              branches.map((branch) => (
-                <BranchCard key={branch.id} branch={branch} />
-              ))
-            ) : (
-              <div className="col-span-full text-center py-8">
-                <p>لا توجد فروع مسجلة</p>
-              </div>
-            )}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
