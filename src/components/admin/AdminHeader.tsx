@@ -67,7 +67,7 @@ const AdminHeader = () => {
         <div className="flex items-center space-x-2 mb-2 md:mb-0">
           <h1 className="text-2xl font-bold" style={{
           color: settings.text_color
-        }}>لوحة تحكم FIXDESK  </h1>
+        }}>لوحة تحكم FixDesk</h1>
           {currentAdmin && <span className="text-sm opacity-75 mr-2" style={{
           color: settings.text_color
         }}>
