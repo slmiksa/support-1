@@ -22,22 +22,6 @@ interface ResourceType {
   created_at?: string;
 }
 
-interface BranchResourceType {
-  id: string;
-  branch_id: string;
-  resource_type_id: string;
-  available: number;
-  in_use: number;
-  created_at?: string;
-  updated_at?: string;
-  resource_type?: ResourceType;
-}
-
-interface Branch {
-  id: string;
-  name: string;
-}
-
 const BranchResourcesManager = () => {
   const [loading, setLoading] = useState(true);
   const [branches, setBranches] = useState<Branch[]>([]);
