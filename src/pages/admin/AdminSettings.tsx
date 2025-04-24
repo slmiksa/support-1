@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -16,13 +15,15 @@ import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-
 const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('branches');
-  const { hasPermission } = useAdminAuth();
+  const {
+    hasPermission
+  } = useAdminAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     if (!hasPermission('view_only')) {
       toast({
@@ -32,9 +33,8 @@ const AdminSettings = () => {
       });
       navigate('/admin/dashboard');
     }
-    
     fetchAndUpdateFavicon();
-    
+
     // عند تغيير علامة التبويب، تحديث العنوان في URL
     const params = new URLSearchParams(window.location.search);
     const tabParam = params.get('tab');
@@ -42,7 +42,7 @@ const AdminSettings = () => {
       setActiveTab(tabParam);
     }
   }, [hasPermission, navigate, toast]);
-  
+
   // تحديث URL عند تغيير علامة التبويب
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
@@ -50,19 +50,16 @@ const AdminSettings = () => {
     url.searchParams.set('tab', tab);
     window.history.pushState({}, '', url);
   };
-  
   const fetchAndUpdateFavicon = async () => {
     try {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('favicon_url')
-        .single();
-        
+      const {
+        data,
+        error
+      } = await supabase.from('site_settings').select('favicon_url').single();
       if (error) {
         console.error('Error fetching favicon:', error);
         return;
       }
-      
       if (data && data.favicon_url) {
         updateFavicon(data.favicon_url);
       }
@@ -70,7 +67,6 @@ const AdminSettings = () => {
       console.error('Error in fetchAndUpdateFavicon:', error);
     }
   };
-  
   const updateFavicon = (faviconUrl: string) => {
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
@@ -80,20 +76,14 @@ const AdminSettings = () => {
     }
     link.href = faviconUrl;
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <AdminHeader />
       <main className="container mx-auto px-4 py-6">
         <Card className="dark:border-border/20">
           <CardContent className="p-6">
             <h1 className="text-2xl font-bold text-company text-right mb-6">إعدادات النظام</h1>
             
-            <Tabs 
-              value={activeTab} 
-              onValueChange={handleTabChange}
-              className="w-full"
-            >
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid grid-cols-2 md:grid-cols-9 w-full mb-8 dark:bg-muted/50">
                 <TabsTrigger value="branches" className="flex items-center gap-2">
                   <Building size={16} />
@@ -101,17 +91,13 @@ const AdminSettings = () => {
                 </TabsTrigger>
                 <TabsTrigger value="branch-resources" className="flex items-center gap-2">
                   <Laptop size={16} />
-                  <span>أجهزة الفروع</span>
+                  <span className="text-slate-500">موارد الشركة</span>
                 </TabsTrigger>
                 <TabsTrigger value="fields" className="flex items-center gap-2">
                   <ListFilter size={16} />
                   <span>حقول الموقع</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="admins" 
-                  className="flex items-center gap-2"
-                  disabled={!hasPermission('manage_admins')}
-                >
+                <TabsTrigger value="admins" className="flex items-center gap-2" disabled={!hasPermission('manage_admins')}>
                   <Users size={16} />
                   <span>المديرين</span>
                 </TabsTrigger>
@@ -127,19 +113,11 @@ const AdminSettings = () => {
                   <Mail size={16} />
                   <span>البريد</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="customization" 
-                  className="flex items-center gap-2"
-                  disabled={!hasPermission('manage_admins')}
-                >
+                <TabsTrigger value="customization" className="flex items-center gap-2" disabled={!hasPermission('manage_admins')}>
                   <PaintBucket size={16} />
                   <span>تخصيص الواجهة</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="settings" 
-                  className="flex items-center gap-2"
-                  disabled={!hasPermission('manage_admins')}
-                >
+                <TabsTrigger value="settings" className="flex items-center gap-2" disabled={!hasPermission('manage_admins')}>
                   <Settings size={16} />
                   <span>إعدادات النظام</span>
                 </TabsTrigger>
@@ -188,8 +166,6 @@ const AdminSettings = () => {
           </CardContent>
         </Card>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default AdminSettings;
