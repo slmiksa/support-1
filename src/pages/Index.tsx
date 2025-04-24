@@ -58,7 +58,7 @@ const Index = () => {
       <main className="container px-4 py-4 mx-auto mb-20">
         <div className="bg-white rounded-lg p-6 shadow-sm mb-8">
           <div className="flex flex-col items-center">
-            <h2 className="text-2xl font-semibold text-center text-[#222222] mb-6">نظام الدعم الفني ( FIXDESK )</h2>
+            <h2 className="text-2xl font-semibold text-center text-[#222222] mb-6">نظام الدعم الفني ( FixDesk )</h2>
             <div className="flex flex-col items-center gap-2 mb-4">
               <DateTimeDisplay />
               
