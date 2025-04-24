@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
@@ -174,6 +173,67 @@ const BranchResourcesManager = () => {
     return branches.find(b => b.id === branchId)?.name || 'غير معروف';
   };
 
+  const ResourceRow = ({ label, available, inUse }: { label: string; available: number; inUse: number }) => (
+    <div className="flex justify-between items-center py-2 border-b last:border-0">
+      <span className="text-right font-medium text-gray-600">{label}</span>
+      <div className="flex gap-4">
+        <div className="text-center">
+          <span className="text-sm text-gray-500 block">المتوفر</span>
+          <span className="font-semibold">{available}</span>
+        </div>
+        <div className="text-center">
+          <span className="text-sm text-gray-500 block">المستخدم</span>
+          <span className="font-semibold">{inUse}</span>
+        </div>
+      </div>
+    </div>
+  );
+
+  const BranchCard = ({ resource, branchName }: { resource: BranchResource; branchName: string }) => (
+    <Card className="mb-4">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-xl font-bold text-company">{branchName}</CardTitle>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => handleEditResource(resource.branch_id)}
+          title="تعديل"
+        >
+          <Edit className="h-4 w-4 text-blue-500" />
+        </Button>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-1">
+          <ResourceRow 
+            label="الهواتف" 
+            available={resource.phones_available} 
+            inUse={resource.phones_in_use} 
+          />
+          <ResourceRow 
+            label="أجهزة الكومبيوتر" 
+            available={resource.pcs_available} 
+            inUse={resource.pcs_in_use} 
+          />
+          <ResourceRow 
+            label="شاشات الكومبيوتر" 
+            available={resource.pc_screens_available} 
+            inUse={resource.pc_screens_in_use} 
+          />
+          <ResourceRow 
+            label="الطابعات" 
+            available={resource.printers_available} 
+            inUse={resource.printers_in_use} 
+          />
+          <ResourceRow 
+            label="كاميرات الكومبيوتر" 
+            available={resource.pc_cameras_available} 
+            inUse={resource.pc_cameras_in_use} 
+          />
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -343,60 +403,20 @@ const BranchResourcesManager = () => {
             <p className="mt-2">جاري تحميل البيانات...</p>
           </div>
         ) : (
-          <div className="rounded-md border overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-right">اسم الفرع</TableHead>
-                  <TableHead className="text-right">الهواتف المتوفرة</TableHead>
-                  <TableHead className="text-right">الهواتف المستخدمة</TableHead>
-                  <TableHead className="text-right">أجهزة الكومبيوتر المتوفرة</TableHead>
-                  <TableHead className="text-right">أجهزة الكومبيوتر المستخدمة</TableHead>
-                  <TableHead className="text-right">شاشات الكومبيوتر المتوفرة</TableHead>
-                  <TableHead className="text-right">شاشات الكومبيوتر المستخدمة</TableHead>
-                  <TableHead className="text-right">الطابعات المتوفرة</TableHead>
-                  <TableHead className="text-right">الطابعات المستخدمة</TableHead>
-                  <TableHead className="text-right">كاميرات الكومبيوتر المتوفرة</TableHead>
-                  <TableHead className="text-right">كاميرات الكومبيوتر المستخدمة</TableHead>
-                  <TableHead className="text-right">إجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {resources.length > 0 ? (
-                  resources.map((resource) => (
-                    <TableRow key={resource.id}>
-                      <TableCell className="font-medium text-right">{getBranchName(resource.branch_id)}</TableCell>
-                      <TableCell className="text-right">{resource.phones_available}</TableCell>
-                      <TableCell className="text-right">{resource.phones_in_use}</TableCell>
-                      <TableCell className="text-right">{resource.pcs_available}</TableCell>
-                      <TableCell className="text-right">{resource.pcs_in_use}</TableCell>
-                      <TableCell className="text-right">{resource.pc_screens_available}</TableCell>
-                      <TableCell className="text-right">{resource.pc_screens_in_use}</TableCell>
-                      <TableCell className="text-right">{resource.printers_available}</TableCell>
-                      <TableCell className="text-right">{resource.printers_in_use}</TableCell>
-                      <TableCell className="text-right">{resource.pc_cameras_available}</TableCell>
-                      <TableCell className="text-right">{resource.pc_cameras_in_use}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEditResource(resource.branch_id)}
-                          title="تعديل"
-                        >
-                          <Edit className="h-4 w-4 text-blue-500" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={12} className="text-center h-24">
-                      <p>لا توجد موارد مسجلة للفروع</p>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {resources.length > 0 ? (
+              resources.map((resource) => (
+                <BranchCard
+                  key={resource.id}
+                  resource={resource}
+                  branchName={getBranchName(resource.branch_id)}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <p>لا توجد موارد مسجلة للفروع</p>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
