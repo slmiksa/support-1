@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import SupportForm from '@/components/SupportForm';
@@ -9,7 +8,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
-
 const Index = () => {
   const [supportStatus, setSupportStatus] = useState({
     available: true,
@@ -18,32 +16,27 @@ const Index = () => {
   const [supportInfo, setSupportInfo] = useState<string | null>(null);
   const [helpFields, setHelpFields] = useState<HelpField[]>([]);
   const [loading, setLoading] = useState(true);
-  
   useEffect(() => {
     const fetchSupportStatus = async () => {
       try {
-        const { data, error } = await supabase.from('site_settings').select('*').single();
-        
+        const {
+          data,
+          error
+        } = await supabase.from('site_settings').select('*').single();
         if (error) {
           console.error('Error fetching site settings:', error);
           setLoading(false);
           return;
         }
-        
         if (data) {
           setSupportStatus({
             available: !!data.support_available,
             message: data.support_message || 'الدعم الفني متواجد'
           });
-          
           setSupportInfo(data.support_info || null);
-
           if (data.support_help_fields) {
             try {
-              const helpFieldsData = typeof data.support_help_fields === 'string' 
-                ? JSON.parse(data.support_help_fields) 
-                : data.support_help_fields;
-              
+              const helpFieldsData = typeof data.support_help_fields === 'string' ? JSON.parse(data.support_help_fields) : data.support_help_fields;
               setHelpFields(Array.isArray(helpFieldsData) ? helpFieldsData : []);
             } catch (e) {
               console.error('Error parsing help fields:', e);
@@ -57,12 +50,9 @@ const Index = () => {
         setLoading(false);
       }
     };
-    
     fetchSupportStatus();
   }, []);
-
-  return (
-    <div className="min-h-screen pb-16 bg-gray-50">
+  return <div className="min-h-screen pb-16 bg-slate-50">
       <Header />
       <main className="container px-4 py-8 mx-auto mb-20">
         <Card className="bg-white shadow-md border-t-4 border-company mb-8 overflow-hidden">
@@ -91,28 +81,20 @@ const Index = () => {
                             </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-80 text-right" align="center">
-                            {helpFields.length > 0 ? (
-                              <Accordion type="single" collapsible className="w-full">
-                                {helpFields.map(field => (
-                                  <AccordionItem key={field.id} value={field.id}>
+                            {helpFields.length > 0 ? <Accordion type="single" collapsible className="w-full">
+                                {helpFields.map(field => <AccordionItem key={field.id} value={field.id}>
                                     <AccordionTrigger className="text-right">
                                       {field.title}
                                     </AccordionTrigger>
                                     <AccordionContent>
                                       <div dangerouslySetInnerHTML={{
-                                        __html: field.content
-                                      }} />
+                                  __html: field.content
+                                }} />
                                     </AccordionContent>
-                                  </AccordionItem>
-                                ))}
-                              </Accordion>
-                            ) : supportInfo ? (
-                              <div className="text-sm" dangerouslySetInnerHTML={{
-                                __html: supportInfo
-                              }} />
-                            ) : (
-                              <p>لا توجد معلومات متاحة حالياً</p>
-                            )}
+                                  </AccordionItem>)}
+                              </Accordion> : supportInfo ? <div className="text-sm" dangerouslySetInnerHTML={{
+                            __html: supportInfo
+                          }} /> : <p>لا توجد معلومات متاحة حالياً</p>}
                           </PopoverContent>
                         </Popover>
                       </TooltipTrigger>
@@ -128,8 +110,6 @@ const Index = () => {
         </Card>
         <SupportForm />
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
