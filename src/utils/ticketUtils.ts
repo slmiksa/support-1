@@ -1,10 +1,11 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
 export type SupportTicket = {
   ticket_id: string;
   branch: string;
-  priority: string;
+  priority: 'urgent' | 'medium' | 'normal'; // Changed from string to proper enum values
   description: string;
   image_url: string | null;
   status: string;
@@ -21,7 +22,7 @@ export type SupportTicket = {
 };
 
 export interface SiteField {
-  id: string | number;
+  id: string; // Changed from string | number to string
   field_name: string;
   display_name: string;
   placeholder?: string;
@@ -174,6 +175,11 @@ export const generateTicketId = (): string => {
 
 export const saveTicket = async (ticket: SupportTicket): Promise<{ success: boolean, error?: any }> => {
   try {
+    // Ensure ticket.priority is one of the allowed values
+    if (!['urgent', 'medium', 'normal'].includes(ticket.priority)) {
+      ticket.priority = 'normal'; // Default to normal if invalid
+    }
+    
     const { error } = await supabase
       .from('tickets')
       .insert(ticket);
@@ -352,6 +358,11 @@ export const deleteAdmin = async (id: string): Promise<boolean> => {
 
 export const updateSiteField = async (fieldId: string, updates: Partial<SiteField>) => {
   try {
+    // Ensure id is a string
+    if (updates.id && typeof updates.id !== 'string') {
+      updates.id = String(updates.id);
+    }
+    
     const { data, error } = await supabase
       .from('site_fields')
       .update(updates)
@@ -373,9 +384,30 @@ export const updateSiteField = async (fieldId: string, updates: Partial<SiteFiel
 export const createSiteField = async (fieldData: Partial<SiteField>): Promise<{ success: boolean; data?: SiteField[]; error?: any }> => {
   try {
     console.log("Creating site field with data:", fieldData);
+    
+    // Ensure required fields are present
+    if (!fieldData.field_name || !fieldData.display_name) {
+      return { 
+        success: false, 
+        error: "Field name and display name are required" 
+      };
+    }
+    
+    // Ensure id is a string or undefined
+    if (fieldData.id && typeof fieldData.id !== 'string') {
+      fieldData.id = String(fieldData.id);
+    }
+    
     const { data, error } = await supabase
       .from('site_fields')
-      .insert([fieldData])
+      .insert([{
+        field_name: fieldData.field_name,
+        display_name: fieldData.display_name,
+        placeholder: fieldData.placeholder,
+        is_required: fieldData.is_required ?? false,
+        is_active: fieldData.is_active ?? true,
+        sort_order: fieldData.sort_order ?? 0
+      }])
       .select();
 
     if (error) {

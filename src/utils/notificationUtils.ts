@@ -227,7 +227,7 @@ export const saveCompanyEmailSettings = async (
         company_sender_email: senderEmail,
         company_sender_name: senderName
       })
-      .eq('id', 1); // Assuming there's only one record in site_settings
+      .eq('id', '1'); // Using string instead of number
 
     if (error) {
       console.error('Error saving company email settings:', error);

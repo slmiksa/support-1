@@ -8,8 +8,20 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
+const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+// Export the supabase client with additional type definitions for RPC functions
+export const supabase = {
+  ...supabaseClient,
+  rpc: (function_name: 
+    "delete_ticket_by_id" | 
+    "update_ticket_status" | 
+    "add_ticket_response_with_admin" | 
+    "check_admin_credentials" |
+    "check_column_exists" |
+    "add_company_email_columns", 
+    params: any) => supabaseClient.rpc(function_name, params)
+};
 
 // ดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดด
 // Export types for use in application
@@ -31,6 +43,8 @@ export interface SiteSettings {
   support_info?: string;
   support_help_fields?: Array<HelpField>;
   email_settings?: EmailSettings;
+  company_sender_email?: string;
+  company_sender_name?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -129,6 +143,7 @@ export interface TicketResponse {
   ticket_id: string;
   admin_id?: string;
   response: string;
+  is_admin?: boolean;
   private?: boolean;
   created_at?: string;
   admin_name?: string;

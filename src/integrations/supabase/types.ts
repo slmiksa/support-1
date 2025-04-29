@@ -194,6 +194,8 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          company_sender_email: string | null
+          company_sender_name: string | null
           created_at: string | null
           email_settings: Json | null
           favicon_url: string | null
@@ -210,6 +212,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          company_sender_email?: string | null
+          company_sender_name?: string | null
           created_at?: string | null
           email_settings?: Json | null
           favicon_url?: string | null
@@ -226,6 +230,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          company_sender_email?: string | null
+          company_sender_name?: string | null
           created_at?: string | null
           email_settings?: Json | null
           favicon_url?: string | null
@@ -248,6 +254,7 @@ export type Database = {
           admin_id: string | null
           created_at: string | null
           id: string
+          is_admin: boolean | null
           private: boolean | null
           response: string
           ticket_id: string
@@ -256,6 +263,7 @@ export type Database = {
           admin_id?: string | null
           created_at?: string | null
           id?: string
+          is_admin?: boolean | null
           private?: boolean | null
           response: string
           ticket_id: string
@@ -264,6 +272,7 @@ export type Database = {
           admin_id?: string | null
           created_at?: string | null
           id?: string
+          is_admin?: boolean | null
           private?: boolean | null
           response?: string
           ticket_id?: string
@@ -295,6 +304,7 @@ export type Database = {
           customer_email: string | null
           description: string
           employee_id: string | null
+          extension_number: string | null
           id: string
           image_url: string | null
           priority: Database["public"]["Enums"]["priority_type"]
@@ -312,6 +322,7 @@ export type Database = {
           customer_email?: string | null
           description: string
           employee_id?: string | null
+          extension_number?: string | null
           id?: string
           image_url?: string | null
           priority?: Database["public"]["Enums"]["priority_type"]
@@ -329,6 +340,7 @@ export type Database = {
           customer_email?: string | null
           description?: string
           employee_id?: string | null
+          extension_number?: string | null
           id?: string
           image_url?: string | null
           priority?: Database["public"]["Enums"]["priority_type"]
@@ -344,8 +356,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_company_email_columns: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      add_ticket_response_with_admin: {
+        Args: {
+          p_ticket_id: string
+          p_response: string
+          p_is_admin: boolean
+          p_admin_id: string
+        }
+        Returns: Json
+      }
+      check_admin_credentials: {
+        Args: { p_username: string; p_password: string }
+        Returns: boolean
+      }
+      check_column_exists: {
+        Args: { table_name: string; column_name: string }
+        Returns: boolean
+      }
       delete_ticket_by_id: {
         Args: { p_ticket_id: string }
+        Returns: boolean
+      }
+      update_ticket_status: {
+        Args: { p_ticket_id: string; p_status: string }
         Returns: boolean
       }
     }

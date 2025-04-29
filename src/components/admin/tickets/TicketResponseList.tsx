@@ -5,10 +5,19 @@ import { useAdminAuth } from '@/contexts/AdminAuthContext';
 interface TicketResponse {
   id: string;
   response: string;
-  is_admin: boolean;
+  is_admin?: boolean;
   created_at: string;
   admin_name?: string | null;
   admin_employee_id?: string | null;
+  // Add missing properties to match database schema
+  ticket_id: string;
+  admin_id?: string | null;
+  private?: boolean | null;
+  admin?: { 
+    username?: string | null; 
+    employee_id?: string | null;
+    id?: string | null;
+  } | null;
 }
 
 interface TicketResponseListProps {
@@ -63,4 +72,3 @@ const TicketResponseList = ({ responses, isCustomerView = false }: TicketRespons
 };
 
 export default TicketResponseList;
-

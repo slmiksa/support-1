@@ -21,7 +21,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       // Fetch ticket data
       const { data: ticketData, error: ticketError } = await supabase
         .from('tickets')
-        .select('*, assigned_to, extension_number')
+        .select('*')
         .eq('ticket_id', ticketId)
         .single();
 
@@ -68,16 +68,18 @@ export const useTicketDetails = (ticketId: string | undefined) => {
         return {
           ...response,
           admin_name: adminName,
-          admin_employee_id: adminEmployeeId
+          admin_employee_id: adminEmployeeId,
+          is_admin: response.is_admin !== undefined ? response.is_admin : true // Default to true if not set
         };
       }) || [];
 
       setResponses(formattedResponses);
       
       // Automatically set the assigned admin if not already assigned
-      if (!ticketData.assigned_to && formattedResponses.length > 0) {
+      if (ticketData && !ticketData.assigned_to && formattedResponses.length > 0) {
         // Find the first admin response
-        const firstAdminResponse = formattedResponses.find(resp => resp.is_admin && resp.admin_name);
+        const firstAdminResponse = formattedResponses.find(resp => 
+          (resp.is_admin !== undefined ? resp.is_admin : true) && resp.admin_name);
         
         if (firstAdminResponse) {
           // Update the ticket's assigned_to field
@@ -97,7 +99,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       }
 
       // Fetch admin data if ticket is assigned
-      if (ticketData.assigned_to) {
+      if (ticketData && ticketData.assigned_to) {
         const { data: adminData, error: adminError } = await supabase
           .from('admins')
           .select('id, username, employee_id')

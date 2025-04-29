@@ -76,7 +76,10 @@ const TicketStatus = () => {
 
       // Auto-assign the ticket to the first admin who responds if not already assigned
       if (!ticket?.assigned_to && fetchedResponses.length > 0) {
-        const firstAdminResponse = fetchedResponses.find(resp => resp.is_admin && resp.admin_name);
+        // Make sure we check for is_admin explicitly - if undefined, assume true for backward compatibility
+        const firstAdminResponse = fetchedResponses.find(resp => 
+          (resp.is_admin !== undefined ? resp.is_admin : true) && resp.admin_name);
+          
         if (firstAdminResponse && ticket) {
           // Update the ticket locally
           setTicket({
