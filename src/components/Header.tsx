@@ -138,7 +138,9 @@ const Header = () => {
                 
                 {/* حاوية الشعار مع تأثير نبض الدعم المحسن وهالة بيضاء */}
                 <div className="relative w-36 h-36 md:w-44 md:h-44 overflow-hidden rounded-full shadow-xl bg-white p-3 border-4 border-white/80 logo-pulse-enhanced">
-                  <AspectRatio ratio={1 / 1} className="overflow-hidden">
+                  {/* إضافة هالة بيضاء أكثر وضوحًا وحركة */}
+                  <div className="absolute -inset-1 bg-white animate-glowing rounded-full opacity-80"></div>
+                  <AspectRatio ratio={1 / 1} className="overflow-hidden relative z-10">
                     <img 
                       src={logoUrl} 
                       alt="شعار نظام الدعم" 
