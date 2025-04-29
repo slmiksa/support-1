@@ -45,6 +45,7 @@ const Header = () => {
       if (data) {
         // Use type assertion to avoid potential conflicts
         const settingsData = data as unknown as SiteSettings;
+        console.log("Fetched settings:", settingsData);
         setSettings(settingsData);
         
         // Set page title if available

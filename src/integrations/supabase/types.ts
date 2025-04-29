@@ -199,6 +199,7 @@ export type Database = {
           created_at: string | null
           email_settings: Json | null
           favicon_url: string | null
+          footer_text: string | null
           id: string
           logo_url: string | null
           page_title: string | null
@@ -217,6 +218,7 @@ export type Database = {
           created_at?: string | null
           email_settings?: Json | null
           favicon_url?: string | null
+          footer_text?: string | null
           id?: string
           logo_url?: string | null
           page_title?: string | null
@@ -235,6 +237,7 @@ export type Database = {
           created_at?: string | null
           email_settings?: Json | null
           favicon_url?: string | null
+          footer_text?: string | null
           id?: string
           logo_url?: string | null
           page_title?: string | null

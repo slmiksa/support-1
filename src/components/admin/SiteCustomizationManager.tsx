@@ -115,7 +115,6 @@ const SiteCustomizationManager = () => {
       // Make a copy of DEFAULT_SETTINGS to avoid reference issues
       const defaultSettings = { ...DEFAULT_SETTINGS };
       
-      // Convert support_help_fields and email_settings to JSON compatible format
       const dbSettings = {
         site_name: defaultSettings.site_name || '',
         page_title: defaultSettings.page_title || '',
@@ -128,9 +127,7 @@ const SiteCustomizationManager = () => {
         support_available: defaultSettings.support_available || true,
         support_message: defaultSettings.support_message || '',
         support_info: defaultSettings.support_info || '',
-        support_help_fields: (defaultSettings.support_help_fields || []) as unknown as Json,
-        company_sender_email: defaultSettings.company_sender_email || '',
-        company_sender_name: defaultSettings.company_sender_name || ''
+        support_help_fields: [] as unknown as Json
       };
       
       const { error } = await supabase
@@ -155,7 +152,11 @@ const SiteCustomizationManager = () => {
 
     setLoading(true);
     try {
-      // Prepare settings data - make sure to strip any unnecessary fields
+      // Debug the data we're sending
+      console.log('Saving settings:', settings);
+      console.log('Help fields:', helpFields);
+
+      // Prepare settings data with proper types
       const cleanSettings = {
         site_name: settings.site_name || '',
         page_title: settings.page_title || '',
@@ -165,17 +166,20 @@ const SiteCustomizationManager = () => {
         secondary_color: settings.secondary_color || '#B08C1A',
         text_color: settings.text_color || '#ffffff',
         footer_text: settings.footer_text || '',
-        support_available: settings.support_available || false,
+        support_available: settings.support_available === true,
         support_message: settings.support_message || '',
         support_info: settings.support_info || '',
-        // Convert helpFields array to JSON that Supabase can handle
         support_help_fields: helpFields as unknown as Json,
-        // Add the email settings if they exist
-        ...(settings.email_settings ? { email_settings: settings.email_settings as unknown as Json } : {}),
-        // Add company sender info if they exist
         company_sender_email: settings.company_sender_email || '',
         company_sender_name: settings.company_sender_name || ''
       };
+      
+      // If email settings exist, convert them to JSON
+      if (settings.email_settings) {
+        (cleanSettings as any).email_settings = settings.email_settings as unknown as Json;
+      }
+
+      console.log('Cleaned settings for submission:', cleanSettings);
       
       const { error } = await supabase
         .from('site_settings')
