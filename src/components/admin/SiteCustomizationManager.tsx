@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -38,8 +37,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
   page_title: '',
   logo_url: '',
   favicon_url: '',
-  primary_color: '#D4AF37',
-  secondary_color: '#B08C1A',
+  primary_color: '#0f72c1',
+  secondary_color: '#0a4f88',
   text_color: '#ffffff',
   footer_text: '',
   support_available: true,
@@ -119,9 +118,11 @@ const SiteCustomizationManager = () => {
   
   const createDefaultSettings = async () => {
     try {
-      // إنشاء بيانات فارغة
+      // إنشاء بيانات فارغة مع التحديثات الجديدة
       const defaultSettings = { 
         ...DEFAULT_SETTINGS,
+        primary_color: '#0f72c1',
+        secondary_color: '#0a4f88',
         support_available: true,
         support_message: ''
       };
@@ -131,8 +132,8 @@ const SiteCustomizationManager = () => {
         page_title: '',
         logo_url: '',
         favicon_url: '',
-        primary_color: '#D4AF37',
-        secondary_color: '#B08C1A', 
+        primary_color: '#0f72c1',
+        secondary_color: '#0a4f88', 
         text_color: '#ffffff',
         footer_text: '',
         support_available: defaultSettings.support_available || true,
@@ -173,8 +174,8 @@ const SiteCustomizationManager = () => {
         page_title: settings.page_title || '',
         logo_url: settings.logo_url || '',
         favicon_url: settings.favicon_url || '',
-        primary_color: settings.primary_color || '#D4AF37',
-        secondary_color: settings.secondary_color || '#B08C1A',
+        primary_color: settings.primary_color || '#0f72c1',
+        secondary_color: settings.secondary_color || '#0a4f88',
         text_color: settings.text_color || '#ffffff',
         footer_text: settings.footer_text || '',
         support_available: settings.support_available === true,
@@ -369,17 +370,19 @@ const SiteCustomizationManager = () => {
   };
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-white/80 -z-10"></div>
+      
       <CardContent className="p-6">
         <div className="flex justify-between items-center mb-6">
           <Button
             onClick={saveSettings}
             disabled={loading}
-            className="bg-company"
+            className="bg-support hover:bg-support-dark transition-all"
           >
             {loading ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
           </Button>
-          <h2 className="text-xl font-bold text-right">تخصيص واجهة الموقع</h2>
+          <h2 className="text-xl font-bold text-right gradient-text">تخصيص واجهة الموقع</h2>
         </div>
 
         {uploadError && (
@@ -397,31 +400,31 @@ const SiteCustomizationManager = () => {
           onValueChange={setActiveTab}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-5 w-full mb-6">
-            <TabsTrigger value="general" className="flex items-center gap-2">
+          <TabsList className="grid grid-cols-5 w-full mb-6 bg-gray-100/80">
+            <TabsTrigger value="general" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Type size={16} />
               <span>الإعدادات العامة</span>
             </TabsTrigger>
-            <TabsTrigger value="logo" className="flex items-center gap-2">
+            <TabsTrigger value="logo" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Image size={16} />
-              <span>الشعار</span>
+              <span>الشع��ر</span>
             </TabsTrigger>
-            <TabsTrigger value="colors" className="flex items-center gap-2">
+            <TabsTrigger value="colors" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Palette size={16} />
               <span>الألوان</span>
             </TabsTrigger>
-            <TabsTrigger value="support" className="flex items-center gap-2">
+            <TabsTrigger value="support" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <HeadphonesIcon size={16} />
               <span>الدعم الفني</span>
             </TabsTrigger>
-            <TabsTrigger value="helpInfo" className="flex items-center gap-2">
+            <TabsTrigger value="helpInfo" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <HelpCircleIcon size={16} />
               <span>معلومات مساعدة</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="general">
-            <div className="space-y-4">
+            <div className="space-y-4 support-card p-6">
               <div className="space-y-2">
                 <Label htmlFor="site_name" className="text-right block">اسم الشركة</Label>
                 <Input
@@ -450,12 +453,12 @@ const SiteCustomizationManager = () => {
           </TabsContent>
 
           <TabsContent value="logo">
-            <div className="space-y-4">
+            <div className="space-y-4 support-card p-6">
               <div className="space-y-2">
                 <Label htmlFor="logo" className="text-right block mb-2">شعار الموقع</Label>
                 
                 {logoPreview && (
-                  <div className="mb-4 p-4 border rounded-lg bg-gray-50 flex justify-center">
+                  <div className="mb-4 p-4 border rounded-lg bg-gray-50/80 flex justify-center">
                     <img 
                       src={logoPreview} 
                       alt="شعار الموقع" 
@@ -513,7 +516,7 @@ const SiteCustomizationManager = () => {
                   <Label htmlFor="favicon" className="text-right block mb-2">أيقونة المتصفح</Label>
                   
                   {faviconPreview && (
-                    <div className="mb-4 p-4 border rounded-lg bg-gray-50 flex justify-center">
+                    <div className="mb-4 p-4 border rounded-lg bg-gray-50/80 flex justify-center">
                       <img 
                         src={faviconPreview} 
                         alt="أيقونة المتصفح" 
@@ -570,24 +573,27 @@ const SiteCustomizationManager = () => {
           </TabsContent>
 
           <TabsContent value="colors">
-            <div className="space-y-4">
+            <div className="space-y-4 support-card p-6">
               <div className="space-y-2">
                 <Label htmlFor="primary_color" className="text-right block">اللون الرئيسي (الهيدر)</Label>
                 <div className="flex items-center gap-2">
                   <Input
                     id="primary_color"
-                    value={settings.primary_color || '#D4AF37'}
+                    value={settings.primary_color || '#0f72c1'}
                     onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
-                    placeholder="#D4AF37"
+                    placeholder="#0f72c1"
                     className="text-right"
                   />
                   <input
                     type="color"
-                    value={settings.primary_color || '#D4AF37'}
+                    value={settings.primary_color || '#0f72c1'}
                     onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
                     className="w-10 h-10 rounded cursor-pointer"
                   />
                 </div>
+                <p className="text-xs text-gray-500 text-right">
+                  اللون المقترح الجديد: #0f72c1 (أزرق)
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -595,41 +601,69 @@ const SiteCustomizationManager = () => {
                 <div className="flex items-center gap-2">
                   <Input
                     id="secondary_color"
-                    value={settings.secondary_color || '#B08C1A'}
+                    value={settings.secondary_color || '#0a4f88'}
                     onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })}
-                    placeholder="#B08C1A"
+                    placeholder="#0a4f88"
                     className="text-right"
                   />
                   <input
                     type="color"
-                    value={settings.secondary_color || '#B08C1A'}
+                    value={settings.secondary_color || '#0a4f88'}
                     onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })}
                     className="w-10 h-10 rounded cursor-pointer"
                   />
                 </div>
+                <p className="text-xs text-gray-500 text-right">
+                  اللون المقتر�� الجديد: #0a4f88 (أزرق داكن)
+                </p>
               </div>
 
-              <div className="mt-4 p-4 border rounded-lg">
+              <div className="mt-4 p-4 border rounded-lg bg-white/80">
                 <h3 className="text-right font-medium mb-2">معاينة الألوان</h3>
                 <div 
-                  className="h-12 rounded-t-lg flex items-center justify-center" 
-                  style={{ backgroundColor: settings.primary_color || '#D4AF37' }}
+                  className="h-12 rounded-t-lg flex items-center justify-center shadow-sm" 
+                  style={{ background: `linear-gradient(135deg, ${settings.primary_color || '#0f72c1'}, ${settings.secondary_color || '#0a4f88'})` }}
                 >
                   <span style={{ color: settings.text_color || '#ffffff' }}>الهيدر</span>
                 </div>
                 <div 
-                  className="h-8 rounded-b-lg flex items-center justify-center"
-                  style={{ backgroundColor: settings.secondary_color || '#B08C1A' }}
+                  className="h-8 rounded-b-lg flex items-center justify-center bg-white shadow-sm border-t border-white/20"
                 >
-                  <span style={{ color: settings.text_color || '#ffffff' }}>القائمة</span>
+                  <span className="text-support">القائمة</span>
+                </div>
+              </div>
+
+              <div className="mt-4 p-4 border rounded-lg bg-white/80">
+                <h3 className="text-right font-medium mb-2">اقتراحات ألوان مميزة</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div 
+                    className="h-16 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, #0f72c1, #0a4f88)' }}
+                    onClick={() => setSettings({ ...settings, primary_color: '#0f72c1', secondary_color: '#0a4f88' })}
+                  ></div>
+                  <div 
+                    className="h-16 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, #3b82f6, #1e40af)' }}
+                    onClick={() => setSettings({ ...settings, primary_color: '#3b82f6', secondary_color: '#1e40af' })}
+                  ></div>
+                  <div 
+                    className="h-16 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, #06b6d4, #0e7490)' }}
+                    onClick={() => setSettings({ ...settings, primary_color: '#06b6d4', secondary_color: '#0e7490' })}
+                  ></div>
+                  <div 
+                    className="h-16 rounded-lg cursor-pointer hover:scale-105 transition-transform"
+                    style={{ background: 'linear-gradient(135deg, #8b5cf6, #6d28d9)' }}
+                    onClick={() => setSettings({ ...settings, primary_color: '#8b5cf6', secondary_color: '#6d28d9' })}
+                  ></div>
                 </div>
               </div>
             </div>
           </TabsContent>
 
           <TabsContent value="support">
-            <div className="space-y-6">
-              <div className="p-4 border rounded-lg bg-gray-50">
+            <div className="space-y-6 support-card p-6">
+              <div className="p-4 border rounded-lg bg-support-light/50">
                 <div className="flex items-center justify-between mb-4">
                   <Switch 
                     id="support_available"
@@ -637,6 +671,7 @@ const SiteCustomizationManager = () => {
                     onCheckedChange={(checked) => 
                       setSettings({ ...settings, support_available: checked })
                     }
+                    className="data-[state=checked]:bg-support"
                   />
                   <Label htmlFor="support_available" className="text-right font-medium">
                     تفعيل الدعم الفني
@@ -645,7 +680,7 @@ const SiteCustomizationManager = () => {
                 
                 <div className="flex gap-2 items-center justify-end">
                   <div 
-                    className={`w-4 h-4 rounded-full ${(settings.support_available || false) ? 'bg-green-500' : 'bg-red-500'}`}
+                    className={`w-4 h-4 rounded-full ${(settings.support_available || false) ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}
                   ></div>
                   <p className="text-sm">
                     {(settings.support_available || false) ? 'الدعم الفني متاح حالياً' : 'الدعم الفني غير متاح حالياً'}
@@ -659,7 +694,7 @@ const SiteCustomizationManager = () => {
                   id="support_message"
                   value={settings.support_message || ''}
                   onChange={(e) => setSettings({ ...settings, support_message: e.target.value })}
-                  placeholder="الدع�� الفني متواجد"
+                  placeholder="الدعم الفني متواجد"
                   className="text-right"
                 />
                 <p className="text-xs text-gray-500 text-right">
@@ -674,13 +709,13 @@ const SiteCustomizationManager = () => {
               <div className="flex justify-between items-center">
                 <Button
                   onClick={addHelpField}
-                  className="bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+                  className="bg-support hover:bg-support-dark flex items-center gap-2"
                 >
                   <Plus size={16} />
                   <span>إضافة حقل معلومات</span>
                 </Button>
                 
-                <h3 className="text-right font-semibold text-lg">حقول المعلومات المساعدة</h3>
+                <h3 className="text-right font-semibold text-lg gradient-text">حقول المعلومات المساعدة</h3>
               </div>
               
               <div className="text-right text-sm text-gray-600 mb-4">
@@ -694,7 +729,7 @@ const SiteCustomizationManager = () => {
               ) : (
                 <div className="space-y-6">
                   {helpFields.map((field, index) => (
-                    <div key={field.id} className="border rounded-lg p-4 bg-gray-50 relative">
+                    <div key={field.id} className="border rounded-lg p-4 bg-white/80 relative support-card">
                       <Button
                         variant="destructive"
                         size="icon"
@@ -743,7 +778,7 @@ const SiteCustomizationManager = () => {
                 </div>
               )}
               
-              <div className="p-4 border rounded-lg bg-gray-50 mt-6">
+              <div className="p-4 border rounded-lg bg-gray-50/80 mt-6 support-card">
                 <h3 className="text-right font-medium mb-3">معاينة المعلومات المساعدة</h3>
                 {helpFields.length > 0 ? (
                   <div className="border rounded-md p-4 bg-white">
@@ -764,7 +799,7 @@ const SiteCustomizationManager = () => {
                 )}
               </div>
               
-              <div className="p-4 border rounded-lg bg-gray-50">
+              <div className="p-4 border rounded-lg bg-gray-50/80 support-card">
                 <h3 className="text-right font-medium mb-3">الطريقة القديمة: معلومات مساعدة (نص HTML)</h3>
                 <div className="space-y-2">
                   <Label htmlFor="support_info" className="text-right block">معلومات مساعدة</Label>

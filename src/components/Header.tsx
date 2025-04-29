@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Info, Headphones } from 'lucide-react';
@@ -12,20 +13,35 @@ const DEFAULT_SETTINGS: SiteSettings = {
   page_title: '',
   logo_url: '',
   favicon_url: '',
-  primary_color: '#D4AF37',
-  secondary_color: '#B08C1A',
+  primary_color: '#0f72c1',
+  secondary_color: '#0a4f88',
   text_color: '#ffffff',
   footer_text: ''
 };
+
+// مكون الخلفية المتحركة ثلاثية الأبعاد
+const AnimatedBackground = () => {
+  return (
+    <div className="animated-bg">
+      <div className="support-cube" style={{ top: '10%', left: '10%' }}></div>
+      <div className="support-sphere" style={{ top: '30%', right: '15%' }}></div>
+      <div className="support-ring" style={{ bottom: '20%', left: '20%' }}></div>
+      <div className="support-cube" style={{ bottom: '10%', right: '10%', width: '40px', height: '40px' }}></div>
+    </div>
+  );
+};
+
 const Header = () => {
   const [settings, setSettings] = useState<SiteSettings>({});
   const [loading, setLoading] = useState(true);
   const [logoError, setLogoError] = useState(false);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const location = useLocation();
+
   useEffect(() => {
     fetchSiteSettings();
   }, []);
+
   const fetchSiteSettings = async () => {
     try {
       // استخدام استعلام يجلب جميع الصفوف
@@ -65,6 +81,7 @@ const Header = () => {
       setLoading(false);
     }
   };
+
   const updateFavicon = (faviconUrl: string) => {
     if (!faviconUrl) return;
     try {
@@ -90,24 +107,35 @@ const Header = () => {
   const isBase64Image = (str: string) => {
     return str && str.startsWith('data:image');
   };
+  
   const logoUrl = logoError ? logoSvg : settings.logo_url && isBase64Image(settings.logo_url) ? settings.logo_url : settings.logo_url || logoSvg;
   const isTicketStatusActive = location.pathname.startsWith('/ticket-status');
   const isHomeActive = location.pathname === '/';
+  
   if (!settingsInitialized) {
     return null;
   }
-  return <header className="w-full">
+
+  return (
+    <header className="w-full relative">
+      <AnimatedBackground />
+      
       {/* Header العلوي مع اسم الشركة والشعار */}
-      <div style={{
-      background: `linear-gradient(to right, ${settings.primary_color || '#D4AF37'}, ${settings.secondary_color || '#B08C1A'})`
-    }} className="py-8 shadow-lg bg-[#12366a]">
+      <div 
+        style={{
+          background: `linear-gradient(135deg, ${settings.primary_color || '#0f72c1'}, ${settings.secondary_color || '#0a4f88'})`
+        }} 
+        className="py-8 shadow-lg relative overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gNDAgMCBMIDAgMCAwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')]" opacity-20></div>
+        
         <Container>
-          <div className="flex flex-col items-center justify-center text-center">
+          <div className="flex flex-col items-center justify-center text-center relative z-10">
             {/* الشعار واسم الشركة - مركزة وأكبر */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
                 {/* مؤشر أيقونة الدعم الفني */}
-                <div className="absolute -top-2 -left-2 bg-sky-500 text-white p-1 rounded-full z-10">
+                <div className="absolute -top-2 -left-2 bg-support text-white p-1 rounded-full z-10 animate-bounce-gentle">
                   <Headphones size={16} />
                 </div>
                 
@@ -150,10 +178,12 @@ const Header = () => {
       {/* معلومات التذييل - مرئية فقط على الشاشات الكبيرة */}
       <div className="fixed bottom-0 left-0 right-0 py-2 px-4 bg-white/90 backdrop-blur-md text-gray-700 text-xs text-center z-10 border-t">
         <Container className="flex justify-center items-center gap-1">
-          <Info size={12} className="text-company" />
+          <Info size={12} className="text-support" />
           <span>{settings.footer_text || ''}</span>
         </Container>
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default Header;
