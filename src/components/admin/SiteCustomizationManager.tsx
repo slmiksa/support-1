@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -9,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase, SiteSettings, HelpField } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon, Plus, X, AlertCircle, Loader2 } from 'lucide-react';
+import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon, Plus, X, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Json } from '@/integrations/supabase/types';
 
@@ -60,6 +61,10 @@ const SiteCustomizationManager = () => {
   // إضافة متغيرات جديدة للتتبع
   const [savedSuccessfully, setSavedSuccessfully] = useState(false);
   const [savingInProgress, setSavingInProgress] = useState(false);
+  // إضافة متغيرات جديدة لتتبع آخر عملية حفظ
+  const [lastSavedLogo, setLastSavedLogo] = useState<string | null>(null);
+  const [lastSavedFavicon, setLastSavedFavicon] = useState<string | null>(null);
+  
   const { hasPermission } = useAdminAuth();
   
   useEffect(() => {
@@ -69,9 +74,14 @@ const SiteCustomizationManager = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
+      console.log("SiteCustomizationManager - Fetching settings...");
+      
       const { data, error } = await supabase
         .from('site_settings')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
         
       if (error) {
         console.error('Error fetching site settings:', error);
@@ -81,36 +91,42 @@ const SiteCustomizationManager = () => {
         } else {
           throw error;
         }
-      } else if (data && data.length > 0) {
-        // استخدام أول صف من البيانات
-        const settingsData = data[0] as unknown as SiteSettings;
-        console.log("Fetched settings:", settingsData);
+      } else if (data) {
+        console.log("Fetched settings data:", data);
+        
+        const settingsData = data as unknown as SiteSettings;
+        
+        // تعيين الإعدادات من قاعدة البيانات
         setSettings(settingsData);
         
         // تعيين معاينات الشعار والأيقونة إذا كانت موجودة
         if (settingsData.logo_url) {
+          console.log("Setting logo preview from DB:", settingsData.logo_url.substring(0, 30) + "...");
           setLogoPreview(settingsData.logo_url);
-          console.log("Logo URL set:", settingsData.logo_url.substring(0, 100) + "...");
+          setLastSavedLogo(settingsData.logo_url);
         }
+        
         if (settingsData.favicon_url) {
+          console.log("Setting favicon preview from DB:", settingsData.favicon_url.substring(0, 30) + "...");
           setFaviconPreview(settingsData.favicon_url);
-          console.log("Favicon URL set:", settingsData.favicon_url.substring(0, 100) + "...");
+          setLastSavedFavicon(settingsData.favicon_url);
         }
         
         // تحليل حقول المساعدة إذا كانت موجودة
-        if (data[0].support_help_fields) {
+        if (data.support_help_fields) {
           try {
-            const helpFieldsData = typeof data[0].support_help_fields === 'string' 
-              ? JSON.parse(data[0].support_help_fields) 
-              : data[0].support_help_fields;
+            const helpFieldsData = typeof data.support_help_fields === 'string' 
+              ? JSON.parse(data.support_help_fields) 
+              : data.support_help_fields;
             setHelpFields(Array.isArray(helpFieldsData) ? helpFieldsData : []);
           } catch (e) {
             console.error('Error parsing help fields:', e);
             setHelpFields([]);
           }
         }
-      } else if (data && data.length === 0) {
+      } else {
         // إذا لم يتم العثور على أي بيانات، قم بإنشاء الإعدادات الافتراضية
+        console.log("No settings found, creating defaults");
         await createDefaultSettings();
       }
     } catch (error) {
@@ -170,34 +186,34 @@ const SiteCustomizationManager = () => {
     setLoading(true);
     setSavingInProgress(true);
     try {
-      // تحضير البيانات المحلية للحفظ
-      // تأكد من عدم فقدان أي بيانات من المعاينة للشعار والأيقونة
-      let logoToSave = settings.logo_url;
-      let faviconToSave = settings.favicon_url;
+      console.log("Saving settings to database...");
+      console.log("Current logoPreview:", logoPreview ? "exists (length: " + logoPreview.length + ")" : "null");
+      console.log("Current faviconPreview:", faviconPreview ? "exists (length: " + faviconPreview.length + ")" : "null");
       
-      // إذا كان هناك معاينة للشعار ولكن ليس هناك شعار في الإعدادات، استخدم المعاينة
-      if (!logoToSave && logoPreview) {
-        logoToSave = logoPreview;
-        console.log("Using logo preview for saving:", logoToSave ? "Preview exists" : "No preview");
-      }
-      
-      // نفس الشيء للأيقونة
-      if (!faviconToSave && faviconPreview) {
-        faviconToSave = faviconPreview;
-        console.log("Using favicon preview for saving:", faviconToSave ? "Preview exists" : "No preview");
-      }
-      
-      // تجهيز بيانات الإعدادات النهائية للحفظ
+      // تجهيز بيانات الإعدادات النهائية للحفظ مع التأكد من عدم فقدان البيانات
       const finalSettings = {
         ...settings,
-        logo_url: logoToSave || '', // تأكد من أن القيمة ليست فارغة
-        favicon_url: faviconToSave || '' // تأكد من أن القيمة ليست فارغة
+        logo_url: logoPreview || settings.logo_url || '',
+        favicon_url: faviconPreview || settings.favicon_url || ''
       };
+      
+      // تأكد من أن شعار الموقع والأيقونة لم يتم فقدانهما
+      if (!finalSettings.logo_url && lastSavedLogo) {
+        console.log("Using last saved logo");
+        finalSettings.logo_url = lastSavedLogo;
+      }
+      
+      if (!finalSettings.favicon_url && lastSavedFavicon) {
+        console.log("Using last saved favicon");
+        finalSettings.favicon_url = lastSavedFavicon;
+      }
       
       // عرض تفاصيل حفظ البيانات للتصحيح
       console.log('====== SAVING SETTINGS ======');
-      console.log('Logo URL:', logoToSave ? logoToSave.substring(0, 50) + '...' : 'None');
-      console.log('Favicon URL:', faviconToSave ? faviconToSave.substring(0, 50) + '...' : 'None');
+      console.log('Logo URL defined:', finalSettings.logo_url ? "YES" : "NO");
+      console.log('Logo URL length:', finalSettings.logo_url?.length || 0);
+      console.log('Favicon URL defined:', finalSettings.favicon_url ? "YES" : "NO");
+      console.log('Favicon URL length:', finalSettings.favicon_url?.length || 0);
       console.log('============================');
 
       // تجهيز بيانات الإعدادات بأنواع مناسبة
@@ -217,18 +233,14 @@ const SiteCustomizationManager = () => {
         company_sender_email: finalSettings.company_sender_email || '',
         company_sender_name: finalSettings.company_sender_name || ''
       };
-      
-      // إذا كانت إعدادات البريد الإلكتروني موجودة، قم بتحويلها إلى JSON
-      if (finalSettings.email_settings) {
-        (cleanSettings as any).email_settings = finalSettings.email_settings as unknown as Json;
-      }
-
-      console.log('Clean settings for submission:', cleanSettings);
 
       // تحقق مما إذا كانت هناك بيانات موجودة بالفعل
-      const { data, error: countError } = await supabase
+      const { data: existingSettings, error: countError } = await supabase
         .from('site_settings')
-        .select('id');
+        .select('id')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
       if (countError) {
         console.error('Error checking existing settings:', countError);
@@ -237,12 +249,13 @@ const SiteCustomizationManager = () => {
 
       let error;
       
-      if (data && data.length > 0) {
+      if (existingSettings) {
+        console.log("Updating existing settings record:", existingSettings.id);
         // تحديث الصف الموجود مع الإعدادات المحدثة
         const { error: updateError, data: updateData } = await supabase
           .from('site_settings')
           .update(cleanSettings)
-          .eq('id', data[0].id)
+          .eq('id', existingSettings.id)
           .select();
         
         error = updateError;
@@ -251,6 +264,7 @@ const SiteCustomizationManager = () => {
           console.log("Update successful, updated data:", updateData);
         }
       } else {
+        console.log("No existing settings, creating new record");
         // إدراج صف جديد إذا لم توجد بيانات سابقة
         const { error: insertError, data: insertData } = await supabase
           .from('site_settings')
@@ -269,11 +283,20 @@ const SiteCustomizationManager = () => {
         throw error;
       }
       
+      // تحديث القيم المخزنة للشعار والأيقونة
+      if (finalSettings.logo_url) {
+        setLastSavedLogo(finalSettings.logo_url);
+      }
+      
+      if (finalSettings.favicon_url) {
+        setLastSavedFavicon(finalSettings.favicon_url);
+      }
+      
       // تحديث الإعدادات المحلية بعد الحفظ الناجح
       setSettings(prevState => ({
         ...prevState,
-        logo_url: logoToSave || '',
-        favicon_url: faviconToSave || ''
+        logo_url: finalSettings.logo_url || '',
+        favicon_url: finalSettings.favicon_url || ''
       }));
       
       toast.success('تم حفظ إعدادات الموقع بنجاح');
@@ -287,8 +310,10 @@ const SiteCustomizationManager = () => {
         updateFavicon(cleanSettings.favicon_url);
       }
       
-      // إعادة جلب البيانات للتأكيد
-      await fetchSettings();
+      // إعادة جلب البيانات للتأكيد بعد التأخير قليلاً
+      setTimeout(() => {
+        fetchSettings();
+      }, 500);
     } catch (error) {
       console.error('Error saving site settings:', error);
       toast.error('حدث خطأ أثناء حفظ إعدادات الموقع');
@@ -324,7 +349,7 @@ const SiteCustomizationManager = () => {
       
       // معاينة الصورة
       setLogoPreview(base64Data);
-      console.log("Logo preview set:", base64Data.substring(0, 100) + "...");
+      console.log("Logo preview set, length:", base64Data.length);
       
       // تحديث الإعدادات ببيانات base64
       setSettings(prevSettings => ({
@@ -346,7 +371,7 @@ const SiteCustomizationManager = () => {
     if (!faviconUrl) return;
     
     try {
-      console.log("Updating favicon to:", faviconUrl.substring(0, 100) + "...");
+      console.log("Updating favicon in browser");
       let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
       if (!link) {
         link = document.createElement('link');
@@ -393,7 +418,7 @@ const SiteCustomizationManager = () => {
       
       // معاينة الصورة
       setFaviconPreview(base64Data);
-      console.log("Favicon preview set:", base64Data.substring(0, 100) + "...");
+      console.log("Favicon preview set, length:", base64Data.length);
       
       // تحديث الإعدادات ببيانات base64
       setSettings(prevSettings => ({
@@ -463,10 +488,25 @@ const SiteCustomizationManager = () => {
                 <Loader2 className="h-4 w-4 animate-spin" />
                 جاري الحفظ...
               </span>
-            ) : savedSuccessfully ? 'تم الحفظ بنجاح ✓' : 'حفظ الإعدادات'}
+            ) : savedSuccessfully ? (
+              <span className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                تم الحفظ بنجاح
+              </span>
+            ) : 'حفظ الإعدادات'}
           </Button>
           <h2 className="text-xl font-bold text-right gradient-text">تخصيص واجهة الموقع</h2>
         </div>
+
+        {savedSuccessfully && (
+          <Alert className="mb-4 bg-green-50 border-green-200 text-green-800">
+            <CheckCircle2 className="h-4 w-4" />
+            <AlertTitle>تم الحفظ بنجاح</AlertTitle>
+            <AlertDescription>
+              تم حفظ التغييرات بنجاح في قاعدة البيانات وتحديث الواجهة.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {uploadError && (
           <Alert variant="destructive" className="mb-6">
@@ -540,8 +580,8 @@ const SiteCustomizationManager = () => {
               <div className="space-y-2">
                 <Label htmlFor="logo" className="text-right block mb-2">شعار الموقع</Label>
                 
-                {logoPreview && (
-                  <div className="mb-4 p-4 border rounded-lg bg-gray-50/80 flex justify-center">
+                <div className="mb-4 p-4 border rounded-lg bg-gray-50/80 flex justify-center">
+                  {logoPreview ? (
                     <img 
                       src={logoPreview} 
                       alt="شعار الموقع" 
@@ -552,8 +592,24 @@ const SiteCustomizationManager = () => {
                         toast.error('تعذر تحميل الشعار');
                       }}
                     />
-                  </div>
-                )}
+                  ) : settings.logo_url ? (
+                    <img 
+                      src={settings.logo_url} 
+                      alt="شعار الموقع" 
+                      className="h-16 object-contain"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
+                        toast.error('تعذر تحميل الشعار');
+                      }}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-16 text-gray-400">
+                      <Image size={24} />
+                      <span className="text-xs mt-1">لم يتم تحميل شعار بعد</span>
+                    </div>
+                  )}
+                </div>
                 
                 <div className="flex items-center justify-end gap-2">
                   <div className="relative w-full">
@@ -598,8 +654,8 @@ const SiteCustomizationManager = () => {
                 <div className="space-y-2">
                   <Label htmlFor="favicon" className="text-right block mb-2">أيقونة المتصفح</Label>
                   
-                  {faviconPreview && (
-                    <div className="mb-4 p-4 border rounded-lg bg-gray-50/80 flex justify-center">
+                  <div className="mb-4 p-4 border rounded-lg bg-gray-50/80 flex justify-center">
+                    {faviconPreview ? (
                       <img 
                         src={faviconPreview} 
                         alt="أيقونة المتصفح" 
@@ -610,8 +666,24 @@ const SiteCustomizationManager = () => {
                           toast.error('تعذر تحميل الأيقونة');
                         }}
                       />
-                    </div>
-                  )}
+                    ) : settings.favicon_url ? (
+                      <img 
+                        src={settings.favicon_url} 
+                        alt="أيقونة المتصفح" 
+                        className="h-8 w-8 object-contain"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).onerror = null;
+                          (e.target as HTMLImageElement).src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
+                          toast.error('تعذر تحميل الأيقونة');
+                        }}
+                      />
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-8 text-gray-400">
+                        <Image size={16} />
+                        <span className="text-xs mt-1">لم يتم تحميل أيقونة بعد</span>
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="flex items-center justify-end gap-2">
                     <div className="relative w-full">

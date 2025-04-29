@@ -50,11 +50,13 @@ const Header = () => {
       setLoading(true);
       console.log("Header - Fetching site settings...");
       
-      // استخدام استعلام يجلب جميع الصفوف مع تعطيل التخزين المؤقت
+      // استخدام استعلام يجلب أحدث الصفوف مع تعطيل التخزين المؤقت
       const { data, error } = await supabase
         .from('site_settings')
         .select('*')
-        .limit(1);
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching site settings:', error);
@@ -63,22 +65,24 @@ const Header = () => {
         return;
       }
 
-      // التحقق من وجود بيانات وأخذ أول صف
-      if (data && data.length > 0) {
+      // التحقق من وجود بيانات
+      if (data) {
         // استخدم النوع المطلوب
-        const settingsData = data[0] as unknown as SiteSettings;
+        const settingsData = data as unknown as SiteSettings;
         console.log("Header - Fetched settings:", settingsData);
         
         // التحقق من وجود رابط الشعار
         if (settingsData.logo_url) {
-          console.log("Header - Logo URL found:", settingsData.logo_url.substring(0, 100) + "...");
+          console.log("Header - Logo URL found:", settingsData.logo_url.substring(0, 50) + "...");
+          console.log("Logo URL length:", settingsData.logo_url.length);
         } else {
           console.log("Header - No logo URL found");
         }
         
         // التحقق من وجود رابط الأيقونة
         if (settingsData.favicon_url) {
-          console.log("Header - Favicon URL found:", settingsData.favicon_url.substring(0, 100) + "...");
+          console.log("Header - Favicon URL found:", settingsData.favicon_url.substring(0, 50) + "...");
+          console.log("Favicon URL length:", settingsData.favicon_url.length);
           updateFavicon(settingsData.favicon_url);
         } else {
           console.log("Header - No favicon URL found");
@@ -89,13 +93,8 @@ const Header = () => {
         // تعيين عنوان الصفحة إذا كان متاحًا
         if (settingsData.page_title) {
           document.title = settingsData.page_title;
-        } else {
-          // Default title if not set
-          document.title = "نظام الدعم الفني";
         }
       } else {
-        // Default title if no settings
-        document.title = "نظام الدعم الفني";
         console.log("Header - No settings data returned from database");
       }
       
@@ -103,7 +102,6 @@ const Header = () => {
       setLastFetchTime(Date.now());
     } catch (error) {
       console.error('Error:', error);
-      document.title = "نظام الدعم الفني";
       setSettingsInitialized(true);
     } finally {
       setLoading(false);
@@ -127,7 +125,7 @@ const Header = () => {
     if (!faviconUrl) return;
     
     try {
-      console.log("Updating favicon to:", faviconUrl.substring(0, 100) + "...");
+      console.log("Updating favicon to:", faviconUrl.substring(0, 50) + "...");
       let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
       if (!link) {
         link = document.createElement('link');
@@ -163,7 +161,7 @@ const Header = () => {
   // تحسين استخراج الشعار لضمان عدم فقدان البيانات
   const logoUrl = logoError 
     ? logoSvg 
-    : settings.logo_url && settings.logo_url.length > 0
+    : (settings.logo_url && settings.logo_url.length > 0)
       ? isBase64Image(settings.logo_url) 
         ? settings.logo_url 
         : settings.logo_url
