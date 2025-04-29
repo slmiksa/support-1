@@ -1,7 +1,7 @@
 
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Home, Search, PhoneOutgoing, Sparkles } from 'lucide-react';
-import { useState, useEffect } from 'react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Container } from '@/components/ui/container';
