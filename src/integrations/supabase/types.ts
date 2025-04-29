@@ -9,16 +9,348 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      admins: {
+        Row: {
+          created_at: string | null
+          employee_id: string | null
+          id: string
+          notification_email: string | null
+          password: string
+          role: string
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          notification_email?: string | null
+          password: string
+          role?: string
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          notification_email?: string | null
+          password?: string
+          role?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      branch_resource_types: {
+        Row: {
+          available: number
+          branch_id: string
+          created_at: string | null
+          id: string
+          in_use: number
+          resource_type_id: string
+        }
+        Insert: {
+          available?: number
+          branch_id: string
+          created_at?: string | null
+          id?: string
+          in_use?: number
+          resource_type_id: string
+        }
+        Update: {
+          available?: number
+          branch_id?: string
+          created_at?: string | null
+          id?: string
+          in_use?: number
+          resource_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_resource_types_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branch_resource_types_resource_type_id_fkey"
+            columns: ["resource_type_id"]
+            isOneToOne: false
+            referencedRelation: "resource_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      branch_resources: {
+        Row: {
+          branch_id: string
+          created_at: string | null
+          id: string
+          name: string | null
+          resource_type_id: string
+          status: string
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          resource_type_id: string
+          status?: string
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string | null
+          id?: string
+          name?: string | null
+          resource_type_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_resources_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branch_resources_resource_type_id_fkey"
+            columns: ["resource_type_id"]
+            isOneToOne: false
+            referencedRelation: "resource_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      branches: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      resource_types: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      site_fields: {
+        Row: {
+          created_at: string | null
+          display_name: string
+          field_name: string
+          id: string
+          is_active: boolean | null
+          is_required: boolean | null
+          placeholder: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name: string
+          field_name: string
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          placeholder?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string
+          field_name?: string
+          id?: string
+          is_active?: boolean | null
+          is_required?: boolean | null
+          placeholder?: string | null
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string | null
+          email_settings: Json | null
+          favicon_url: string | null
+          id: string
+          logo_url: string | null
+          page_title: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          support_available: boolean | null
+          support_help_fields: Json | null
+          support_info: string | null
+          support_message: string | null
+          text_color: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_settings?: Json | null
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string | null
+          page_title?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          support_available?: boolean | null
+          support_help_fields?: Json | null
+          support_info?: string | null
+          support_message?: string | null
+          text_color?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_settings?: Json | null
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string | null
+          page_title?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          support_available?: boolean | null
+          support_help_fields?: Json | null
+          support_info?: string | null
+          support_message?: string | null
+          text_color?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ticket_responses: {
+        Row: {
+          admin_id: string | null
+          created_at: string | null
+          id: string
+          private: boolean | null
+          response: string
+          ticket_id: string
+        }
+        Insert: {
+          admin_id?: string | null
+          created_at?: string | null
+          id?: string
+          private?: boolean | null
+          response: string
+          ticket_id: string
+        }
+        Update: {
+          admin_id?: string | null
+          created_at?: string | null
+          id?: string
+          private?: boolean | null
+          response?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_responses_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ticket_responses_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["ticket_id"]
+          },
+        ]
+      }
+      tickets: {
+        Row: {
+          anydesk_number: string | null
+          assigned_to: string | null
+          branch: string
+          created_at: string | null
+          custom_fields: Json | null
+          customer_email: string | null
+          description: string
+          employee_id: string | null
+          id: string
+          image_url: string | null
+          priority: Database["public"]["Enums"]["priority_type"]
+          status: string
+          support_email: string | null
+          ticket_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          anydesk_number?: string | null
+          assigned_to?: string | null
+          branch: string
+          created_at?: string | null
+          custom_fields?: Json | null
+          customer_email?: string | null
+          description: string
+          employee_id?: string | null
+          id?: string
+          image_url?: string | null
+          priority?: Database["public"]["Enums"]["priority_type"]
+          status?: string
+          support_email?: string | null
+          ticket_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          anydesk_number?: string | null
+          assigned_to?: string | null
+          branch?: string
+          created_at?: string | null
+          custom_fields?: Json | null
+          customer_email?: string | null
+          description?: string
+          employee_id?: string | null
+          id?: string
+          image_url?: string | null
+          priority?: Database["public"]["Enums"]["priority_type"]
+          status?: string
+          support_email?: string | null
+          ticket_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      delete_ticket_by_id: {
+        Args: { p_ticket_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      priority_type: "urgent" | "medium" | "normal"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +465,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      priority_type: ["urgent", "medium", "normal"],
+    },
   },
 } as const
