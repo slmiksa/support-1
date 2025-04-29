@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -32,20 +31,20 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
-// إزالة الإعدادات الافتراضية
+// إعدادات فارغة بدلاً من القيم الإفتراضية
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: '',
   page_title: '',
   logo_url: '',
   favicon_url: '',
-  primary_color: '', 
-  secondary_color: '', 
-  text_color: '', 
+  primary_color: '#D4AF37',
+  secondary_color: '#B08C1A',
+  text_color: '#ffffff',
   footer_text: '',
   support_available: true,
-  support_message: 'الدعم الفني متواجد',
+  support_message: '',
   support_info: '',
-  support_help_fields: [],
+  support_help_fields: []
 };
 
 const SiteCustomizationManager = () => {
@@ -69,21 +68,23 @@ const SiteCustomizationManager = () => {
     try {
       const { data, error } = await supabase
         .from('site_settings')
-        .select('*')
-        .single();
+        .select('*');
         
       if (error) {
+        console.error('Error fetching site settings:', error);
+        toast.error('حدث خطأ أثناء جلب إعدادات الموقع');
         if (error.code === 'PGRST116') {
           await createDefaultSettings();
         } else {
           throw error;
         }
-      } else if (data) {
-        // Cast to unknown first to avoid type errors
-        const settingsData = data as unknown as SiteSettings;
+      } else if (data && data.length > 0) {
+        // استخدام أول صف من البيانات
+        const settingsData = data[0] as unknown as SiteSettings;
+        console.log("Fetched settings:", settingsData);
         setSettings(settingsData);
         
-        // Set logo and favicon previews if they exist
+        // تعيين معاينات الشعار والأيقونة إذا كانت موجودة
         if (settingsData.logo_url) {
           setLogoPreview(settingsData.logo_url);
         }
@@ -91,18 +92,21 @@ const SiteCustomizationManager = () => {
           setFaviconPreview(settingsData.favicon_url);
         }
         
-        // Parse help fields if they exist
-        if (data.support_help_fields) {
+        // تحليل حقول المساعدة إذا كانت موجودة
+        if (data[0].support_help_fields) {
           try {
-            const helpFieldsData = typeof data.support_help_fields === 'string' 
-              ? JSON.parse(data.support_help_fields) 
-              : data.support_help_fields;
+            const helpFieldsData = typeof data[0].support_help_fields === 'string' 
+              ? JSON.parse(data[0].support_help_fields) 
+              : data[0].support_help_fields;
             setHelpFields(Array.isArray(helpFieldsData) ? helpFieldsData : []);
           } catch (e) {
             console.error('Error parsing help fields:', e);
             setHelpFields([]);
           }
         }
+      } else if (data && data.length === 0) {
+        // إذا لم يتم العثور على أي بيانات، قم بإنشاء الإعدادات الافتراضية
+        await createDefaultSettings();
       }
     } catch (error) {
       console.error('Error fetching site settings:', error);
@@ -118,7 +122,7 @@ const SiteCustomizationManager = () => {
       const defaultSettings = { 
         ...DEFAULT_SETTINGS,
         support_available: true,
-        support_message: 'الدعم الفني متواجد'
+        support_message: ''
       };
       
       const dbSettings = {
@@ -126,12 +130,12 @@ const SiteCustomizationManager = () => {
         page_title: '',
         logo_url: '',
         favicon_url: '',
-        primary_color: '',
-        secondary_color: '', 
-        text_color: '',
+        primary_color: '#D4AF37',
+        secondary_color: '#B08C1A', 
+        text_color: '#ffffff',
         footer_text: '',
         support_available: defaultSettings.support_available || true,
-        support_message: defaultSettings.support_message || 'الدعم الفني متواجد',
+        support_message: defaultSettings.support_message || '',
         support_info: '',
         support_help_fields: [] as unknown as Json
       };
@@ -158,11 +162,11 @@ const SiteCustomizationManager = () => {
 
     setLoading(true);
     try {
-      // Debug the data we're sending
+      // عرض البيانات التي سيتم إرسالها للتأكد
       console.log('Saving settings:', settings);
       console.log('Help fields:', helpFields);
 
-      // Prepare settings data with proper types
+      // تجهيز بيانات الإعدادات بأنواع مناسبة
       const cleanSettings = {
         site_name: settings.site_name || '',
         page_title: settings.page_title || '',
@@ -180,17 +184,41 @@ const SiteCustomizationManager = () => {
         company_sender_name: settings.company_sender_name || ''
       };
       
-      // If email settings exist, convert them to JSON
+      // إذا كانت إعدادات البريد الإلكتروني موجودة، قم بتحويلها إلى JSON
       if (settings.email_settings) {
         (cleanSettings as any).email_settings = settings.email_settings as unknown as Json;
       }
 
       console.log('Cleaned settings for submission:', cleanSettings);
       
-      const { error } = await supabase
+      // التحقق من وجود صف بالفعل
+      const { data: existingData, error: existingError } = await supabase
         .from('site_settings')
-        .upsert(cleanSettings);
-        
+        .select('id')
+        .limit(1);
+      
+      let error;
+      
+      if (existingError) {
+        console.error('Error checking existing settings:', existingError);
+        throw existingError;
+      }
+      
+      if (existingData && existingData.length > 0) {
+        // تحديث الصف الموجود
+        const { error: updateError } = await supabase
+          .from('site_settings')
+          .update(cleanSettings)
+          .eq('id', existingData[0].id);
+        error = updateError;
+      } else {
+        // إدراج صف جديد
+        const { error: insertError } = await supabase
+          .from('site_settings')
+          .insert([cleanSettings]);
+        error = insertError;
+      }
+      
       if (error) {
         console.error('Supabase error:', error);
         throw error;
@@ -205,6 +233,9 @@ const SiteCustomizationManager = () => {
       if (settings.favicon_url) {
         updateFavicon(settings.favicon_url);
       }
+      
+      // إعادة جلب البيانات للتأكيد
+      fetchSettings();
     } catch (error) {
       console.error('Error saving site settings:', error);
       toast.error('حدث خطأ أثناء حفظ إعدادات الموقع');
@@ -230,16 +261,16 @@ const SiteCustomizationManager = () => {
     
     setUploading(true);
     try {
-      // Clear input value to allow re-uploading the same file
+      // مسح قيمة الإدخال للسماح بإعادة تحميل نفس الملف
       event.target.value = '';
       
-      // Convert file to base64
+      // تحويل الملف إلى base64
       const base64Data = await fileToBase64(file);
       
-      // Preview the image
+      // معاينة الصورة
       setLogoPreview(base64Data);
       
-      // Update settings with base64 data
+      // تحديث الإعدادات ببيانات base64
       setSettings({
         ...settings,
         logo_url: base64Data
@@ -288,22 +319,22 @@ const SiteCustomizationManager = () => {
     
     setUploadingFavicon(true);
     try {
-      // Clear input value to allow re-uploading the same file
+      // مسح قيمة الإدخال للسماح بإعادة تحميل نفس الملف
       event.target.value = '';
       
-      // Convert file to base64
+      // تحويل الملف إلى base64
       const base64Data = await fileToBase64(file);
       
-      // Preview the image
+      // معاينة الصورة
       setFaviconPreview(base64Data);
       
-      // Update settings with base64 data
+      // تحديث الإعدادات ببيانات base64
       setSettings({
         ...settings,
         favicon_url: base64Data
       });
       
-      // Update favicon in browser
+      // تحديث أيقونة المتصفح
       updateFavicon(base64Data);
       
       toast.success('تم تحميل أيقونة المتصفح بنجاح');
@@ -543,14 +574,14 @@ const SiteCustomizationManager = () => {
                 <div className="flex items-center gap-2">
                   <Input
                     id="primary_color"
-                    value={settings.primary_color}
+                    value={settings.primary_color || '#D4AF37'}
                     onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
-                    placeholder="#15437f"
+                    placeholder="#D4AF37"
                     className="text-right"
                   />
                   <input
                     type="color"
-                    value={settings.primary_color}
+                    value={settings.primary_color || '#D4AF37'}
                     onChange={(e) => setSettings({ ...settings, primary_color: e.target.value })}
                     className="w-10 h-10 rounded cursor-pointer"
                   />
@@ -562,14 +593,14 @@ const SiteCustomizationManager = () => {
                 <div className="flex items-center gap-2">
                   <Input
                     id="secondary_color"
-                    value={settings.secondary_color}
+                    value={settings.secondary_color || '#B08C1A'}
                     onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })}
-                    placeholder="#093467"
+                    placeholder="#B08C1A"
                     className="text-right"
                   />
                   <input
                     type="color"
-                    value={settings.secondary_color}
+                    value={settings.secondary_color || '#B08C1A'}
                     onChange={(e) => setSettings({ ...settings, secondary_color: e.target.value })}
                     className="w-10 h-10 rounded cursor-pointer"
                   />
@@ -580,15 +611,15 @@ const SiteCustomizationManager = () => {
                 <h3 className="text-right font-medium mb-2">معاينة الألوان</h3>
                 <div 
                   className="h-12 rounded-t-lg flex items-center justify-center" 
-                  style={{ backgroundColor: settings.primary_color }}
+                  style={{ backgroundColor: settings.primary_color || '#D4AF37' }}
                 >
-                  <span style={{ color: settings.text_color }}>الهيدر</span>
+                  <span style={{ color: settings.text_color || '#ffffff' }}>الهيدر</span>
                 </div>
                 <div 
                   className="h-8 rounded-b-lg flex items-center justify-center"
-                  style={{ backgroundColor: settings.secondary_color }}
+                  style={{ backgroundColor: settings.secondary_color || '#B08C1A' }}
                 >
-                  <span style={{ color: settings.text_color }}>القائمة</span>
+                  <span style={{ color: settings.text_color || '#ffffff' }}>القائمة</span>
                 </div>
               </div>
             </div>
@@ -600,7 +631,7 @@ const SiteCustomizationManager = () => {
                 <div className="flex items-center justify-between mb-4">
                   <Switch 
                     id="support_available"
-                    checked={settings.support_available}
+                    checked={settings.support_available || false}
                     onCheckedChange={(checked) => 
                       setSettings({ ...settings, support_available: checked })
                     }
@@ -612,10 +643,10 @@ const SiteCustomizationManager = () => {
                 
                 <div className="flex gap-2 items-center justify-end">
                   <div 
-                    className={`w-4 h-4 rounded-full ${settings.support_available ? 'bg-green-500' : 'bg-red-500'}`}
+                    className={`w-4 h-4 rounded-full ${(settings.support_available || false) ? 'bg-green-500' : 'bg-red-500'}`}
                   ></div>
                   <p className="text-sm">
-                    {settings.support_available ? 'الدعم الفني متاح حالياً' : 'الدعم الفني غير متاح حالياً'}
+                    {(settings.support_available || false) ? 'الدعم الفني متاح حالياً' : 'الدعم الفني غير متاح حالياً'}
                   </p>
                 </div>
               </div>
@@ -624,9 +655,9 @@ const SiteCustomizationManager = () => {
                 <Label htmlFor="support_message" className="text-right block">رسالة حالة الدعم الفني</Label>
                 <Input
                   id="support_message"
-                  value={settings.support_message}
+                  value={settings.support_message || ''}
                   onChange={(e) => setSettings({ ...settings, support_message: e.target.value })}
-                  placeholder="الدعم الفني متواجد"
+                  placeholder="الدع�� الفني متواجد"
                   className="text-right"
                 />
                 <p className="text-xs text-gray-500 text-right">
@@ -651,7 +682,7 @@ const SiteCustomizationManager = () => {
               </div>
               
               <div className="text-right text-sm text-gray-600 mb-4">
-                <p>يمكنك إض��فة عدة حقول معلومات مساعدة ستظهر في الصفحة الر��يسية عند الضغط على أيقونة المساعدة</p>
+                <p>يمكنك إضافة عدة حقول معلومات مساعدة ستظهر في الصفحة الرئيسية عند الضغط على أيقونة المساعدة</p>
               </div>
               
               {helpFields.length === 0 ? (
@@ -682,7 +713,7 @@ const SiteCustomizationManager = () => {
                           </Label>
                           <Input
                             id={`field-title-${field.id}`}
-                            value={field.title}
+                            value={field.title || ''}
                             onChange={(e) => updateHelpField(field.id, 'title', e.target.value)}
                             placeholder="مثال: رقم تحويلة الدعم الفني"
                             className="text-right"
@@ -695,7 +726,7 @@ const SiteCustomizationManager = () => {
                           </Label>
                           <Textarea
                             id={`field-content-${field.id}`}
-                            value={field.content}
+                            value={field.content || ''}
                             onChange={(e) => updateHelpField(field.id, 'content', e.target.value)}
                             placeholder="مثال: 2014"
                             className="text-right min-h-[100px]"

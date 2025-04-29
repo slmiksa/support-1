@@ -32,6 +32,23 @@ const AdminSettings = () => {
       });
       navigate('/admin/dashboard');
     }
+    
+    // استخدام select عادي بدلاً من single لتفادي الخطأ
+    const fetchAndUpdateFavicon = async () => {
+      try {
+        const { data, error } = await supabase.from('site_settings').select('favicon_url');
+        if (error) {
+          console.error('Error fetching favicon:', error);
+          return;
+        }
+        if (data && data.length > 0 && data[0].favicon_url) {
+          updateFavicon(data[0].favicon_url);
+        }
+      } catch (error) {
+        console.error('Error in fetchAndUpdateFavicon:', error);
+      }
+    };
+
     fetchAndUpdateFavicon();
 
     // عند تغيير علامة التبويب، تحديث العنوان في URL
@@ -48,21 +65,6 @@ const AdminSettings = () => {
     const url = new URL(window.location.href);
     url.searchParams.set('tab', tab);
     window.history.pushState({}, '', url);
-  };
-
-  const fetchAndUpdateFavicon = async () => {
-    try {
-      const { data, error } = await supabase.from('site_settings').select('favicon_url').single();
-      if (error) {
-        console.error('Error fetching favicon:', error);
-        return;
-      }
-      if (data && data.favicon_url) {
-        updateFavicon(data.favicon_url);
-      }
-    } catch (error) {
-      console.error('Error in fetchAndUpdateFavicon:', error);
-    }
   };
 
   const updateFavicon = (faviconUrl: string) => {

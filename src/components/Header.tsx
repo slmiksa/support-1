@@ -13,9 +13,9 @@ const DEFAULT_SETTINGS: SiteSettings = {
   page_title: '',
   logo_url: '',
   favicon_url: '',
-  primary_color: '',
-  secondary_color: '',
-  text_color: '',
+  primary_color: '#D4AF37',
+  secondary_color: '#B08C1A',
+  text_color: '#ffffff',
   footer_text: ''
 };
 
@@ -32,29 +32,29 @@ const Header = () => {
   
   const fetchSiteSettings = async () => {
     try {
-      const { data, error } = await supabase.from('site_settings').select('*').single();
+      // استخدام استعلام يجلب جميع الصفوف
+      const { data, error } = await supabase.from('site_settings').select('*');
       
       if (error) {
-        if (error.code !== 'PGRST116') {
-          console.error('Error fetching site settings:', error);
-        }
+        console.error('Error fetching site settings:', error);
         setSettingsInitialized(true);
         setLoading(false);
         return;
       }
       
-      if (data) {
-        // Use type assertion to avoid potential conflicts
-        const settingsData = data as unknown as SiteSettings;
+      // التحقق من وجود بيانات وأخذ أول صف
+      if (data && data.length > 0) {
+        // استخدم النوع المطلوب
+        const settingsData = data[0] as unknown as SiteSettings;
         console.log("Fetched settings:", settingsData);
         setSettings(settingsData);
         
-        // Set page title if available
+        // تعيين عنوان الصفحة إذا كان متاحًا
         if (settingsData.page_title) {
           document.title = settingsData.page_title;
         }
         
-        // Update favicon if available
+        // تحديث أيقونة المتصفح إذا كانت متاحة
         if (settingsData.favicon_url) {
           updateFavicon(settingsData.favicon_url);
         }
@@ -84,13 +84,13 @@ const Header = () => {
     }
   };
   
-  // Fallback to default logo if custom logo fails to load
+  // استخدام الشعار الافتراضي إذا فشل تحميل الشعار المخصص
   const handleLogoError = () => {
     console.log('Logo failed to load, using default logo');
     setLogoError(true);
   };
   
-  // Check if logoUrl is a base64 string and use it directly
+  // التحقق مما إذا كان الشعار عبارة عن سلسلة base64 واستخدامها مباشرة
   const isBase64Image = (str: string) => {
     return str && str.startsWith('data:image');
   };
@@ -107,7 +107,7 @@ const Header = () => {
   
   return (
     <header className="w-full">
-      {/* Top header with company name and logo */}
+      {/* Header العلوي مع اسم الشركة والشعار */}
       <div 
         className="py-8 shadow-lg" 
         style={{ 
@@ -116,20 +116,20 @@ const Header = () => {
       >
         <Container>
           <div className="flex flex-col items-center justify-center text-center">
-            {/* Logo and company name - centered and larger */}
+            {/* الشعار واسم الشركة - مركزة وأكبر */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
-                {/* Technical support icon indicator */}
+                {/* مؤشر أيقونة الدعم الفني */}
                 <div className="absolute -top-2 -left-2 bg-sky-500 text-white p-1 rounded-full z-10">
                   <Headphones size={16} />
                 </div>
                 
-                {/* Logo container with enhanced support pulse effect */}
+                {/* حاوية الشعار مع تأثير نبض الدعم المحسن */}
                 <div className="relative w-28 h-28 md:w-36 md:h-36 overflow-hidden rounded-full shadow-lg bg-white p-2 logo-pulse">
                   <AspectRatio ratio={1 / 1} className="overflow-hidden">
                     <img 
                       src={logoUrl} 
-                      alt={settings.site_name || ''} 
+                      alt={settings.site_name || 'شعار الموقع'} 
                       className="object-contain h-full w-full" 
                       onError={handleLogoError}
                     />
@@ -146,7 +146,7 @@ const Header = () => {
         </Container>
       </div>
       
-      {/* Navigation Bar */}
+      {/* شريط التنقل */}
       <nav className="bg-white shadow-md border-b border-gray-100">
         <Container>
           <div className="flex justify-center py-3">
@@ -165,7 +165,7 @@ const Header = () => {
         </Container>
       </nav>
       
-      {/* Footer info - only visible on larger screens */}
+      {/* معلومات التذييل - مرئية فقط على الشاشات الكبيرة */}
       <div className="fixed bottom-0 left-0 right-0 py-2 px-4 bg-white/90 backdrop-blur-md text-gray-700 text-xs text-center z-10 border-t">
         <Container className="flex justify-center items-center gap-1">
           <Info size={12} className="text-company" />
