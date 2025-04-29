@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Home, Search, PhoneOutgoing, Sparkles } from 'lucide-react';
+import { Home, Search, Info } from 'lucide-react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Container } from '@/components/ui/container';
@@ -12,8 +12,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
   page_title: 'شركة الوصل الوطنية',
   logo_url: '',
   favicon_url: '',
-  primary_color: '#034078',
-  secondary_color: '#001F3F',
+  primary_color: '#0f4c81',
+  secondary_color: '#0a2f4f',
   text_color: '#ffffff',
   footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.'
 };
@@ -33,25 +33,20 @@ const Header = () => {
       
       if (error) {
         if (error.code !== 'PGRST116') {
-          // Not found error
           console.error('Error fetching site settings:', error);
         }
-        // Use default settings if no settings found
         setSettingsInitialized(true);
         setLoading(false);
         return;
       }
       
       if (data) {
-        // Cast to unknown first to avoid type errors
         setSettings(data as unknown as SiteSettings);
 
-        // تحديث عنوان الصفحة إذا كان موجودًا
         if (data.page_title) {
           document.title = data.page_title;
         }
 
-        // تحديث أيقونة المتصفح إذا كانت موجودة
         if (data.favicon_url) {
           updateFavicon(data.favicon_url);
         }
@@ -65,7 +60,6 @@ const Header = () => {
     }
   };
 
-  // دالة لتحديث أيقونة المتصفح
   const updateFavicon = (faviconUrl: string) => {
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
@@ -76,10 +70,8 @@ const Header = () => {
     link.href = faviconUrl;
   };
 
-  // Use default logo if no logo_url is set
   const logoUrl = settings.logo_url || logoSvg;
 
-  // Don't render anything until settings are initialized to prevent flash of default styling
   if (!settingsInitialized) {
     return null;
   }
@@ -87,63 +79,61 @@ const Header = () => {
   return (
     <header className="w-full">
       {/* Top header with company name and logo */}
-      <div className="bg-gradient-to-r from-company to-company-dark py-6">
+      <div className="bg-gradient-to-r from-company to-company-dark py-6 shadow-lg">
         <Container>
-          <div className="flex flex-col items-center justify-center space-y-4">
-            {/* Logo with animation */}
-            <div className="relative w-32 h-32 logo-pulse">
-              <AspectRatio ratio={1/1} className="overflow-hidden">
-                <img 
-                  src={logoUrl} 
-                  alt={settings.site_name} 
-                  className="object-contain h-full w-full"
-                />
-              </AspectRatio>
-              <div className="absolute inset-0 rounded-full animate-pulse-light" style={{
-                boxShadow: '0 0 20px 8px rgba(3, 64, 120, 0.4)',
-                filter: 'blur(10px)',
-                opacity: 0.6
-              }}></div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Logo and company name */}
+            <div className="flex items-center gap-5">
+              <div className="relative w-16 h-16 md:w-20 md:h-20 overflow-hidden rounded-lg shadow-lg bg-white p-1">
+                <AspectRatio ratio={1/1} className="overflow-hidden">
+                  <img 
+                    src={logoUrl} 
+                    alt={settings.site_name} 
+                    className="object-contain h-full w-full"
+                  />
+                </AspectRatio>
+              </div>
+              
+              <div className="text-center md:text-right">
+                <h1 className="text-white text-xl md:text-2xl font-bold">{settings.site_name}</h1>
+                <p className="text-white/80 text-sm mt-1">
+                  نظام الدعم الفني المتكامل
+                </p>
+              </div>
             </div>
             
-            <div className="text-center space-y-2">
-              <h1 className="text-white text-2xl md:text-3xl font-bold">{settings.site_name}</h1>
-              <p className="text-white/80 text-sm md:text-base max-w-xl">
-                نظام الدعم الفني المتكامل لتقديم الخدمات وحل المشكلات
-              </p>
-            </div>
+            {/* Description - hidden on mobile */}
+            <p className="text-white/90 text-sm max-w-md hidden md:block">
+              خدمة العملاء وحل المشكلات بكفاءة عالية
+            </p>
           </div>
         </Container>
       </div>
       
       {/* Navigation Bar */}
-      <nav className="bg-company-dark py-3 shadow-md">
+      <nav className="bg-white shadow-md border-b border-gray-100">
         <Container>
-          <div className="flex justify-center flex-wrap gap-4">
-            <Link to="/" className="navigation-link">
-              <Home size={18} />
-              <span>الرئيسية</span>
-            </Link>
-            
-            <Link to="/ticket-status" className="navigation-link">
-              <Search size={18} />
-              <span>متابعة التذاكر</span>
-            </Link>
-            
-            <Link to="/admin/login" className="navigation-link">
-              <PhoneOutgoing size={18} />
-              <span>لوحة التحكم</span>
-            </Link>
+          <div className="flex justify-center md:justify-start flex-wrap py-2">
+            <div className="flex gap-2">
+              <Link to="/" className="nav-link-primary">
+                <Home size={18} />
+                <span>الرئيسية</span>
+              </Link>
+              
+              <Link to="/ticket-status" className="nav-link-secondary">
+                <Search size={18} />
+                <span>متابعة التذاكر</span>
+              </Link>
+            </div>
           </div>
         </Container>
       </nav>
       
-      {/* Developer footer */}
-      <div className="fixed bottom-0 left-0 right-0 py-2 px-4 bg-white/80 backdrop-blur-md text-gray-700 text-xs text-center z-10 border-t shadow-md">
+      {/* Footer info - only visible on larger screens */}
+      <div className="fixed bottom-0 left-0 right-0 py-2 px-4 bg-white/90 backdrop-blur-md text-gray-700 text-xs text-center z-10 border-t">
         <Container className="flex justify-center items-center gap-1">
-          <Sparkles size={12} className="text-company" />
-          <span>© 2025 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة. | تطوير Trndsky ( FixDesk 2.0 )</span>
-          <Sparkles size={12} className="text-company" />
+          <Info size={12} className="text-company" />
+          <span>{settings.footer_text || '© 2025 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.'}</span>
         </Container>
       </div>
     </header>
