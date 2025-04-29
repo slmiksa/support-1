@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -112,13 +111,17 @@ const SiteCustomizationManager = () => {
   
   const createDefaultSettings = async () => {
     try {
+      // Make a copy of DEFAULT_SETTINGS to avoid reference issues
+      const defaultSettings = { ...DEFAULT_SETTINGS };
+      
       const { error } = await supabase
         .from('site_settings')
-        .insert([DEFAULT_SETTINGS as any]);
+        .insert([defaultSettings]);
         
       if (error) throw error;
       
-      setSettings(DEFAULT_SETTINGS);
+      setSettings(defaultSettings);
+      toast.success('تم إنشاء الإعدادات الافتراضية بنجاح');
     } catch (error) {
       console.error('Error creating default settings:', error);
       toast.error('حدث خطأ أثناء إنشاء الإعدادات الافتراضية');
@@ -133,17 +136,30 @@ const SiteCustomizationManager = () => {
 
     setLoading(true);
     try {
-      // Convert helpFields to JSON compatible format
-      const updatedSettings = {
-        ...settings,
+      // Prepare settings data - make sure to strip any unnecessary fields
+      const cleanSettings = {
+        site_name: settings.site_name,
+        page_title: settings.page_title,
+        logo_url: settings.logo_url,
+        favicon_url: settings.favicon_url,
+        primary_color: settings.primary_color,
+        secondary_color: settings.secondary_color,
+        text_color: settings.text_color,
+        footer_text: settings.footer_text,
+        support_available: settings.support_available,
+        support_message: settings.support_message,
+        support_info: settings.support_info,
         support_help_fields: helpFields
       };
       
       const { error } = await supabase
         .from('site_settings')
-        .upsert([updatedSettings as any]);
+        .upsert([cleanSettings]);
         
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
       
       toast.success('تم حفظ إعدادات الموقع بنجاح');
       
@@ -154,8 +170,6 @@ const SiteCustomizationManager = () => {
       if (settings.favicon_url) {
         updateFavicon(settings.favicon_url);
       }
-      
-      toast.info('قم بتحديث الصفحة لرؤية التغييرات على الموقع');
     } catch (error) {
       console.error('Error saving site settings:', error);
       toast.error('حدث خطأ أثناء حفظ إعدادات الموقع');
@@ -207,13 +221,19 @@ const SiteCustomizationManager = () => {
   };
   
   const updateFavicon = (faviconUrl: string) => {
-    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
+    if (!faviconUrl) return;
+    
+    try {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = faviconUrl;
+    } catch (error) {
+      console.error('Error updating favicon:', error);
     }
-    link.href = faviconUrl;
   };
   
   const handleFaviconUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -43,12 +43,18 @@ const Header = () => {
       }
       
       if (data) {
-        setSettings(data as unknown as SiteSettings);
-        if (data.page_title) {
-          document.title = data.page_title;
+        // Use type assertion to avoid potential conflicts
+        const settingsData = data as unknown as SiteSettings;
+        setSettings(settingsData);
+        
+        // Set page title if available
+        if (settingsData.page_title) {
+          document.title = settingsData.page_title;
         }
-        if (data.favicon_url) {
-          updateFavicon(data.favicon_url);
+        
+        // Update favicon if available
+        if (settingsData.favicon_url) {
+          updateFavicon(settingsData.favicon_url);
         }
       }
       setSettingsInitialized(true);
