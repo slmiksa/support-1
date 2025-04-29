@@ -41,21 +41,26 @@ const SiteCustomizationManager = () => {
   const [uploadingFavicon, setUploadingFavicon] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [helpFields, setHelpFields] = useState<HelpField[]>([]);
+  const [storageInitialized, setStorageInitialized] = useState(false);
   const { hasPermission } = useAdminAuth();
   
   useEffect(() => {
     fetchSettings();
     // Check if storage bucket exists or create it
-    checkAndCreateStorageBucket();
+    initializeStorage();
   }, []);
 
-  const checkAndCreateStorageBucket = async () => {
+  const initializeStorage = async () => {
     try {
+      setStorageInitialized(false);
+      
       // Check if public bucket exists
       const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
       
       if (bucketsError) {
         console.error('Error checking buckets:', bucketsError);
+        toast.error('حدث خطأ أثناء التحقق من وجود مساحة تخزين');
+        setStorageInitialized(true);
         return;
       }
       
@@ -66,11 +71,13 @@ const SiteCustomizationManager = () => {
         const { error: createError } = await supabase.storage.createBucket('public', {
           public: true,
           fileSizeLimit: 10 * 1024 * 1024, // 10MB limit
-          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml', 'image/webp']
+          allowedMimeTypes: ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml', 'image/webp', 'image/x-icon']
         });
         
         if (createError) {
           console.error('Error creating public bucket:', createError);
+          toast.error('حدث خطأ أثناء إنشاء مساحة التخزين');
+          setStorageInitialized(true);
           return;
         }
         
@@ -80,8 +87,12 @@ const SiteCustomizationManager = () => {
       // Ensure folders exist in the bucket
       await createFolderIfNotExists('public', 'logos');
       await createFolderIfNotExists('public', 'favicons');
+      
+      setStorageInitialized(true);
     } catch (error) {
       console.error('Error setting up storage:', error);
+      toast.error('حدث خطأ أثناء إعداد مساحة التخزين');
+      setStorageInitialized(true);
     }
   };
 
@@ -199,6 +210,11 @@ const SiteCustomizationManager = () => {
       return;
     }
 
+    if (!storageInitialized) {
+      toast.error('جاري تهيئة مساحة التخزين، يرجى المحاولة بعد قليل');
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
     
@@ -216,7 +232,19 @@ const SiteCustomizationManager = () => {
       const fileName = `logo_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `logos/${fileName}`;
       
-      // إنشاء الملف في تخزين سوبابيس
+      // Check bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const publicBucketExists = buckets?.some(bucket => bucket.name === 'public');
+      
+      if (!publicBucketExists) {
+        // Create bucket if it doesn't exist
+        await supabase.storage.createBucket('public', {
+          public: true,
+          fileSizeLimit: 10 * 1024 * 1024
+        });
+      }
+      
+      // Upload file
       const { error: uploadError, data } = await supabase.storage
         .from('public')
         .upload(filePath, file, { 
@@ -229,7 +257,7 @@ const SiteCustomizationManager = () => {
         throw uploadError;
       }
       
-      // الحصول على عنوان URL العام للملف المرفوع
+      // Get public URL
       const { data: urlData } = await supabase.storage
         .from('public')
         .getPublicUrl(filePath);
@@ -238,7 +266,7 @@ const SiteCustomizationManager = () => {
         throw new Error('Could not get public URL for uploaded file');
       }
       
-      // تحديث الإعدادات بعنوان URL للشعار الجديد
+      // Update settings with new logo URL
       setSettings({
         ...settings,
         logo_url: urlData.publicUrl
@@ -247,7 +275,7 @@ const SiteCustomizationManager = () => {
       toast.success('تم رفع الشعار بنجاح');
     } catch (error) {
       console.error('Error uploading logo:', error);
-      toast.error('حدث خطأ أثناء رفع الشعار');
+      toast.error('حدث خطأ أثناء رفع الشعار: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setUploading(false);
     }
@@ -269,6 +297,11 @@ const SiteCustomizationManager = () => {
       return;
     }
 
+    if (!storageInitialized) {
+      toast.error('جاري تهيئة مساحة التخزين، يرجى المحاولة بعد قليل');
+      return;
+    }
+
     const file = event.target.files?.[0];
     if (!file) return;
     
@@ -286,7 +319,19 @@ const SiteCustomizationManager = () => {
       const fileName = `favicon_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `favicons/${fileName}`;
       
-      // إنشاء الملف في تخزين سوبابيس
+      // Check bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const publicBucketExists = buckets?.some(bucket => bucket.name === 'public');
+      
+      if (!publicBucketExists) {
+        // Create bucket if it doesn't exist
+        await supabase.storage.createBucket('public', {
+          public: true,
+          fileSizeLimit: 10 * 1024 * 1024
+        });
+      }
+      
+      // Upload file
       const { error: uploadError } = await supabase.storage
         .from('public')
         .upload(filePath, file, { 
@@ -299,7 +344,7 @@ const SiteCustomizationManager = () => {
         throw uploadError;
       }
       
-      // الحصول على عنوان URL العام للملف المرفوع
+      // Get public URL
       const { data: urlData } = await supabase.storage
         .from('public')
         .getPublicUrl(filePath);
@@ -308,7 +353,7 @@ const SiteCustomizationManager = () => {
         throw new Error('Could not get public URL for uploaded file');
       }
       
-      // تحديث الإعدادات بعنوان URL للفافيكون الجديد
+      // Update settings with new favicon URL
       setSettings({
         ...settings,
         favicon_url: urlData.publicUrl
@@ -319,7 +364,7 @@ const SiteCustomizationManager = () => {
       toast.success('تم رفع أيقونة المتصفح بنجاح');
     } catch (error) {
       console.error('Error uploading favicon:', error);
-      toast.error('حدث خطأ أثناء رفع أيقونة المتصفح');
+      toast.error('حدث خطأ أثناء رفع أيقونة المتصفح: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setUploadingFavicon(false);
     }
@@ -357,6 +402,12 @@ const SiteCustomizationManager = () => {
           </Button>
           <h2 className="text-xl font-bold text-right">تخصيص واجهة الموقع</h2>
         </div>
+
+        {!storageInitialized && (
+          <div className="bg-amber-50 border border-amber-200 text-amber-700 p-4 mb-6 rounded-md">
+            <p className="text-center">جاري تهيئة مساحة التخزين، يرجى الإنتظار...</p>
+          </div>
+        )}
 
         <Tabs
           value={activeTab}
@@ -442,7 +493,7 @@ const SiteCustomizationManager = () => {
                     key={`logo-upload-${Date.now()}`} // Force re-render on each upload
                     accept="image/*"
                     onChange={handleLogoUpload}
-                    disabled={uploading}
+                    disabled={uploading || !storageInitialized}
                     className="text-right"
                   />
                   <Label htmlFor="logo" className="text-xs text-gray-500 block">
@@ -496,7 +547,7 @@ const SiteCustomizationManager = () => {
                       key={`favicon-upload-${Date.now()}`} // Force re-render on each upload
                       accept="image/*"
                       onChange={handleFaviconUpload}
-                      disabled={uploadingFavicon}
+                      disabled={uploadingFavicon || !storageInitialized}
                       className="text-right"
                     />
                     <Label htmlFor="favicon" className="text-xs text-gray-500 block">

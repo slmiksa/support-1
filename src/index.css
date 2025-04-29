@@ -2,299 +2,127 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+ 
 @layer base {
   :root {
-    /* Light mode variables - Modern blue theme */
-    --background: 210 50% 98%;
-    --foreground: 222 47% 11%;
-    
+    --background: 0 0% 100%;
+    --foreground: 224 71.4% 4.1%;
+
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    
+    --card-foreground: 224 71.4% 4.1%;
+ 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    
-    --primary: 210 100% 28%;
-    --primary-foreground: 210 40% 98%;
-    
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11%;
-    
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215 25% 40%;
-    
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11%;
-    
+    --popover-foreground: 224 71.4% 4.1%;
+ 
+    --primary: 220.9 39.3% 11%;
+    --primary-foreground: 210 20% 98%;
+ 
+    --secondary: 220 14.3% 95.9%;
+    --secondary-foreground: 220.9 39.3% 11%;
+ 
+    --muted: 220 14.3% 95.9%;
+    --muted-foreground: 220 8.9% 46.1%;
+ 
+    --accent: 220 14.3% 95.9%;
+    --accent-foreground: 220.9 39.3% 11%;
+ 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 207 100% 24%;
-    
+    --destructive-foreground: 210 20% 98%;
+
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 224 71.4% 4.1%;
+ 
     --radius: 0.5rem;
     
-    --font-sans: 'Tajawal', system-ui, sans-serif;
-
-    /* Company colors - Modern blue theme */
-    --company-primary: #0f4c81;
-    --company-secondary: #0a2f4f;
-    --accent-blue: #3a86ff;
-    
-    /* Global text color */
-    --global-text: 0 0% 13%;
-
-    /* Background pattern for light mode */
-    --bg-pattern: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230f4c81' fill-opacity='0.03'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0l28-28v2L54 40h-2zm4 0l24-24v2L58 40h-2zm4 0l20-20v2L62 40h-2zm4 0l16-16v2L66 40h-2zm4 0l12-12v2L70 40h-2zm4 0l8-8v2l-6 6h-2zm4 0l4-4v2l-2 2h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --company: 43 65% 52%;
+    --company-dark: 43 75% 40%;
+    --company-light: 43 65% 65%;
   }
-
-  /* Dark mode variables - Modern dark blue theme */
+ 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
-    
-    --card: 215 28% 17%;
-    --card-foreground: 210 40% 98%;
-    
-    --popover: 215 28% 17%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 207 100% 24%;
-    --primary-foreground: 210 40% 98%;
-    
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20% 65%;
-    
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+ 
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+ 
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+ 
+    --primary: 210 20% 98%;
+    --primary-foreground: 220.9 39.3% 11%;
+ 
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+ 
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+ 
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
+ 
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 207 100% 24%;
-
-    /* Background pattern for dark mode */
-    --bg-pattern: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230f4c81' fill-opacity='0.03'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0l28-28v2L54 40h-2zm4 0l24-24v2L58 40h-2zm4 0l20-20v2L62 40h-2zm4 0l16-16v2L66 40h-2zm4 0l12-12v2L70 40h-2zm4 0l8-8v2l-6 6h-2zm4 0l4-4v2l-2 2h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --destructive-foreground: 210 20% 98%;
+ 
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
   }
 }
-
-/* Base styling */
+ 
 @layer base {
   * {
     @apply border-border;
   }
-  
   body {
-    @apply bg-background text-foreground antialiased;
-    direction: rtl;
-    background-image: var(--bg-pattern);
-  }
-
-  /* Typography */
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
-  }
-
-  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
-    @apply text-foreground;
-  }
-
-  h1 { @apply text-3xl md:text-4xl; }
-  h2 { @apply text-2xl md:text-3xl; }
-  h3 { @apply text-xl md:text-2xl; }
-
-  /* Form elements */
-  input, select, textarea {
-    @apply transition-all duration-200 rounded-md;
-  }
-
-  input:focus, select:focus, textarea:focus {
-    @apply ring-2 ring-company outline-none;
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-/* Font face */
-@font-face {
-  font-family: 'Tajawal';
-  src: url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700&display=swap');
-  font-display: swap;
+/* RTL direction for the whole website */
+body {
+  direction: rtl;
 }
 
-/* Custom components */
-@layer components {
-  /* Navigation Links */
-  .nav-link-primary {
-    @apply flex items-center gap-2 py-2 px-4 font-medium text-white bg-company rounded-md transition-colors hover:bg-company-dark;
-  }
-  
-  .nav-link-secondary {
-    @apply flex items-center gap-2 py-2 px-4 font-medium text-company bg-white border border-gray-200 rounded-md transition-colors hover:bg-gray-50 hover:border-company;
-  }
-  
-  /* Active navigation link - highlighted state */
-  .nav-link-active {
-    @apply flex items-center gap-2 py-2 px-4 font-medium text-white bg-gradient-to-r from-company to-company-dark rounded-md shadow-md border border-white/20;
-    position: relative;
-  }
-  
-  .nav-link-active::after {
-    content: '';
-    position: absolute;
-    bottom: -8px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 8px;
-    height: 8px;
-    background-color: var(--company-primary);
-    border-radius: 50%;
-  }
+/* Left-to-right direction text field inputs and some elements */
+.ltr {
+  direction: ltr;
+  text-align: left;
+}
 
-  /* Buttons */
-  .button-primary {
-    @apply bg-company text-white hover:bg-company-dark transition-all rounded-md px-4 py-2 shadow-sm hover:shadow;
-  }
-  
-  /* Cards */
-  .card-enhanced {
-    @apply bg-white rounded-md shadow-sm border border-border/50 hover:shadow transition-all duration-300;
-    @apply dark:bg-card dark:border-border/10;
-  }
+/* Navigation links styling */
+.nav-link-primary {
+  @apply flex items-center gap-2 px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100 transition-all;
+}
 
-  /* Glass effects */
-  .glass {
-    @apply bg-white/90 backdrop-blur-md border border-white/30 shadow-sm rounded-md;
-  }
-  
-  /* Company colors - Fixed circular dependency issue */
-  .bg-company { background-color: var(--company-primary); }
-  .bg-company-dark { background-color: var(--company-secondary); }
-  .text-company { color: var(--company-primary); }
-  .text-company-dark { color: var(--company-secondary); }
-  .border-company { border-color: var(--company-primary); }
-  .ring-company { --tw-ring-color: var(--company-primary); }
+.nav-link-secondary {
+  @apply flex items-center gap-2 px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-100 transition-all;
+}
 
-  /* Status badges */
-  .status-badge {
-    @apply px-3 py-1 rounded-full text-xs font-medium;
-  }
+.nav-link-active {
+  @apply flex items-center gap-2 px-4 py-2 text-white bg-gradient-to-r from-company to-company-dark rounded-lg font-medium relative;
+}
 
-  .status-pending {
-    @apply bg-amber-100 text-amber-800;
+.nav-link-active::before {
+  content: '';
+  @apply absolute top-1/2 -right-1 transform -translate-y-1/2 h-2 w-2 rounded-full bg-white;
+}
+
+/* Logo pulsing animation */
+@keyframes logoPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7);
   }
-  
-  .status-open {
-    @apply bg-blue-100 text-blue-800;
+  70% {
+    box-shadow: 0 0 0 8px rgba(212, 175, 55, 0);
   }
-  
-  .status-inprogress {
-    @apply bg-purple-100 text-purple-800;
-  }
-  
-  .status-resolved {
-    @apply bg-green-100 text-green-800;
-  }
-  
-  .status-closed {
-    @apply bg-gray-100 text-gray-800;
-  }
-  
-  /* Form styling */
-  .form-label {
-    @apply block text-sm font-medium text-gray-700 mb-1;
-  }
-  
-  .form-input {
-    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-company focus:ring focus:ring-company focus:ring-opacity-50;
-  }
-  
-  .form-select {
-    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-company focus:ring focus:ring-company focus:ring-opacity-50;
-  }
-  
-  .form-textarea {
-    @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-company focus:ring focus:ring-company focus:ring-opacity-50;
+  100% {
+    box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
   }
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-in-out;
-}
-
-@keyframes slideIn {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.animate-slide-in {
-  animation: slideIn 0.5s ease-in-out;
-}
-
-/* Keep the existing animations and styles */
-@keyframes pulse-light {
-  0% { opacity: 0.7; transform: scale(0.98); }
-  50% { opacity: 1; transform: scale(1.03); }
-  100% { opacity: 0.7; transform: scale(0.98); }
-}
-
-.animate-pulse-light { animation: pulse-light 3s ease-in-out infinite; }
-
-/* Header logo animation */
 .logo-pulse {
-  animation: logo-pulse 4s ease-in-out infinite;
-}
-
-@keyframes logo-pulse {
-  0% { filter: drop-shadow(0 0 8px rgba(3, 64, 120, 0.2)); transform: scale(1); }
-  50% { filter: drop-shadow(0 0 15px rgba(3, 64, 120, 0.5)); transform: scale(1.03); }
-  100% { filter: drop-shadow(0 0 8px rgba(3, 64, 120, 0.2)); transform: scale(1); }
-}
-
-/* Page transitions */
-.page-transition-enter {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.page-transition-enter-active {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 400ms, transform 400ms;
-}
-
-.page-transition-exit {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.page-transition-exit-active {
-  opacity: 0;
-  transform: translateY(10px);
-  transition: opacity 300ms, transform 300ms;
-}
-
-/* Dark mode overrides for ticket details page */
-.dark .bg-gray-50 {
-  @apply bg-card text-white border-border;
-}
-
-.dark p.text-right,
-.dark p.text-right.font-medium {
-  @apply text-white;
-}
-
-.dark .bg-white {
-  @apply bg-card text-white border-border;
+  animation: logoPulse 2s infinite;
 }
