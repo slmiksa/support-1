@@ -144,7 +144,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       case 'view_only':
         return ['super_admin', 'admin', 'viewer'].includes(currentAdmin.role);
       case 'manage_admins':
-        return currentAdmin.role === 'super_admin';
+        return ['super_admin', 'admin'].includes(currentAdmin.role);  // Allow both super_admin and admin to manage admins
       case 'respond_to_tickets':
         return ['super_admin', 'admin'].includes(currentAdmin.role);
       case 'delete_tickets':

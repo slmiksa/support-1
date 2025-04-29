@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import AdminHeader from '@/components/admin/AdminHeader';
 import { Card, CardContent } from '@/components/ui/card';
@@ -15,15 +16,13 @@ import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+
 const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('branches');
-  const {
-    hasPermission
-  } = useAdminAuth();
+  const { hasPermission } = useAdminAuth();
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
+  const { toast } = useToast();
+
   useEffect(() => {
     if (!hasPermission('view_only')) {
       toast({
@@ -50,12 +49,10 @@ const AdminSettings = () => {
     url.searchParams.set('tab', tab);
     window.history.pushState({}, '', url);
   };
+
   const fetchAndUpdateFavicon = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('site_settings').select('favicon_url').single();
+      const { data, error } = await supabase.from('site_settings').select('favicon_url').single();
       if (error) {
         console.error('Error fetching favicon:', error);
         return;
@@ -67,6 +64,7 @@ const AdminSettings = () => {
       console.error('Error in fetchAndUpdateFavicon:', error);
     }
   };
+
   const updateFavicon = (faviconUrl: string) => {
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
@@ -76,6 +74,10 @@ const AdminSettings = () => {
     }
     link.href = faviconUrl;
   };
+
+  // Debug access permissions
+  console.log("Current user has manage_admins permission:", hasPermission('manage_admins'));
+
   return <div className="min-h-screen bg-background">
       <AdminHeader />
       <main className="container mx-auto px-4 py-6">
@@ -97,7 +99,7 @@ const AdminSettings = () => {
                   <ListFilter size={16} />
                   <span>حقول الموقع</span>
                 </TabsTrigger>
-                <TabsTrigger value="admins" className="flex items-center gap-2" disabled={!hasPermission('manage_admins')}>
+                <TabsTrigger value="admins" className="flex items-center gap-2">
                   <Users size={16} />
                   <span>المديرين</span>
                 </TabsTrigger>
@@ -168,4 +170,5 @@ const AdminSettings = () => {
       </main>
     </div>;
 };
+
 export default AdminSettings;

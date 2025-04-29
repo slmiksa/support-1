@@ -64,6 +64,8 @@ function App() {
                 <Route path="/admin/manage-admins" element={<ManageAdmins />} />
                 <Route path="/ticket-status" element={<TicketStatus />} />
                 <Route path="/ticket-status/:ticketId" element={<TicketStatus />} />
+                {/* Ensure there's a catch-all route for the admin section */}
+                <Route path="/admin/*" element={<AdminDashboard />} />
               </Routes>
               <Toaster closeButton richColors position="top-left" />
             </QueryClientProvider>
