@@ -1,10 +1,16 @@
 
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="90" cy="90" r="70" fill="#0f4c81" />
+  <circle cx="90" cy="90" r="70" fill="#0EA5E9" />
   <circle cx="90" cy="90" r="55" fill="#FFFFFF" />
-  <circle cx="90" cy="90" r="40" fill="#0f4c81" />
+  <circle cx="90" cy="90" r="40" fill="#0EA5E9" />
   <circle cx="90" cy="90" r="25" fill="#FFFFFF" />
-  <circle cx="90" cy="90" r="15" fill="#0f4c81" />
-  <path d="M55 140 L125 140 L90 160 Z" fill="#0f4c81" />
+  <circle cx="90" cy="90" r="15" fill="#0EA5E9" />
+  <!-- Headset to represent customer support -->
+  <path d="M70 70 C70 56 110 56 110 70 L110 100 C110 114 70 114 70 100 Z" fill="#0EA5E9" stroke="#FFFFFF" stroke-width="2" />
+  <rect x="65" y="85" width="10" height="20" rx="5" fill="#0EA5E9" stroke="#FFFFFF" stroke-width="2" />
+  <rect x="105" y="85" width="10" height="20" rx="5" fill="#0EA5E9" stroke="#FFFFFF" stroke-width="2" />
+  <path d="M90 115 L90 125" stroke="#0EA5E9" stroke-width="4" />
   <text x="85" y="95" font-family="Arial, sans-serif" font-weight="bold" font-size="16" fill="#FFFFFF" text-anchor="middle">الوصل</text>
+  <!-- Support indicator lines -->
+  <path d="M55 140 L125 140 L90 160 Z" fill="#0EA5E9" />
 </svg>

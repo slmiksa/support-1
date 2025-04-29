@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Info } from 'lucide-react';
+import { Home, Search, Info, Headphones } from 'lucide-react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Container } from '@/components/ui/container';
@@ -110,15 +110,23 @@ const Header = () => {
           <div className="flex flex-col items-center justify-center text-center">
             {/* Logo and company name - centered and larger */}
             <div className="flex flex-col items-center gap-4">
-              <div className="relative w-28 h-28 md:w-36 md:h-36 overflow-hidden rounded-lg shadow-lg bg-white p-2 logo-pulse">
-                <AspectRatio ratio={1 / 1} className="overflow-hidden">
-                  <img 
-                    src={logoUrl} 
-                    alt={settings.site_name} 
-                    className="object-contain h-full w-full" 
-                    onError={handleLogoError}
-                  />
-                </AspectRatio>
+              <div className="relative">
+                {/* Technical support icon indicator */}
+                <div className="absolute -top-2 -left-2 bg-sky-500 text-white p-1 rounded-full z-10">
+                  <Headphones size={16} />
+                </div>
+                
+                {/* Logo container with enhanced support pulse effect */}
+                <div className="relative w-28 h-28 md:w-36 md:h-36 overflow-hidden rounded-full shadow-lg bg-white p-2 logo-pulse">
+                  <AspectRatio ratio={1 / 1} className="overflow-hidden">
+                    <img 
+                      src={logoUrl} 
+                      alt={settings.site_name} 
+                      className="object-contain h-full w-full" 
+                      onError={handleLogoError}
+                    />
+                  </AspectRatio>
+                </div>
               </div>
               
               <div className="text-center">
