@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Branch } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -223,36 +222,10 @@ const BranchesManager = () => {
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
           <CardTitle className="text-right text-xl font-bold text-company">إدارة الفروع</CardTitle>
-          {canManageAdmins && (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <Plus size={16} />
-                  <span>إضافة فرع جديد</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
-                <DialogHeader>
-                  <DialogTitle className="text-right">إضافة فرع جديد</DialogTitle>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Input
-                      id="branchName"
-                      value={newBranchName}
-                      onChange={(e) => setNewBranchName(e.target.value)}
-                      className="col-span-4"
-                      placeholder="اسم الفرع"
-                      dir="rtl"
-                    />
-                  </div>
-                </div>
-                <DialogFooter>
-                  <Button type="submit" onClick={handleCreateBranch}>إضافة</Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          )}
+          <Button className="flex items-center gap-2" onClick={() => setDialogOpen(true)}>
+            <Plus size={16} />
+            <span>إضافة فرع جديد</span>
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -308,6 +281,30 @@ const BranchesManager = () => {
             </Table>
           </div>
         )}
+
+        {/* Add Branch Dialog */}
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="text-right">إضافة فرع جديد</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Input
+                  id="branchName"
+                  value={newBranchName}
+                  onChange={(e) => setNewBranchName(e.target.value)}
+                  className="col-span-4"
+                  placeholder="اسم الفرع"
+                  dir="rtl"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" onClick={handleCreateBranch}>إضافة</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Branch Dialog */}
         <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
