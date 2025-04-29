@@ -6,13 +6,13 @@ import type { Database } from './types';
 const SUPABASE_URL = "https://iczrgrgonwmiyrmoxtbz.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImljenJncmdvbndtaXlybW94dGJ6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU5MDcwMDAsImV4cCI6MjA2MTQ4MzAwMH0.M7gKbxlQEGobpauu4CtSFLcK73c60zgr2S8mz4fk1H8";
 
-// Import the supabase client like this:
-// import { supabase } from "@/integrations/supabase/client";
+// Create the supabase client
 const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
 // Export the supabase client with additional type definitions for RPC functions
 export const supabase = {
   ...supabaseClient,
+  // Add typed RPC function to ensure type safety for our database functions
   rpc: (function_name: 
     "delete_ticket_by_id" | 
     "update_ticket_status" | 
