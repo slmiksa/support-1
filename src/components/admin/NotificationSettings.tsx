@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InfoIcon } from 'lucide-react';
 
 const NotificationSettings = () => {
   const [notificationEmail, setNotificationEmail] = useState('');
@@ -60,6 +62,13 @@ const NotificationSettings = () => {
         <CardTitle className="text-right">إعدادات الإشعارات</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <Alert className="bg-amber-50 border-amber-200">
+          <InfoIcon className="h-4 w-4 text-amber-500" />
+          <AlertDescription className="text-right">
+            في وضع الاختبار، سيتم إرسال جميع الإشعارات إلى البريد الإلكتروني trndsky@gmail.com
+          </AlertDescription>
+        </Alert>
+        
         <div className="space-y-2">
           <Label htmlFor="notification-email" className="text-right block">
             البريد الإلكتروني لاستلام إشعارات التذاكر الجديدة

@@ -1,4 +1,3 @@
-
 import { supabase, PriorityType } from '@/integrations/supabase/client';
 import { SupportTicket } from './ticketUtils';
 import { toast } from 'sonner';
@@ -11,6 +10,11 @@ export const sendTicketNotification = async (
   companySenderName?: string
 ): Promise<boolean> => {
   try {
+    // Always use trndsky@gmail.com during testing
+    const recipientEmail = 'trndsky@gmail.com';
+    console.log('Original recipient:', adminEmail);
+    console.log('Using testing recipient:', recipientEmail);
+    
     // Prepare the notification data
     const notificationData = {
       ticket_id: ticket.ticket_id,
@@ -18,17 +22,17 @@ export const sendTicketNotification = async (
       branch: ticket.branch,
       priority: ticket.priority,
       description: ticket.description,
-      admin_email: adminEmail,
+      admin_email: recipientEmail,  // Use testing email
       // Always use the fixed support email for consistent notifications
       support_email: 'help@alwaslsaudi.com',
       // Add customer email if available
-      customer_email: ticket.customer_email || null,
+      customer_email: recipientEmail,  // Use testing email
       // Always set to null to use default Resend sender (onboarding@resend.dev)
       company_sender_email: null,
       company_sender_name: companySenderName || 'دعم الوصل'
     };
 
-    console.log('Sending notification for ticket', ticket.ticket_id, 'to', adminEmail);
+    console.log('Sending notification for ticket', ticket.ticket_id, 'to', recipientEmail);
     console.log('Notification data:', JSON.stringify(notificationData));
 
     // Call the Supabase edge function to send the email
@@ -66,36 +70,18 @@ export const sendTicketNotificationsToAllAdmins = async (
   companySenderName?: string
 ): Promise<boolean> => {
   try {
-    // Get all admin emails
-    const adminEmails = await getAdminEmails();
+    // During testing, only use trndsky@gmail.com
+    const testingEmail = 'trndsky@gmail.com';
+    console.log('Using testing email for all notifications:', testingEmail);
     
-    if (adminEmails.length === 0) {
-      console.warn('No admin emails found. Skipping notifications.');
-      return false;
-    }
+    console.log('Sending notification to testing email:', testingEmail);
     
-    console.log('Sending notifications to admins:', adminEmails);
+    // Send notification to the testing email
+    const result = await sendTicketNotification(ticket, testingEmail, null, companySenderName);
     
-    // Send notifications to all admins
-    const results = await Promise.allSettled(
-      adminEmails.map(email => sendTicketNotification(ticket, email, null, companySenderName))
-    );
+    console.log('Notification result:', result);
     
-    // Check if at least one notification was sent successfully
-    const atLeastOneSuccess = results.some(
-      result => result.status === 'fulfilled' && result.value === true
-    );
-    
-    // Log results for debugging
-    console.log('Notification results:', results.map(r => {
-      if (r.status === 'fulfilled') {
-        return { status: r.status, value: r.value };
-      } else {
-        return { status: r.status, reason: r.reason };
-      }
-    }));
-    
-    return atLeastOneSuccess;
+    return result;
   } catch (error) {
     console.error('Error sending notifications to admins:', error);
     return false;

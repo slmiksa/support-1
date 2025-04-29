@@ -57,13 +57,16 @@ const handler = async (req: Request): Promise<Response> => {
       company_sender_name = 'دعم الوصل'
     }: TicketNotificationRequest = JSON.parse(requestBody);
 
+    // During testing, only use trndsky@gmail.com
+    const testingEmail = 'trndsky@gmail.com';
+
     console.log("Parsed data:");
     console.log(`Sending notification for ticket ${ticket_id}`);
     console.log(`Employee ID: ${employee_id || 'not provided'}`);
     console.log(`Branch: ${branch}`);
     console.log(`Description length: ${description?.length || 0}`);
-    console.log(`Customer email: ${customer_email || 'not provided'}`);
-    console.log(`Admin email: ${admin_email}`);
+    console.log(`Original admin email: ${admin_email}`);
+    console.log(`Using testing email: ${testingEmail}`);
     console.log(`Support email: ${support_email}`);
     console.log(`Priority: ${priority}`);
     console.log(`Company sender name: ${company_sender_name}`);
@@ -79,7 +82,6 @@ const handler = async (req: Request): Promise<Response> => {
     if (!ticket_id) missingFields.push("ticket_id");
     if (!branch) missingFields.push("branch");
     if (!description) missingFields.push("description");
-    if (!admin_email) missingFields.push("admin_email");
     
     if (missingFields.length > 0) {
       console.error(`Missing required fields: ${missingFields.join(", ")}`);
@@ -137,12 +139,6 @@ const handler = async (req: Request): Promise<Response> => {
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">وصف المشكلة:</td>
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${description}</td>
             </tr>
-            ${customer_email ? `
-            <tr>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">البريد الإلكتروني للعميل:</td>
-              <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${customer_email}</td>
-            </tr>
-            ` : ''}
           </table>
 
           <div style="text-align: center; margin-top: 30px;">
@@ -151,116 +147,53 @@ const handler = async (req: Request): Promise<Response> => {
               مشاهدة التذكرة
             </a>
           </div>
+          
+          <p style="margin-top: 30px; font-size: 12px; color: #888;">هذه رسالة تلقائية من نظام الدعم الفني - تم إرسالها إلى ${testingEmail} (وضع الاختبار)</p>
         </div>
       </div>
     `;
 
     let allEmails = [];
     
-    // Send email to admin - trying this one first since it's the most critical
-    console.log(`[${new Date().toISOString()}] Attempting to send admin notification email to:`, admin_email);
+    // Send email to testing email
+    console.log(`[${new Date().toISOString()}] Attempting to send notification to testing email:`, testingEmail);
     try {
       const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
 
       // Try to send email and log detailed response
       console.log("Sending email with config:", JSON.stringify(emailConfig));
       
-      const adminEmailResponse = await resend.emails.send({
+      const emailResponse = await resend.emails.send({
         ...emailConfig,
-        to: [admin_email],
+        to: [testingEmail],
         subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
         html: emailHtml,
       });
 
-      console.log(`[${new Date().toISOString()}] Admin notification sent:`, JSON.stringify(adminEmailResponse));
-      allEmails.push({ type: 'admin', success: true, response: adminEmailResponse });
-    } catch (adminError) {
-      console.error(`[${new Date().toISOString()}] Error sending admin notification:`, adminError);
-      console.error("Error details:", adminError instanceof Error ? adminError.message : String(adminError));
-      console.error("Stack trace:", adminError instanceof Error ? adminError.stack : "No stack trace");
-      allEmails.push({ type: 'admin', success: false, error: String(adminError) });
-    }
-    
-    // Send email to support team
-    console.log(`[${new Date().toISOString()}] Attempting to send support notification email to:`, support_email);
-    try {
-      const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
-
-      const supportEmailResponse = await resend.emails.send({
-        ...emailConfig,
-        to: [support_email],
-        subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
-        html: emailHtml,
-      });
-
-      console.log(`[${new Date().toISOString()}] Support notification sent:`, JSON.stringify(supportEmailResponse));
-      allEmails.push({ type: 'support', success: true, response: supportEmailResponse });
-    } catch (supportError) {
-      console.error(`[${new Date().toISOString()}] Error sending support notification:`, supportError);
-      console.error("Error details:", supportError instanceof Error ? supportError.message : String(supportError));
-      allEmails.push({ type: 'support', success: false, error: String(supportError) });
-    }
-
-    // If customer email is provided, send confirmation to customer
-    let customerEmailResult = null;
-    if (customer_email) {
-      console.log(`[${new Date().toISOString()}] Attempting to send customer notification email to:`, customer_email);
+      console.log(`[${new Date().toISOString()}] Notification sent to testing email:`, JSON.stringify(emailResponse));
+      allEmails.push({ type: 'testing', success: true, response: emailResponse });
+    } catch (emailError) {
+      console.error(`[${new Date().toISOString()}] Error sending notification to testing email:`, emailError);
+      console.error("Error details:", emailError instanceof Error ? emailError.message : String(emailError));
+      console.error("Stack trace:", emailError instanceof Error ? emailError.stack : "No stack trace");
+      allEmails.push({ type: 'testing', success: false, error: String(emailError) });
       
-      const customerHtml = `
-        <div dir="rtl" style="text-align: right; font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-          <div style="background-color: #D4AF37; padding: 20px; border-radius: 8px 8px 0 0; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 24px;">تم استلام طلب الدعم الفني</h1>
-          </div>
-          
-          <div style="background-color: #ffffff; padding: 25px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <p style="font-size: 16px; margin-bottom: 25px; color: #555555;">تم استلام طلب الدعم الفني الخاص بك وسيتم التواصل معك قريباً:</p>
-            
-            <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
-              <tr>
-                <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">رقم التذكرة:</td>
-                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${ticket_id}</td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الحالة:</td>
-                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${formattedStatus}</td>
-              </tr>
-              <tr>
-                <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الوصف:</td>
-                <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${description}</td>
-              </tr>
-            </table>
-
-            <div style="background-color: #f5f7fa; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-              <p style="margin: 0;">يمكنك متابعة حالة طلبك من خلال الدخول على نظام الدعم الفني وإدخال رقم التذكرة.</p>
-            </div>
-            
-            <div style="text-align: center; margin-top: 30px;">
-              <a href="https://support.alwaslsaudi.com/ticket-status/${ticket_id}" 
-                 style="background-color: #D4AF37; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                تتبع الطلب
-              </a>
-            </div>
-          </div>
-        </div>
-      `;
-
+      // Try sending with detailed error information
       try {
-        const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
-
-        const customerEmailResponse = await resend.emails.send({
-          ...emailConfig,
-          to: [customer_email],
-          subject: `تم استلام طلب الدعم الفني رقم ${ticket_id}`,
-          html: customerHtml,
+        const errorDetails = emailError instanceof Error ? 
+          `Error: ${emailError.message}\n${emailError.stack || ''}` : 
+          `Error: ${String(emailError)}`;
+            
+        const errorEmailResponse = await resend.emails.send({
+          from: `Debug <onboarding@resend.dev>`,
+          to: [testingEmail],
+          subject: `[DEBUG] Error sending ticket notification for ${ticket_id}`,
+          text: `There was an error sending the notification email:\n\n${errorDetails}\n\nRequest data:\n${requestBody}`
         });
-
-        console.log(`[${new Date().toISOString()}] Customer notification sent:`, JSON.stringify(customerEmailResponse));
-        customerEmailResult = { success: true, response: customerEmailResponse };
-        allEmails.push({ type: 'customer', success: true, response: customerEmailResponse });
-      } catch (customerError) {
-        console.error(`[${new Date().toISOString()}] Error sending customer notification:`, customerError);
-        console.error("Error details:", customerError instanceof Error ? customerError.message : String(customerError));
-        allEmails.push({ type: 'customer', success: false, error: String(customerError) });
+        
+        console.log(`[${new Date().toISOString()}] Debug error email sent:`, JSON.stringify(errorEmailResponse));
+      } catch (debugError) {
+        console.error(`[${new Date().toISOString()}] Failed to send debug error email:`, debugError);
       }
     }
 
@@ -268,16 +201,14 @@ const handler = async (req: Request): Promise<Response> => {
     const anySent = allEmails.some(email => email.success);
     
     if (!anySent) {
-      throw new Error("Failed to send any notifications");
+      throw new Error("Failed to send notifications");
     }
 
     return new Response(
       JSON.stringify({ 
         success: true, 
         allEmails,
-        supportNotification: "Sent",
-        adminNotification: "Sent",
-        customerNotification: customer_email ? "Sent" : null 
+        testingEmail
       }),
       {
         status: 200,

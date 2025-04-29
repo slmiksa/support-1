@@ -67,32 +67,33 @@ const TicketResponseForm = ({
       }
 
       // Try to send an email notification if there's a customer email attached to the ticket
-      if (ticket?.customer_email) {
-        try {
-          console.log('Sending response notification to customer:', ticket.customer_email);
-          
-          // Create a simple ticket-like object for the notification function
-          const ticketData: SupportTicket = {
-            ticket_id: ticketId,
-            branch: ticket.branch || '',
-            priority: ticket.priority || 'normal',
-            description: responseText, // Use the response as the description
-            image_url: null,
-            status: ticket.status || 'pending',
-            created_at: new Date().toISOString(),
-            employee_id: '',
-            custom_fields: {},
-            anydesk_number: '',
-            customer_email: ticket.customer_email,
-            support_email: 'help@alwaslsaudi.com',
-            extension_number: ''
-          };
-          
-          await sendTicketNotification(ticketData, ticket.customer_email, null, 'دعم الوصل');
-        } catch (notifyError) {
-          // Just log the error, don't fail the entire response operation
-          console.error('Failed to send notification about response:', notifyError);
-        }
+      // During testing mode, always send to trndsky@gmail.com
+      try {
+        // For testing purposes, send all notifications to trndsky@gmail.com
+        const notificationEmail = 'trndsky@gmail.com';
+        console.log('Sending response notification to:', notificationEmail);
+        
+        // Create a simple ticket-like object for the notification function
+        const ticketData: SupportTicket = {
+          ticket_id: ticketId,
+          branch: ticket.branch || '',
+          priority: ticket.priority || 'normal',
+          description: responseText, // Use the response as the description
+          image_url: null,
+          status: ticket.status || 'pending',
+          created_at: new Date().toISOString(),
+          employee_id: '',
+          custom_fields: {},
+          anydesk_number: '',
+          customer_email: notificationEmail,
+          support_email: 'help@alwaslsaudi.com',
+          extension_number: ''
+        };
+        
+        await sendTicketNotification(ticketData, notificationEmail, null, 'دعم الوصل');
+      } catch (notifyError) {
+        // Just log the error, don't fail the entire response operation
+        console.error('Failed to send notification about response:', notifyError);
       }
 
       toast.success('تم إرسال الرد بنجاح');
