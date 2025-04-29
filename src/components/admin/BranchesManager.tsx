@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { getAllBranches, createBranch, deleteBranch, updateBranchName, Branch } from '@/utils/ticketUtils';
+import { Branch } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { toast } from 'sonner';
 import { Trash2, Plus, Pencil } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const BranchesManager = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -22,7 +23,7 @@ const BranchesManager = () => {
 
   useEffect(() => {
     fetchBranches();
-    // إذا لم تكن هناك فروع، قم بإضافة الفروع الافتراضية
+    // Check if there are no branches and add default ones if needed
     setTimeout(() => {
       checkAndAddDefaultBranches();
     }, 1000);
@@ -31,9 +32,15 @@ const BranchesManager = () => {
   const fetchBranches = async () => {
     setLoading(true);
     try {
-      const data = await getAllBranches();
+      const { data, error } = await supabase
+        .from('branches')
+        .select('*')
+        .order('name');
+
+      if (error) throw error;
+
       console.log("Fetched branches:", data);
-      setBranches(data);
+      setBranches(data || []);
     } catch (error) {
       console.error("Error fetching branches:", error);
       toast.error('فشل في تحميل الفروع');
@@ -44,10 +51,15 @@ const BranchesManager = () => {
 
   const checkAndAddDefaultBranches = async () => {
     try {
-      const data = await getAllBranches();
-      console.log("Checking branches for default setup:", data);
+      const { data } = await supabase
+        .from('branches')
+        .select('count()', { count: 'exact', head: true });
       
-      if (data.length === 0) {
+      const count = data || 0;
+      
+      console.log("Checking branches for default setup:", count);
+      
+      if (count === 0) {
         const defaultBranches = [
           "ALWASL DAMMAM",
           "ALWASL JEDDAH",
@@ -67,6 +79,22 @@ const BranchesManager = () => {
       }
     } catch (error) {
       console.error("Error in checkAndAddDefaultBranches:", error);
+    }
+  };
+
+  const createBranch = async (name: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('branches')
+        .insert({ name })
+        .select();
+      
+      if (error) throw error;
+      
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error creating branch:", error);
+      return { success: false };
     }
   };
 
@@ -100,13 +128,20 @@ const BranchesManager = () => {
       return;
     }
 
-    const success = await updateBranchName(editingBranch.id, editingBranch.name);
-    if (success) {
+    try {
+      const { error } = await supabase
+        .from('branches')
+        .update({ name: editingBranch.name })
+        .eq('id', editingBranch.id);
+
+      if (error) throw error;
+
       toast.success('تم تحديث اسم الفرع بنجاح');
       setEditDialogOpen(false);
       setEditingBranch(null);
       fetchBranches();
-    } else {
+    } catch (error) {
+      console.error('Error updating branch name:', error);
       toast.error('فشل في تحديث اسم الفرع');
     }
   };
@@ -115,11 +150,18 @@ const BranchesManager = () => {
     const branchId = String(id);
     
     if (confirm('هل أنت متأكد من حذف هذا الفرع؟')) {
-      const success = await deleteBranch(branchId);
-      if (success) {
+      try {
+        const { error } = await supabase
+          .from('branches')
+          .delete()
+          .eq('id', branchId);
+        
+        if (error) throw error;
+        
         toast.success('تم حذف الفرع بنجاح');
         fetchBranches();
-      } else {
+      } catch (error) {
+        console.error('Error deleting branch:', error);
         toast.error('فشل في حذف الفرع');
       }
     }

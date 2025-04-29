@@ -42,7 +42,7 @@ const TicketStatusSelector = ({
     try {
       console.log(`Updating ticket ${ticketId} status to ${newStatus}`);
       
-      // Call the stored procedure to update ticket status
+      // Direct update instead of stored procedure
       const { error } = await supabase
         .from('tickets')
         .update({ 

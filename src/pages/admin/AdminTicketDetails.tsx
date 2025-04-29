@@ -50,7 +50,9 @@ const AdminTicketDetails = () => {
         throw responseError;
       }
       
-      // Then delete the ticket itself
+      console.log('Successfully deleted responses for ticket:', ticketId);
+      
+      // Then delete the ticket itself (direct table delete instead of function call)
       const { error } = await supabase
         .from('tickets')
         .delete()
