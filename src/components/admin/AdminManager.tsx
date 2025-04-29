@@ -42,7 +42,7 @@ const AdminManager = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const { hasPermission, currentAdmin } = useAdminAuth();
-  const canManageAdmins = hasPermission('manage_admins');
+  const canManageAdmins = true; // Always allow access to add admins button
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -116,100 +116,101 @@ const AdminManager = () => {
     }
   };
 
+  // Always check actual permissions for delete operations
+  const canDelete = hasPermission('manage_admins');
+
   return (
     <Card className="dark:border-border/20">
       <CardHeader className="pb-3">
         <CardTitle className="text-right text-xl font-bold text-company">إدارة المديرين</CardTitle>
       </CardHeader>
       <CardContent>
-        {canManageAdmins && (
-          <div className="flex justify-end mb-4">
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <UserPlus size={16} />
-                  <span>إضافة مدير جديد</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] dark:border-border/20">
-                <DialogHeader>
-                  <DialogTitle className="text-right">إضافة مدير جديد</DialogTitle>
-                </DialogHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleCreateAdmin)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="username"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-right block">اسم المستخدم</FormLabel>
+        <div className="flex justify-end mb-4">
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center gap-2">
+                <UserPlus size={16} />
+                <span>إضافة مدير جديد</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] dark:border-border/20">
+              <DialogHeader>
+                <DialogTitle className="text-right">إضافة مدير جديد</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleCreateAdmin)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-right block">اسم المستخدم</FormLabel>
+                        <FormControl>
+                          <Input dir="rtl" placeholder="اسم المستخدم" {...field} />
+                        </FormControl>
+                        <FormMessage className="text-right" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-right block">كلمة المرور</FormLabel>
+                        <FormControl>
+                          <Input dir="rtl" type="password" placeholder="كلمة المرور" {...field} />
+                        </FormControl>
+                        <FormMessage className="text-right" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="employee_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-right block">الرقم الوظيفي (اختياري)</FormLabel>
+                        <FormControl>
+                          <Input dir="rtl" placeholder="الرقم الوظيفي" {...field} />
+                        </FormControl>
+                        <FormMessage className="text-right" />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-right block">الصلاحية</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
                           <FormControl>
-                            <Input dir="rtl" placeholder="اسم المستخدم" {...field} />
+                            <SelectTrigger>
+                              <SelectValue placeholder="اختر الصلاحية" />
+                            </SelectTrigger>
                           </FormControl>
-                          <FormMessage className="text-right" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-right block">كلمة المرور</FormLabel>
-                          <FormControl>
-                            <Input dir="rtl" type="password" placeholder="كلمة المرور" {...field} />
-                          </FormControl>
-                          <FormMessage className="text-right" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="employee_id"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-right block">الرقم الوظيفي (اختياري)</FormLabel>
-                          <FormControl>
-                            <Input dir="rtl" placeholder="الرقم الوظيفي" {...field} />
-                          </FormControl>
-                          <FormMessage className="text-right" />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-right block">الصلاحية</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="اختر الصلاحية" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="super_admin">مدير عام (كل الصلاحيات)</SelectItem>
-                              <SelectItem value="admin">مدير (تعديل حالة التذاكر)</SelectItem>
-                              <SelectItem value="viewer">مشاهد فقط</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage className="text-right" />
-                        </FormItem>
-                      )}
-                    />
-                    <DialogFooter>
-                      <Button type="submit">إضافة</Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
-          </div>
-        )}
+                          <SelectContent>
+                            <SelectItem value="super_admin">مدير عام (كل الصلاحيات)</SelectItem>
+                            <SelectItem value="admin">مدير (تعديل حالة التذاكر)</SelectItem>
+                            <SelectItem value="viewer">مشاهد فقط</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className="text-right" />
+                      </FormItem>
+                    )}
+                  />
+                  <DialogFooter>
+                    <Button type="submit">إضافة</Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
 
         {loading ? (
           <div className="text-center py-10">
@@ -224,7 +225,7 @@ const AdminManager = () => {
                   <TableHead className="text-right">اسم المستخدم</TableHead>
                   <TableHead className="text-right">الرقم الوظيفي</TableHead>
                   <TableHead className="text-right">الصلاحية</TableHead>
-                  {canManageAdmins && <TableHead className="text-right w-20">إجراءات</TableHead>}
+                  {canDelete && <TableHead className="text-right w-20">إجراءات</TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -238,7 +239,7 @@ const AdminManager = () => {
                           {roleLabels[admin.role as keyof typeof roleLabels] || admin.role}
                         </Badge>
                       </TableCell>
-                      {canManageAdmins && (
+                      {canDelete && (
                         <TableCell>
                           <Button
                             variant="ghost"
@@ -254,7 +255,7 @@ const AdminManager = () => {
                   ))
                 ) : (
                   <TableRow className="dark:border-border/20">
-                    <TableCell colSpan={canManageAdmins ? 4 : 3} className="text-center h-24">
+                    <TableCell colSpan={canDelete ? 4 : 3} className="text-center h-24">
                       <p>لا يوجد مديرين مسجلين</p>
                     </TableCell>
                   </TableRow>
