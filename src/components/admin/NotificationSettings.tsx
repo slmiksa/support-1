@@ -85,6 +85,9 @@ const NotificationSettings = () => {
           <p className="text-sm text-muted-foreground text-right">
             سيتم إرسال إشعار إلى هذا البريد الإلكتروني عند إنشاء تذكرة دعم فني جديدة
           </p>
+          <p className="text-sm text-green-500 text-right">
+            تم تكوين مفتاح Resend API بنجاح. سيتم إرسال الإشعارات من onboarding@resend.dev
+          </p>
         </div>
       </CardContent>
     </Card>

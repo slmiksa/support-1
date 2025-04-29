@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -7,7 +8,7 @@ if (!resendApiKey) {
   console.error("RESEND_API_KEY environment variable is not set");
 }
 
-console.log("Initializing Resend with API key length:", resendApiKey?.length);
+console.log("Initializing Resend with API key:", resendApiKey ? "API key found" : "API key missing");
 const resend = new Resend(resendApiKey);
 
 const corsHeaders = {
@@ -26,8 +27,8 @@ interface TicketNotificationRequest {
   support_email?: string;
   customer_email?: string;
   status?: string;
-  company_sender_email?: string | null; // إضافة حقل البريد الإلكتروني الرسمي للشركة
-  company_sender_name?: string; // إضافة حقل اسم المرسل
+  company_sender_email?: string | null;
+  company_sender_name?: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -49,18 +50,19 @@ const handler = async (req: Request): Promise<Response> => {
       support_email = 'help@alwaslsaudi.com',
       customer_email,
       status = 'pending',
-      company_sender_email = null, // Always use null to ensure default sender is used
-      company_sender_name = 'دعم الوصل' // استخدام الاسم الافتراضي إذا لم يتم تحديد اسم المرسل
+      company_sender_email = null,
+      company_sender_name = 'دعم الوصل'
     }: TicketNotificationRequest = await req.json();
 
     console.log(`Sending notification for ticket ${ticket_id}`);
     console.log(`Customer email: ${customer_email || 'not provided'}`);
     console.log(`Admin email: ${admin_email}`);
     console.log(`Support email: ${support_email}`);
-    console.log(`Company sender email: null (using default Resend sender: onboarding@resend.dev)`);
     console.log(`Company sender name: ${company_sender_name}`);
 
+    // Verify resendApiKey is available
     if (!resendApiKey) {
+      console.error("RESEND_API_KEY environment variable is not set");
       throw new Error("RESEND_API_KEY environment variable is not set");
     }
 
@@ -141,7 +143,6 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to support team
     console.log(`[${new Date().toISOString()}] Attempting to send support notification email to:`, support_email);
     try {
-      // Always use the default Resend sender
       const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
 
       const supportEmailResponse = await resend.emails.send({
@@ -161,7 +162,6 @@ const handler = async (req: Request): Promise<Response> => {
     // Send email to admin
     console.log(`[${new Date().toISOString()}] Attempting to send admin notification email to:`, admin_email);
     try {
-      // Always use the default Resend sender
       const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
 
       const adminEmailResponse = await resend.emails.send({
@@ -222,7 +222,6 @@ const handler = async (req: Request): Promise<Response> => {
       `;
 
       try {
-        // Always use the default Resend sender for customer emails
         const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
 
         const customerEmailResponse = await resend.emails.send({

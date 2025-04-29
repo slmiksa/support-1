@@ -139,6 +139,13 @@ const SupportForm = () => {
             position: 'top-center',
             duration: 5000
           });
+        } else {
+          // If notification failed, show a warning
+          toast.warning('تم إنشاء التذكرة ولكن فشل إرسال الإشعارات', {
+            closeButton: true,
+            position: 'top-center',
+            duration: 5000
+          });
         }
       } catch (error) {
         console.error('Error sending notifications:', error);
