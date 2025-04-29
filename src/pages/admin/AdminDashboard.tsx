@@ -12,6 +12,7 @@ import { Search, X, Flag, AlertTriangle, CircleCheck, Bell, Trash2 } from 'lucid
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { deleteTicket } from '@/utils/ticketUtils';
+
 const statusColorMap = {
   pending: 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200',
   open: 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200',
@@ -41,6 +42,7 @@ const priorityLabels = {
   medium: 'متوسطة',
   normal: 'عادية'
 };
+
 const AdminDashboard = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,53 +52,24 @@ const AdminDashboard = () => {
   const {
     isAuthenticated
   } = useAdminAuth();
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchTickets();
-      setupRealtimeSubscription();
     }
   }, [isAuthenticated]);
-  const setupRealtimeSubscription = () => {
-    const channel = supabase.channel('admin-dashboard-tickets').on('postgres_changes', {
-      event: 'INSERT',
-      schema: 'public',
-      table: 'tickets'
-    }, payload => {
-      const newTicket = payload.new;
-      toast(<div className="flex items-start space-x-2 rtl:space-x-reverse">
-            <Bell className="h-5 w-5 text-company flex-shrink-0 mt-0.5" />
-            <div>
-              <div className="font-bold text-base">تذكرة جديدة</div>
-              <div className="text-sm">تم استلام تذكرة جديدة: {newTicket.ticket_id}</div>
-              <div className="text-sm">الفرع: {newTicket.branch}</div>
-              <div className="text-sm">الأهمية: {priorityLabels[newTicket.priority] || 'عادية'}</div>
-              <div className="text-sm">الموظف: {newTicket.employee_id}</div>
-            </div>
-          </div>, {
-        duration: 30000,
-        position: 'top-left',
-        onDismiss: () => console.log("تم إغلاق الإشعار"),
-        onAutoClose: () => console.log("تم إغلاق الإشعار تلقائيًا"),
-        action: {
-          label: "عرض التذكرة",
-          onClick: () => navigate(`/admin/tickets/${newTicket.ticket_id}`)
-        },
-        closeButton: true
-      });
-      try {
-        const audio = new Audio('/notification.mp3');
-        audio.play().catch(e => console.log('Could not play notification sound:', e));
-      } catch (e) {
-        console.log('Error playing notification sound:', e);
-      }
-      setTickets(prevTickets => {
-        return [newTicket, ...prevTickets];
-      });
-    }).subscribe();
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  };
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    
+    // Poll for new tickets every 30 seconds
+    const interval = setInterval(() => {
+      fetchTickets();
+    }, 30000);
+    
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
   const fetchTickets = async () => {
     try {
       setLoading(true);
@@ -117,6 +90,7 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
+
   const filterTickets = () => {
     let filtered = [...tickets];
     if (activeFilter !== 'all') {
@@ -128,9 +102,11 @@ const AdminDashboard = () => {
     }
     return filtered;
   };
+
   const handleViewTicket = ticketId => {
     navigate(`/admin/tickets/${ticketId}`);
   };
+
   const getPriorityDisplay = priority => {
     const actualPriority = priority || 'normal';
     return <Badge className={`font-medium px-3 py-1 rounded-md text-sm flex items-center ${priorityColorMap[actualPriority] || 'bg-green-100'}`}>
@@ -138,6 +114,7 @@ const AdminDashboard = () => {
         {priorityLabels[actualPriority] || 'عادية'}
       </Badge>;
   };
+
   const handleDeleteTicket = async (ticketId: string) => {
     if (confirm(`هل أنت متأكد من حذف التذكرة ${ticketId}؟`)) {
       try {
@@ -155,11 +132,14 @@ const AdminDashboard = () => {
       }
     }
   };
+
   const {
     hasPermission
   } = useAdminAuth();
   const canDeleteTickets = hasPermission('delete_tickets');
-  return <div className="min-h-screen bg-white">
+
+  return (
+    <div className="min-h-screen bg-white">
       <AdminHeader />
       <main className="container mx-auto px-4 py-6">
         <Card className="shadow-md border-company-light">
@@ -266,6 +246,8 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </main>
-    </div>;
+    </div>
+  );
 };
+
 export default AdminDashboard;
