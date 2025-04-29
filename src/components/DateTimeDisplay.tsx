@@ -29,24 +29,24 @@ const DateTimeDisplay = () => {
   });
 
   return (
-    <div className="flex items-center justify-center gap-8 flex-wrap">
-      {/* Clock Section */}
-      <div className="flex items-center bg-white/80 backdrop-blur-sm shadow-md rounded-lg px-4 py-3 border border-gray-100">
-        <div className="rounded-full bg-blue-50 p-2 mr-3">
-          <Clock size={22} className="text-company" />
+    <div className="flex items-center justify-center gap-4 flex-row">
+      {/* Date Section */}
+      <div className="flex items-center bg-white shadow-sm rounded-lg px-3 py-2 border border-gray-100">
+        <div className="rounded-full bg-blue-50 p-1.5 mr-2">
+          <Calendar size={18} className="text-company" />
         </div>
         <div className="text-gray-700">
-          <span className="font-bold">{formattedTime}</span>
+          <span className="font-medium text-sm">{formattedDate}</span>
         </div>
       </div>
 
-      {/* Date Section */}
-      <div className="flex items-center bg-white/80 backdrop-blur-sm shadow-md rounded-lg px-4 py-3 border border-gray-100">
-        <div className="rounded-full bg-blue-50 p-2 mr-3">
-          <Calendar size={22} className="text-company" />
+      {/* Clock Section */}
+      <div className="flex items-center bg-white shadow-sm rounded-lg px-3 py-2 border border-gray-100">
+        <div className="rounded-full bg-blue-50 p-1.5 mr-2">
+          <Clock size={18} className="text-company" />
         </div>
         <div className="text-gray-700">
-          <span className="font-bold">{formattedDate}</span>
+          <span className="font-medium text-sm">{formattedTime}</span>
         </div>
       </div>
     </div>

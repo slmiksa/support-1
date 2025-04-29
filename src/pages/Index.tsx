@@ -4,7 +4,7 @@ import Header from '@/components/Header';
 import SupportForm from '@/components/SupportForm';
 import DateTimeDisplay from '@/components/DateTimeDisplay';
 import { supabase, SiteSettings, HelpField } from '@/integrations/supabase/client';
-import { HeadphonesIcon, PhoneOffIcon, HelpCircleIcon, Sparkles } from 'lucide-react';
+import { HeadphonesIcon, PhoneOffIcon, HelpCircleIcon } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -71,23 +71,23 @@ const Index = () => {
     <div className="min-h-screen pb-16 bg-gradient-to-b from-slate-50 to-blue-50">
       <Header />
       <main className="container px-4 py-8 mx-auto mb-20">
-        <Card className="bg-white shadow-xl border-t-4 border-company mb-8 overflow-hidden rounded-xl transform hover:scale-[1.01] transition-all">
-          <CardContent className="p-6">
+        <Card className="bg-white shadow-md border border-gray-100 mb-6 overflow-hidden rounded-lg max-w-3xl mx-auto">
+          <CardContent className="p-4">
             <div className="flex flex-col items-center">
-              <div className="flex flex-col items-center gap-3 mb-6 animate-slide-in pt-4 pb-2">
+              <div className="flex flex-col items-center py-2">
                 <DateTimeDisplay />
                 
-                <div className="flex items-center gap-3 mt-4">
-                  <div className={`flex items-center gap-2 py-2 px-4 rounded-full shadow-md transition-all ${
+                <div className="flex items-center gap-3 mt-3">
+                  <div className={`flex items-center gap-2 py-1.5 px-3 rounded-full shadow-sm transition-all ${
                     supportStatus.available 
                       ? 'bg-gradient-to-r from-green-100 to-green-50 text-green-800 border border-green-200' 
                       : 'bg-gradient-to-r from-red-100 to-red-50 text-red-800 border border-red-200'
                   }`}>
                     {supportStatus.available 
-                      ? <HeadphonesIcon size={18} className="text-green-600 animate-bounce-gentle" /> 
-                      : <PhoneOffIcon size={18} className="text-red-600" />
+                      ? <HeadphonesIcon size={16} className="text-green-600 animate-bounce-gentle" /> 
+                      : <PhoneOffIcon size={16} className="text-red-600" />
                     }
-                    <span className="font-medium text-sm">
+                    <span className="font-medium text-xs">
                       {supportStatus.message}
                     </span>
                   </div>
@@ -98,10 +98,10 @@ const Index = () => {
                         <Popover>
                           <PopoverTrigger asChild>
                             <button 
-                              className="p-1.5 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors shadow-md hover:shadow-lg" 
+                              className="p-1.5 bg-blue-100 text-blue-800 rounded-full hover:bg-blue-200 transition-colors shadow-sm hover:shadow" 
                               aria-label="معلومات مهمة"
                             >
-                              <HelpCircleIcon size={18} className="text-blue-600" />
+                              <HelpCircleIcon size={16} className="text-blue-600" />
                             </button>
                           </PopoverTrigger>
                           <PopoverContent className="w-80 text-right bg-white/90 backdrop-blur-sm border-blue-100 shadow-xl" align="center">
