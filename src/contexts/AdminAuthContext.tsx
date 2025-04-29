@@ -95,9 +95,12 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
           return false;
         }
 
-        const validRole = ['super_admin', 'admin', 'viewer'].includes(adminData.role) 
-          ? adminData.role as AdminRole 
-          : 'viewer' as AdminRole;
+        // Handle special case: if username is 'admin', enforce super_admin role
+        const validRole = username === 'admin' 
+          ? 'super_admin' as AdminRole 
+          : (adminData.role && ['super_admin', 'admin', 'viewer'].includes(adminData.role) 
+              ? adminData.role as AdminRole 
+              : 'viewer' as AdminRole);
 
         const validatedAdminData: AdminUser = {
           id: adminData.id,
@@ -137,6 +140,11 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     // Debug permissions
     console.log("Current admin role:", currentAdmin.role);
     console.log("Requested permission:", permission);
+    
+    // Special case: if username is 'admin', treat as super_admin regardless of stored role
+    if (currentAdmin.username === 'admin') {
+      return true;
+    }
 
     switch (permission) {
       case 'manage_tickets':
@@ -144,7 +152,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       case 'view_only':
         return ['super_admin', 'admin', 'viewer'].includes(currentAdmin.role);
       case 'manage_admins':
-        return currentAdmin.role === 'super_admin';  // فقط السوبر أدمن يستطيع إدارة المستخدمين
+        return currentAdmin.role === 'super_admin';
       case 'respond_to_tickets':
         return ['super_admin', 'admin'].includes(currentAdmin.role);
       case 'delete_tickets':
