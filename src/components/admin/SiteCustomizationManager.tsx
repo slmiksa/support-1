@@ -114,9 +114,16 @@ const SiteCustomizationManager = () => {
       // Make a copy of DEFAULT_SETTINGS to avoid reference issues
       const defaultSettings = { ...DEFAULT_SETTINGS };
       
+      // Convert support_help_fields to JSON compatible format
+      const dbSettings = {
+        ...defaultSettings,
+        // Explicitly convert array to JSON format that Supabase expects
+        support_help_fields: defaultSettings.support_help_fields as unknown as any
+      };
+      
       const { error } = await supabase
         .from('site_settings')
-        .insert([defaultSettings]);
+        .insert([dbSettings]);
         
       if (error) throw error;
       
@@ -149,7 +156,8 @@ const SiteCustomizationManager = () => {
         support_available: settings.support_available,
         support_message: settings.support_message,
         support_info: settings.support_info,
-        support_help_fields: helpFields
+        // Convert helpFields array to JSON that Supabase can handle
+        support_help_fields: helpFields as unknown as any
       };
       
       const { error } = await supabase
@@ -616,7 +624,7 @@ const SiteCustomizationManager = () => {
               </div>
               
               <div className="text-right text-sm text-gray-600 mb-4">
-                <p>يمكنك إض��فة عدة حقول معلومات مساعدة ستظهر في الصفحة الرئيسية عند الضغط على أيقونة المساعدة</p>
+                <p>يمكنك إض��فة عدة حقول معلومات مساعدة ستظهر في الصفحة الر��يسية عند الضغط على أيقونة المساعدة</p>
               </div>
               
               {helpFields.length === 0 ? (
