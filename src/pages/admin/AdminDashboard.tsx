@@ -208,7 +208,7 @@ const AdminDashboard = () => {
                     })}
                           </TableCell>
                           <TableCell className="py-4 flex items-center gap-2">
-                            <Button size="sm" onClick={() => handleViewTicket(ticket.ticket_id)} className="bg-company hover:bg-company-dark rounded-sm">
+                            <Button size="sm" onClick={() => handleViewTicket(ticket.ticket_id)} className="bg-company hover:bg-company-dark rounded text-slate-50 text-justify">
                               عرض التفاصيل
                             </Button>
                             
