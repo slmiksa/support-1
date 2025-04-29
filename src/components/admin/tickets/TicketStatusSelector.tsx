@@ -41,10 +41,15 @@ const TicketStatusSelector = ({
     setUpdatingStatus(true);
     try {
       console.log(`Updating ticket ${ticketId} status to ${newStatus}`);
-      const { data, error } = await supabase.rpc('update_ticket_status', {
-        p_ticket_id: ticketId,
-        p_status: newStatus
-      });
+      
+      // Call the stored procedure to update ticket status
+      const { error } = await supabase
+        .from('tickets')
+        .update({ 
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        })
+        .eq('ticket_id', ticketId);
 
       if (error) {
         console.error('Error updating ticket status:', error);

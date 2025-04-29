@@ -31,10 +31,13 @@ export const useTicketDetails = (ticketId: string | undefined) => {
 
       // If the ticket status is 'pending', update it to 'open' automatically
       if (ticketData.status === 'pending') {
-        const { error: updateError } = await supabase.rpc('update_ticket_status', {
-          p_ticket_id: ticketId,
-          p_status: 'open'
-        });
+        const { error: updateError } = await supabase
+          .from('tickets')
+          .update({ 
+            status: 'open',
+            updated_at: new Date().toISOString()
+          })
+          .eq('ticket_id', ticketId);
         
         if (!updateError) {
           // Update local state with the new status
