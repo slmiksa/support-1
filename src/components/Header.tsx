@@ -120,18 +120,15 @@ const Header = () => {
     <header className="w-full relative">
       <AnimatedBackground />
       
-      {/* Header العلوي مع الشعار */}
+      {/* Header العلوي مع الشعار - تم تغيير اللون إلى أزرق متدرج */}
       <div 
-        style={{
-          background: `linear-gradient(135deg, ${settings.primary_color || '#0f72c1'}, ${settings.secondary_color || '#0a4f88'})`
-        }} 
-        className="py-12 shadow-xl relative overflow-hidden"
+        className="py-12 shadow-xl relative overflow-hidden bg-gradient-modern"
       >
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gNDAgMCBMIDAgMCAwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] bg-[#333b60] opacity-20"></div>
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gNDAgMCBMIDAgMCAwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30"></div>
         
         <Container>
           <div className="flex flex-col items-center justify-center text-center relative z-10">
-            {/* الشعار - مركزة وأكبر */}
+            {/* الشعار - مركزة وأكبر مع هالة بيضاء محسنة */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
                 {/* مؤشر أيقونة الدعم الفني */}
@@ -139,8 +136,8 @@ const Header = () => {
                   <Headphones size={20} />
                 </div>
                 
-                {/* حاوية الشعار مع تأثير نبض الدعم المحسن */}
-                <div className="relative w-36 h-36 md:w-44 md:h-44 overflow-hidden rounded-full shadow-xl bg-white p-3 logo-pulse border-4 border-white/50">
+                {/* حاوية الشعار مع تأثير نبض الدعم المحسن وهالة بيضاء */}
+                <div className="relative w-36 h-36 md:w-44 md:h-44 overflow-hidden rounded-full shadow-xl bg-white p-3 border-4 border-white/80 logo-pulse-enhanced">
                   <AspectRatio ratio={1 / 1} className="overflow-hidden">
                     <img 
                       src={logoUrl} 

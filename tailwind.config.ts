@@ -119,9 +119,9 @@ export default {
 					'50%': { transform: 'translateY(-5px)' }
 				},
 				'glowing': {
-					'0%': { boxShadow: '0 0 5px rgba(59, 130, 246, 0.5)' },
-					'50%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.8)' },
-					'100%': { boxShadow: '0 0 5px rgba(59, 130, 246, 0.5)' }
+					'0%': { boxShadow: '0 0 5px rgba(255, 255, 255, 0.7)' },
+					'50%': { boxShadow: '0 0 20px rgba(255, 255, 255, 1)' },
+					'100%': { boxShadow: '0 0 5px rgba(255, 255, 255, 0.7)' }
 				}
 			},
 			animation: {
@@ -140,14 +140,14 @@ export default {
 				sans: ['Tajawal', 'system-ui', 'sans-serif']
 			},
 			backgroundImage: {
-				'gradient-primary': 'linear-gradient(90deg, var(--company-primary, #0f72c1) 0%, var(--company-secondary, #0a4f88) 100%)',
+				'gradient-primary': 'linear-gradient(90deg, #1e40af 0%, #3b82f6 100%)',
 				'gradient-support': 'linear-gradient(135deg, #3b82f6, #1e40af)',
-				'gradient-modern': 'linear-gradient(109.6deg, rgba(15, 114, 193, 0.85) 11.2%, rgba(30, 58, 138, 0.95) 91.1%)'
+				'gradient-modern': 'linear-gradient(109.6deg, rgba(59, 130, 246, 0.9) 11.2%, rgba(29, 78, 216, 0.95) 91.1%)'
 			},
 			boxShadow: {
 				'soft': '0 4px 15px rgba(0, 0, 0, 0.08)',
-				'card': '0 10px 20px -3px rgba(15, 114, 193, 0.15)',
-				'glow': '0 0 15px rgba(59, 130, 246, 0.6)'
+				'card': '0 10px 20px -3px rgba(59, 130, 246, 0.15)',
+				'glow': '0 0 15px rgba(255, 255, 255, 0.6)'
 			}
 		}
 	},
