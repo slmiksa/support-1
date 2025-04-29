@@ -126,3 +126,16 @@ body {
 .logo-pulse {
   animation: logoPulse 2s infinite;
 }
+
+/* File upload button styling */
+.file-input-wrapper {
+  @apply relative overflow-hidden inline-block;
+}
+
+.file-input-wrapper input[type=file] {
+  @apply absolute top-0 right-0 opacity-0 cursor-pointer h-full w-full;
+}
+
+.file-input-btn {
+  @apply px-4 py-2 rounded bg-company text-white hover:bg-company-dark transition-colors;
+}
