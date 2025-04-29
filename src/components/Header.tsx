@@ -25,17 +25,36 @@ const Header = () => {
   const [logoError, setLogoError] = useState(false);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const location = useLocation();
-  // إضافة متغير جديد لتتبع محاولات تحميل الشعار
+  // متغيرات تتبع محاولات تحميل الشعار والأيقونة
   const [logoLoadAttempts, setLogoLoadAttempts] = useState(0);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
 
   useEffect(() => {
     fetchSiteSettings();
-  }, []);
+    
+    // إعادة محاولة الجلب كل دقيقة للتأكد من تحديث البيانات
+    const intervalId = setInterval(() => {
+      const now = Date.now();
+      // تحقق من مرور وقت كافي منذ آخر عملية جلب (30 ثانية)
+      if (now - lastFetchTime > 30000) {
+        console.log("Auto-refreshing site settings data");
+        fetchSiteSettings();
+      }
+    }, 60000);
+    
+    return () => clearInterval(intervalId);
+  }, [lastFetchTime]);
 
   const fetchSiteSettings = async () => {
     try {
-      // استخدام استعلام يجلب جميع الصفوف
-      const { data, error } = await supabase.from('site_settings').select('*');
+      setLoading(true);
+      console.log("Header - Fetching site settings...");
+      
+      // استخدام استعلام يجلب جميع الصفوف مع تعطيل التخزين المؤقت
+      const { data, error } = await supabase
+        .from('site_settings')
+        .select('*')
+        .limit(1);
       
       if (error) {
         console.error('Error fetching site settings:', error);
@@ -77,9 +96,11 @@ const Header = () => {
       } else {
         // Default title if no settings
         document.title = "نظام الدعم الفني";
+        console.log("Header - No settings data returned from database");
       }
       
       setSettingsInitialized(true);
+      setLastFetchTime(Date.now());
     } catch (error) {
       console.error('Error:', error);
       document.title = "نظام الدعم الفني";
@@ -89,9 +110,9 @@ const Header = () => {
     }
   };
 
-  // محاولة تحميل الشعار مرة أخرى كل 3 ثوانٍ إذا فشلت المحاولة الأولى (حتى 3 محاولات)
+  // محاولة تحميل الشعار مرة أخرى كل 3 ثوانٍ إذا فشلت المحاولة الأولى (حتى 5 محاولات)
   useEffect(() => {
-    if (logoError && logoLoadAttempts < 3 && settings.logo_url) {
+    if (logoError && logoLoadAttempts < 5 && settings.logo_url) {
       const timer = setTimeout(() => {
         console.log(`Retry loading logo attempt ${logoLoadAttempts + 1}`);
         setLogoError(false);
@@ -181,7 +202,7 @@ const Header = () => {
                   <div className="absolute -inset-1 bg-white animate-glowing rounded-full opacity-80"></div>
                   <AspectRatio ratio={1 / 1} className="overflow-hidden relative z-10">
                     <img 
-                      key={`logo-${logoLoadAttempts}`}
+                      key={`logo-${logoLoadAttempts}-${settings.logo_url?.substring(0, 10) || 'default'}`}
                       src={logoUrl} 
                       alt="شعار نظام الدعم" 
                       className="object-contain h-full w-full transform hover:scale-110 transition-transform duration-500" 
@@ -244,4 +265,3 @@ const Header = () => {
 };
 
 export default Header;
-

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -10,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase, SiteSettings, HelpField } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon, Plus, X, AlertCircle } from 'lucide-react';
+import { Image, Palette, Type, HeadphonesIcon, HelpCircleIcon, Plus, X, AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { Json } from '@/integrations/supabase/types';
 
@@ -91,11 +90,11 @@ const SiteCustomizationManager = () => {
         // تعيين معاينات الشعار والأيقونة إذا كانت موجودة
         if (settingsData.logo_url) {
           setLogoPreview(settingsData.logo_url);
-          console.log("Logo URL set:", settingsData.logo_url);
+          console.log("Logo URL set:", settingsData.logo_url.substring(0, 100) + "...");
         }
         if (settingsData.favicon_url) {
           setFaviconPreview(settingsData.favicon_url);
-          console.log("Favicon URL set:", settingsData.favicon_url);
+          console.log("Favicon URL set:", settingsData.favicon_url.substring(0, 100) + "...");
         }
         
         // تحليل حقول المساعدة إذا كانت موجودة
@@ -171,45 +170,60 @@ const SiteCustomizationManager = () => {
     setLoading(true);
     setSavingInProgress(true);
     try {
-      // تحقق من صحة بيانات الشعار والأيقونة
-      if (!settings.logo_url && logoPreview) {
-        settings.logo_url = logoPreview;
+      // تحضير البيانات المحلية للحفظ
+      // تأكد من عدم فقدان أي بيانات من المعاينة للشعار والأيقونة
+      let logoToSave = settings.logo_url;
+      let faviconToSave = settings.favicon_url;
+      
+      // إذا كان هناك معاينة للشعار ولكن ليس هناك شعار في الإعدادات، استخدم المعاينة
+      if (!logoToSave && logoPreview) {
+        logoToSave = logoPreview;
+        console.log("Using logo preview for saving:", logoToSave ? "Preview exists" : "No preview");
       }
       
-      if (!settings.favicon_url && faviconPreview) {
-        settings.favicon_url = faviconPreview;
+      // نفس الشيء للأيقونة
+      if (!faviconToSave && faviconPreview) {
+        faviconToSave = faviconPreview;
+        console.log("Using favicon preview for saving:", faviconToSave ? "Preview exists" : "No preview");
       }
       
-      // عرض البيانات التي سيتم إرسالها للتأكد
-      console.log('Saving settings:', settings);
-      console.log('Logo URL before save:', settings.logo_url);
-      console.log('Favicon URL before save:', settings.favicon_url);
-      console.log('Help fields:', helpFields);
+      // تجهيز بيانات الإعدادات النهائية للحفظ
+      const finalSettings = {
+        ...settings,
+        logo_url: logoToSave || '', // تأكد من أن القيمة ليست فارغة
+        favicon_url: faviconToSave || '' // تأكد من أن القيمة ليست فارغة
+      };
+      
+      // عرض تفاصيل حفظ البيانات للتصحيح
+      console.log('====== SAVING SETTINGS ======');
+      console.log('Logo URL:', logoToSave ? logoToSave.substring(0, 50) + '...' : 'None');
+      console.log('Favicon URL:', faviconToSave ? faviconToSave.substring(0, 50) + '...' : 'None');
+      console.log('============================');
 
       // تجهيز بيانات الإعدادات بأنواع مناسبة
       const cleanSettings = {
-        site_name: settings.site_name || '',
-        page_title: settings.page_title || '',
-        logo_url: settings.logo_url || '',
-        favicon_url: settings.favicon_url || '',
-        primary_color: settings.primary_color || '#0f72c1',
-        secondary_color: settings.secondary_color || '#0a4f88',
-        text_color: settings.text_color || '#ffffff',
-        footer_text: settings.footer_text || '',
-        support_available: settings.support_available === true,
-        support_message: settings.support_message || '',
-        support_info: settings.support_info || '',
+        site_name: finalSettings.site_name || '',
+        page_title: finalSettings.page_title || '',
+        logo_url: finalSettings.logo_url || '',
+        favicon_url: finalSettings.favicon_url || '',
+        primary_color: finalSettings.primary_color || '#0f72c1',
+        secondary_color: finalSettings.secondary_color || '#0a4f88',
+        text_color: finalSettings.text_color || '#ffffff',
+        footer_text: finalSettings.footer_text || '',
+        support_available: finalSettings.support_available === true,
+        support_message: finalSettings.support_message || '',
+        support_info: finalSettings.support_info || '',
         support_help_fields: helpFields as unknown as Json,
-        company_sender_email: settings.company_sender_email || '',
-        company_sender_name: settings.company_sender_name || ''
+        company_sender_email: finalSettings.company_sender_email || '',
+        company_sender_name: finalSettings.company_sender_name || ''
       };
       
       // إذا كانت إعدادات البريد الإلكتروني موجودة، قم بتحويلها إلى JSON
-      if (settings.email_settings) {
-        (cleanSettings as any).email_settings = settings.email_settings as unknown as Json;
+      if (finalSettings.email_settings) {
+        (cleanSettings as any).email_settings = finalSettings.email_settings as unknown as Json;
       }
 
-      console.log('Cleaned settings for submission:', cleanSettings);
+      console.log('Clean settings for submission:', cleanSettings);
 
       // تحقق مما إذا كانت هناك بيانات موجودة بالفعل
       const { data, error: countError } = await supabase
@@ -224,20 +238,30 @@ const SiteCustomizationManager = () => {
       let error;
       
       if (data && data.length > 0) {
-        // تحديث الصف الموجود
-        const { error: updateError } = await supabase
+        // تحديث الصف الموجود مع الإعدادات المحدثة
+        const { error: updateError, data: updateData } = await supabase
           .from('site_settings')
           .update(cleanSettings)
-          .eq('id', data[0].id);
+          .eq('id', data[0].id)
+          .select();
         
         error = updateError;
+        
+        if (!updateError && updateData) {
+          console.log("Update successful, updated data:", updateData);
+        }
       } else {
-        // إدراج صف جديد
-        const { error: insertError } = await supabase
+        // إدراج صف جديد إذا لم توجد بيانات سابقة
+        const { error: insertError, data: insertData } = await supabase
           .from('site_settings')
-          .insert([cleanSettings]);
+          .insert([cleanSettings])
+          .select();
         
         error = insertError;
+        
+        if (!insertError && insertData) {
+          console.log("Insert successful, inserted data:", insertData);
+        }
       }
       
       if (error) {
@@ -245,15 +269,22 @@ const SiteCustomizationManager = () => {
         throw error;
       }
       
+      // تحديث الإعدادات المحلية بعد الحفظ الناجح
+      setSettings(prevState => ({
+        ...prevState,
+        logo_url: logoToSave || '',
+        favicon_url: faviconToSave || ''
+      }));
+      
       toast.success('تم حفظ إعدادات الموقع بنجاح');
       setSavedSuccessfully(true);
       
-      if (settings.page_title) {
-        document.title = settings.page_title;
+      if (cleanSettings.page_title) {
+        document.title = cleanSettings.page_title;
       }
       
-      if (settings.favicon_url) {
-        updateFavicon(settings.favicon_url);
+      if (cleanSettings.favicon_url) {
+        updateFavicon(cleanSettings.favicon_url);
       }
       
       // إعادة جلب البيانات للتأكيد
@@ -323,6 +354,15 @@ const SiteCustomizationManager = () => {
         document.getElementsByTagName('head')[0].appendChild(link);
       }
       link.href = faviconUrl;
+      
+      // تحديث الأيقونة المصغرة أيضًا
+      let shortcutLink = document.querySelector("link[rel~='shortcut icon']") as HTMLLinkElement;
+      if (!shortcutLink) {
+        shortcutLink = document.createElement('link');
+        shortcutLink.rel = 'shortcut icon';
+        document.getElementsByTagName('head')[0].appendChild(shortcutLink);
+      }
+      shortcutLink.href = faviconUrl;
     } catch (error) {
       console.error('Error updating favicon:', error);
     }
@@ -418,7 +458,12 @@ const SiteCustomizationManager = () => {
                 ? 'bg-yellow-500 hover:bg-yellow-600' 
                 : 'bg-support hover:bg-support-dark'}`}
           >
-            {loading ? 'جاري الحفظ...' : savedSuccessfully ? 'تم الحفظ بنجاح ✓' : 'حفظ الإعدادات'}
+            {loading ? (
+              <span className="flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                جاري الحفظ...
+              </span>
+            ) : savedSuccessfully ? 'تم الحفظ بنجاح ✓' : 'حفظ الإعدادات'}
           </Button>
           <h2 className="text-xl font-bold text-right gradient-text">تخصيص واجهة الموقع</h2>
         </div>
@@ -862,4 +907,3 @@ const SiteCustomizationManager = () => {
 };
 
 export default SiteCustomizationManager;
-
