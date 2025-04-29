@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -135,6 +136,24 @@
   
   .nav-link-secondary {
     @apply flex items-center gap-2 py-2 px-4 font-medium text-company bg-white border border-gray-200 rounded-md transition-colors hover:bg-gray-50 hover:border-company;
+  }
+  
+  /* Active navigation link - highlighted state */
+  .nav-link-active {
+    @apply flex items-center gap-2 py-2 px-4 font-medium text-white bg-gradient-to-r from-company to-company-dark rounded-md shadow-md border border-white/20;
+    position: relative;
+  }
+  
+  .nav-link-active::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: var(--company-primary);
+    border-radius: 50%;
   }
 
   /* Buttons */
