@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Info, Headphones } from 'lucide-react';
@@ -18,42 +17,41 @@ const DEFAULT_SETTINGS: SiteSettings = {
   text_color: '#ffffff',
   footer_text: ''
 };
-
 const Header = () => {
   const [settings, setSettings] = useState<SiteSettings>({});
   const [loading, setLoading] = useState(true);
   const [logoError, setLogoError] = useState(false);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const location = useLocation();
-  
   useEffect(() => {
     fetchSiteSettings();
   }, []);
-  
   const fetchSiteSettings = async () => {
     try {
       // استخدام استعلام يجلب جميع الصفوف
-      const { data, error } = await supabase.from('site_settings').select('*');
-      
+      const {
+        data,
+        error
+      } = await supabase.from('site_settings').select('*');
       if (error) {
         console.error('Error fetching site settings:', error);
         setSettingsInitialized(true);
         setLoading(false);
         return;
       }
-      
+
       // التحقق من وجود بيانات وأخذ أول صف
       if (data && data.length > 0) {
         // استخدم النوع المطلوب
         const settingsData = data[0] as unknown as SiteSettings;
         console.log("Fetched settings:", settingsData);
         setSettings(settingsData);
-        
+
         // تعيين عنوان الصفحة إذا كان متاحًا
         if (settingsData.page_title) {
           document.title = settingsData.page_title;
         }
-        
+
         // تحديث أيقونة المتصفح إذا كانت متاحة
         if (settingsData.favicon_url) {
           updateFavicon(settingsData.favicon_url);
@@ -67,10 +65,8 @@ const Header = () => {
       setLoading(false);
     }
   };
-  
   const updateFavicon = (faviconUrl: string) => {
     if (!faviconUrl) return;
-    
     try {
       let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
       if (!link) {
@@ -83,37 +79,28 @@ const Header = () => {
       console.error('Error updating favicon:', error);
     }
   };
-  
+
   // استخدام الشعار الافتراضي إذا فشل تحميل الشعار المخصص
   const handleLogoError = () => {
     console.log('Logo failed to load, using default logo');
     setLogoError(true);
   };
-  
+
   // التحقق مما إذا كان الشعار عبارة عن سلسلة base64 واستخدامها مباشرة
   const isBase64Image = (str: string) => {
     return str && str.startsWith('data:image');
   };
-  
-  const logoUrl = logoError ? logoSvg : (settings.logo_url && isBase64Image(settings.logo_url) ? 
-    settings.logo_url : (settings.logo_url || logoSvg));
-  
+  const logoUrl = logoError ? logoSvg : settings.logo_url && isBase64Image(settings.logo_url) ? settings.logo_url : settings.logo_url || logoSvg;
   const isTicketStatusActive = location.pathname.startsWith('/ticket-status');
   const isHomeActive = location.pathname === '/';
-  
   if (!settingsInitialized) {
     return null;
   }
-  
-  return (
-    <header className="w-full">
+  return <header className="w-full">
       {/* Header العلوي مع اسم الشركة والشعار */}
-      <div 
-        className="py-8 shadow-lg" 
-        style={{ 
-          background: `linear-gradient(to right, ${settings.primary_color || '#D4AF37'}, ${settings.secondary_color || '#B08C1A'})` 
-        }}
-      >
+      <div style={{
+      background: `linear-gradient(to right, ${settings.primary_color || '#D4AF37'}, ${settings.secondary_color || '#B08C1A'})`
+    }} className="py-8 shadow-lg bg-[#133b73]">
         <Container>
           <div className="flex flex-col items-center justify-center text-center">
             {/* الشعار واسم الشركة - مركزة وأكبر */}
@@ -127,12 +114,7 @@ const Header = () => {
                 {/* حاوية الشعار مع تأثير نبض الدعم المحسن */}
                 <div className="relative w-28 h-28 md:w-36 md:h-36 overflow-hidden rounded-full shadow-lg bg-white p-2 logo-pulse">
                   <AspectRatio ratio={1 / 1} className="overflow-hidden">
-                    <img 
-                      src={logoUrl} 
-                      alt={settings.site_name || 'شعار الموقع'} 
-                      className="object-contain h-full w-full" 
-                      onError={handleLogoError}
-                    />
+                    <img src={logoUrl} alt={settings.site_name || 'شعار الموقع'} className="object-contain h-full w-full" onError={handleLogoError} />
                   </AspectRatio>
                 </div>
               </div>
@@ -172,8 +154,6 @@ const Header = () => {
           <span>{settings.footer_text || ''}</span>
         </Container>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;
