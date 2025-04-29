@@ -19,13 +19,9 @@ const BranchesManager = () => {
   const [editingBranch, setEditingBranch] = useState<{ id: string, name: string } | null>(null);
   const { hasPermission } = useAdminAuth();
   const canManageAdmins = hasPermission('manage_admins');
-  const defaultBranches = ["ALWASL DAMMAM", "ALWASL JEDDAH", "ALWASL RIYADH", "MADA"];
 
   useEffect(() => {
-    fetchBranches().then(() => {
-      // Check if default branches need to be added only if no branches exist
-      checkAndAddDefaultBranches();
-    });
+    fetchBranches();
   }, []);
 
   const fetchBranches = async () => {
@@ -76,40 +72,6 @@ const BranchesManager = () => {
     
     // Convert map back to array
     return Array.from(nameToEarliestBranch.values());
-  };
-
-  const checkAndAddDefaultBranches = async () => {
-    try {
-      const existingBranches = branches;
-      
-      if (existingBranches.length === 0) {
-        console.log("No branches found. Adding default branches.");
-        
-        for (const branchName of defaultBranches) {
-          await createBranch(branchName);
-        }
-        
-        toast.success('تم إضافة الفروع الافتراضية بنجاح');
-        fetchBranches();
-      } else {
-        // Check if we need to add any missing default branches
-        const existingNames = new Set(existingBranches.map(b => b.name));
-        let addedAny = false;
-        
-        for (const branchName of defaultBranches) {
-          if (!existingNames.has(branchName)) {
-            await createBranch(branchName);
-            addedAny = true;
-          }
-        }
-        
-        if (addedAny) {
-          fetchBranches();
-        }
-      }
-    } catch (error) {
-      console.error("Error in checkAndAddDefaultBranches:", error);
-    }
   };
 
   // Delete duplicate branches
