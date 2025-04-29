@@ -61,13 +61,19 @@ const Header = () => {
   };
   
   const updateFavicon = (faviconUrl: string) => {
-    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
+    if (!faviconUrl) return;
+    
+    try {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.getElementsByTagName('head')[0].appendChild(link);
+      }
+      link.href = faviconUrl;
+    } catch (error) {
+      console.error('Error updating favicon:', error);
     }
-    link.href = faviconUrl;
   };
   
   // Fallback to default logo if custom logo fails to load
@@ -76,7 +82,14 @@ const Header = () => {
     setLogoError(true);
   };
   
-  const logoUrl = logoError ? logoSvg : (settings.logo_url || logoSvg);
+  // Check if logoUrl is a base64 string and use it directly
+  const isBase64Image = (str: string) => {
+    return str && str.startsWith('data:image');
+  };
+  
+  const logoUrl = logoError ? logoSvg : (settings.logo_url && isBase64Image(settings.logo_url) ? 
+    settings.logo_url : (settings.logo_url || logoSvg));
+  
   const isTicketStatusActive = location.pathname.startsWith('/ticket-status');
   const isHomeActive = location.pathname === '/';
   
@@ -87,7 +100,12 @@ const Header = () => {
   return (
     <header className="w-full">
       {/* Top header with company name and logo */}
-      <div className="bg-gradient-to-r from-company to-company-dark py-8 shadow-lg">
+      <div 
+        className="py-8 shadow-lg" 
+        style={{ 
+          background: `linear-gradient(to right, ${settings.primary_color || '#D4AF37'}, ${settings.secondary_color || '#B08C1A'})` 
+        }}
+      >
         <Container>
           <div className="flex flex-col items-center justify-center text-center">
             {/* Logo and company name - centered and larger */}

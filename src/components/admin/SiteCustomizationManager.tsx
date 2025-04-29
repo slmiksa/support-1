@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -17,6 +18,16 @@ const generateUUID = () => {
   return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
     const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
+  });
+};
+
+// Convert File to base64 string
+const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
   });
 };
 
@@ -43,6 +54,8 @@ const SiteCustomizationManager = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [helpFields, setHelpFields] = useState<HelpField[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
   const { hasPermission } = useAdminAuth();
   
   useEffect(() => {
@@ -67,6 +80,14 @@ const SiteCustomizationManager = () => {
         // Cast to unknown first to avoid type errors
         const settingsData = data as unknown as SiteSettings;
         setSettings(settingsData);
+        
+        // Set logo and favicon previews if they exist
+        if (settingsData.logo_url) {
+          setLogoPreview(settingsData.logo_url);
+        }
+        if (settingsData.favicon_url) {
+          setFaviconPreview(settingsData.favicon_url);
+        }
         
         // Parse help fields if they exist
         if (data.support_help_fields) {
@@ -163,32 +184,22 @@ const SiteCustomizationManager = () => {
       // Clear input value to allow re-uploading the same file
       event.target.value = '';
       
-      // Use Lovable's file upload system instead
-      const formData = new FormData();
-      formData.append('file', file);
+      // Convert file to base64
+      const base64Data = await fileToBase64(file);
       
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
+      // Preview the image
+      setLogoPreview(base64Data);
       
-      if (!response.ok) {
-        throw new Error(`Error uploading: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      const fileUrl = `/lovable-uploads/${result.fileId}`;
-      
-      // Update settings with new logo URL
+      // Update settings with base64 data
       setSettings({
         ...settings,
-        logo_url: fileUrl
+        logo_url: base64Data
       });
       
-      toast.success('تم رفع الشعار بنجاح');
+      toast.success('تم تحميل الشعار بنجاح');
     } catch (error) {
       console.error('Error uploading logo:', error);
-      setUploadError('حدث خطأ أثناء رفع الشعار. يرجى المحاولة مرة أخرى أو استخدام رابط مباشر.');
+      setUploadError('حدث خطأ أثناء معالجة الشعار. يرجى المحاولة مرة أخرى.');
       toast.error('حدث خطأ أثناء رفع الشعار: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setUploading(false);
@@ -225,34 +236,25 @@ const SiteCustomizationManager = () => {
       // Clear input value to allow re-uploading the same file
       event.target.value = '';
       
-      // Use Lovable's file upload system instead
-      const formData = new FormData();
-      formData.append('file', file);
+      // Convert file to base64
+      const base64Data = await fileToBase64(file);
       
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      });
+      // Preview the image
+      setFaviconPreview(base64Data);
       
-      if (!response.ok) {
-        throw new Error(`Error uploading: ${response.statusText}`);
-      }
-      
-      const result = await response.json();
-      const fileUrl = `/lovable-uploads/${result.fileId}`;
-      
-      // Update settings with new favicon URL
+      // Update settings with base64 data
       setSettings({
         ...settings,
-        favicon_url: fileUrl
+        favicon_url: base64Data
       });
       
-      updateFavicon(fileUrl);
+      // Update favicon in browser
+      updateFavicon(base64Data);
       
-      toast.success('تم رفع أيقونة المتصفح بنجاح');
+      toast.success('تم تحميل أيقونة المتصفح بنجاح');
     } catch (error) {
       console.error('Error uploading favicon:', error);
-      setUploadError('حدث خطأ أثناء رفع أيقونة المتصفح. يرجى المحاولة مرة أخرى أو استخدام رابط مباشر.');
+      setUploadError('حدث خطأ أثناء معالجة أيقونة المتصفح. يرجى المحاولة مرة أخرى.');
       toast.error('حدث خطأ أثناء رفع أيقونة المتصفح: ' + (error instanceof Error ? error.message : String(error)));
     } finally {
       setUploadingFavicon(false);
@@ -336,7 +338,7 @@ const SiteCustomizationManager = () => {
                 <Label htmlFor="site_name" className="text-right block">اسم الشركة</Label>
                 <Input
                   id="site_name"
-                  value={settings.site_name}
+                  value={settings.site_name || ''}
                   onChange={(e) => setSettings({ ...settings, site_name: e.target.value })}
                   placeholder="اسم الشركة"
                   className="text-right"
@@ -347,7 +349,7 @@ const SiteCustomizationManager = () => {
                 <Label htmlFor="page_title" className="text-right block">عنوان الصفحة (Page Title)</Label>
                 <Input
                   id="page_title"
-                  value={settings.page_title}
+                  value={settings.page_title || ''}
                   onChange={(e) => setSettings({ ...settings, page_title: e.target.value })}
                   placeholder="عنوان الصفحة"
                   className="text-right"
@@ -364,10 +366,10 @@ const SiteCustomizationManager = () => {
               <div className="space-y-2">
                 <Label htmlFor="logo" className="text-right block mb-2">شعار الموقع</Label>
                 
-                {settings.logo_url && (
+                {logoPreview && (
                   <div className="mb-4 p-4 border rounded-lg bg-gray-50 flex justify-center">
                     <img 
-                      src={settings.logo_url} 
+                      src={logoPreview} 
                       alt="شعار الموقع" 
                       className="h-16 object-contain"
                       onError={(e) => {
@@ -380,18 +382,19 @@ const SiteCustomizationManager = () => {
                 )}
                 
                 <div className="flex items-center justify-end gap-2">
-                  <Input
-                    id="logo"
-                    type="file"
-                    key={`logo-upload-${Date.now()}`} // Force re-render on each upload
-                    accept="image/*"
-                    onChange={handleLogoUpload}
-                    disabled={uploading}
-                    className="text-right"
-                  />
-                  <Label htmlFor="logo" className="text-xs text-gray-500 block">
-                    {uploading ? 'جاري الرفع...' : 'اختر ملف'}
-                  </Label>
+                  <div className="relative w-full">
+                    <Input
+                      id="logo"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                      disabled={uploading}
+                      className="text-right cursor-pointer"
+                    />
+                    <Label htmlFor="logo" className="text-xs text-gray-500 block mt-1">
+                      {uploading ? 'جاري الرفع...' : 'اختر ملف'}
+                    </Label>
+                  </div>
                 </div>
                 
                 <p className="text-xs text-gray-500 text-right mt-1">
@@ -404,7 +407,10 @@ const SiteCustomizationManager = () => {
                 <Input
                   id="logo_url"
                   value={settings.logo_url || ''}
-                  onChange={(e) => setSettings({ ...settings, logo_url: e.target.value })}
+                  onChange={(e) => {
+                    setSettings({ ...settings, logo_url: e.target.value });
+                    setLogoPreview(e.target.value);
+                  }}
                   placeholder="أدخل رابط الشعار"
                   className="text-right"
                 />
@@ -418,10 +424,10 @@ const SiteCustomizationManager = () => {
                 <div className="space-y-2">
                   <Label htmlFor="favicon" className="text-right block mb-2">أيقونة المتصفح</Label>
                   
-                  {settings.favicon_url && (
+                  {faviconPreview && (
                     <div className="mb-4 p-4 border rounded-lg bg-gray-50 flex justify-center">
                       <img 
-                        src={settings.favicon_url} 
+                        src={faviconPreview} 
                         alt="أيقونة المتصفح" 
                         className="h-8 w-8 object-contain"
                         onError={(e) => {
@@ -434,22 +440,23 @@ const SiteCustomizationManager = () => {
                   )}
                   
                   <div className="flex items-center justify-end gap-2">
-                    <Input
-                      id="favicon"
-                      type="file"
-                      key={`favicon-upload-${Date.now()}`} // Force re-render on each upload
-                      accept="image/*"
-                      onChange={handleFaviconUpload}
-                      disabled={uploadingFavicon}
-                      className="text-right"
-                    />
-                    <Label htmlFor="favicon" className="text-xs text-gray-500 block">
-                      {uploadingFavicon ? 'جاري الرفع...' : 'اختر ملف'}
-                    </Label>
+                    <div className="relative w-full">
+                      <Input
+                        id="favicon"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFaviconUpload}
+                        disabled={uploadingFavicon}
+                        className="text-right cursor-pointer"
+                      />
+                      <Label htmlFor="favicon" className="text-xs text-gray-500 block mt-1">
+                        {uploadingFavicon ? 'جاري الرفع...' : 'اختر ملف'}
+                      </Label>
+                    </div>
                   </div>
                   
                   <p className="text-xs text-gray-500 text-right mt-1">
-                    يفضل استخدام صورة مربعة بحجم 32×32 أو 64×64 بتنسيق PNG أو ICO
+                    يفضل استخدام صورة مربعة بحجم 32×32 أو 64×64 بتنسيق PNG
                   </p>
                 </div>
                 
@@ -458,7 +465,11 @@ const SiteCustomizationManager = () => {
                   <Input
                     id="favicon_url"
                     value={settings.favicon_url || ''}
-                    onChange={(e) => setSettings({ ...settings, favicon_url: e.target.value })}
+                    onChange={(e) => {
+                      setSettings({ ...settings, favicon_url: e.target.value });
+                      setFaviconPreview(e.target.value);
+                      if (e.target.value) updateFavicon(e.target.value);
+                    }}
                     placeholder="أدخل رابط أيقونة المتصفح"
                     className="text-right"
                   />

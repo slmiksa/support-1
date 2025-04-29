@@ -139,3 +139,18 @@ body {
 .file-input-btn {
   @apply px-4 py-2 rounded bg-company text-white hover:bg-company-dark transition-colors;
 }
+
+/* Fix for file input styling */
+input[type="file"] {
+  @apply py-2 px-4 border border-input rounded-md cursor-pointer;
+}
+
+input[type="file"]::file-selector-button {
+  @apply hidden;
+}
+
+input[type="file"]::before {
+  content: "اختر ملف";
+  @apply bg-secondary text-secondary-foreground py-1 px-3 mr-2 rounded-md cursor-pointer;
+}
+
