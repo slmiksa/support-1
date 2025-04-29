@@ -19,7 +19,7 @@ export const ImageUpload = ({
 }: ImageUploadProps) => {
   return <div className="grid gap-2">
       <Label htmlFor="imageFile" className="text-right">إرفاق صورة (اختياري)</Label>
-      <Input id="imageFile" name="imageFile" type="file" accept="image/*" onChange={handleImageChange} className="text-right cursor-pointer bg-slate-50" />
+      <Input id="imageFile" name="imageFile" type="file" accept="image/*" onChange={handleImageChange} className="text-right cursor-pointer bg-slate-50 border-slate-200 file:bg-blue-600 file:text-white file:hover:bg-blue-700" />
       {imagePreview && <div className="mt-2 relative">
           <img src={imagePreview} alt="صورة مرفقة" className="w-full max-h-48 object-contain rounded-md border border-border" />
           <button type="button" className="absolute top-2 left-2 bg-white/80 rounded-full p-1 hover:bg-white" onClick={resetImage}>

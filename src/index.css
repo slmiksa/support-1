@@ -85,6 +85,15 @@
   .shadow-text {
     text-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
+  
+  /* تحسين مظهر حقل رفع الملفات */
+  input[type="file"] {
+    @apply py-2 px-4 border border-slate-200 rounded-md cursor-pointer bg-slate-50;
+  }
+
+  input[type="file"]::file-selector-button {
+    @apply bg-blue-600 text-white py-1.5 px-3 mr-2 rounded-md cursor-pointer border-0 hover:bg-blue-700 transition-colors;
+  }
 }
 
 /* RTL direction for the whole website */
@@ -349,7 +358,7 @@ body {
 
 /* Fix for file input styling */
 input[type="file"] {
-  @apply py-2 px-4 border border-input rounded-md cursor-pointer;
+  @apply py-2 px-4 border border-slate-200 rounded-md cursor-pointer bg-slate-50;
 }
 
 input[type="file"]::file-selector-button {

@@ -74,14 +74,7 @@ const Index = () => {
         <Card className="bg-white shadow-xl border-t-4 border-company mb-8 overflow-hidden rounded-xl transform hover:scale-[1.01] transition-all">
           <CardContent className="p-6">
             <div className="flex flex-col items-center">
-              <h2 className="text-2xl font-bold text-center mb-6 text-company animate-fade-in">
-                نظام الدعم الفني
-                <span className="inline-block ml-2 text-yellow-500 animate-pulse">
-                  <Sparkles size={20} />
-                </span>
-              </h2>
-              
-              <div className="flex flex-col items-center gap-3 mb-6 animate-slide-in">
+              <div className="flex flex-col items-center gap-3 mb-6 animate-slide-in pt-4 pb-2">
                 <DateTimeDisplay />
                 
                 <div className="flex items-center gap-3 mt-4">

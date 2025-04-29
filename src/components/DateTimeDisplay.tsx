@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { Clock, Calendar } from 'lucide-react';
 
 const DateTimeDisplay = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -28,11 +29,26 @@ const DateTimeDisplay = () => {
   });
 
   return (
-    <div className="text-[#222222] text-center">
-      <span className="ml-2 font-medium">Time:</span>
-      <span className="font-medium">{formattedTime}</span>
-      <span className="mx-4 font-medium">Date:</span>
-      <span className="font-medium">{formattedDate}</span>
+    <div className="flex items-center justify-center gap-8 flex-wrap">
+      {/* Clock Section */}
+      <div className="flex items-center bg-white/80 backdrop-blur-sm shadow-md rounded-lg px-4 py-3 border border-gray-100">
+        <div className="rounded-full bg-blue-50 p-2 mr-3">
+          <Clock size={22} className="text-company" />
+        </div>
+        <div className="text-gray-700">
+          <span className="font-bold">{formattedTime}</span>
+        </div>
+      </div>
+
+      {/* Date Section */}
+      <div className="flex items-center bg-white/80 backdrop-blur-sm shadow-md rounded-lg px-4 py-3 border border-gray-100">
+        <div className="rounded-full bg-blue-50 p-2 mr-3">
+          <Calendar size={22} className="text-company" />
+        </div>
+        <div className="text-gray-700">
+          <span className="font-bold">{formattedDate}</span>
+        </div>
+      </div>
     </div>
   );
 };
