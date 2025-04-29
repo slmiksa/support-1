@@ -40,19 +40,23 @@ const TicketStatusSelector = ({
 
     setUpdatingStatus(true);
     try {
+      console.log(`Updating ticket ${ticketId} status to ${newStatus}`);
       const { data, error } = await supabase.rpc('update_ticket_status', {
         p_ticket_id: ticketId,
         p_status: newStatus
       });
 
       if (error) {
+        console.error('Error updating ticket status:', error);
         throw error;
       }
 
+      // If this is a resolution or closing and the ticket isn't assigned, assign it to current admin
       if ((newStatus === 'resolved' || newStatus === 'closed') && 
-          (!currentStatus || currentStatus === '') && 
-          currentAdmin) {
+          currentAdmin && 
+          (!currentStatus || currentStatus === '')) {
         
+        console.log(`Auto-assigning ticket to ${currentAdmin.username}`);
         const { error: updateError } = await supabase
           .from('tickets')
           .update({ assigned_to: currentAdmin.username })

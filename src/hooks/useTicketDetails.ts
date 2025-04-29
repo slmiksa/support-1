@@ -65,11 +65,14 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       const formattedResponses = responsesData?.map(response => {
         const adminName = response.admin?.username || null;
         const adminEmployeeId = response.admin?.employee_id || null;
+        // Fix for boolean comparison issue - ensure is_admin is treated as boolean
+        const isAdmin = response.is_admin === null ? true : Boolean(response.is_admin);
+        
         return {
           ...response,
           admin_name: adminName,
           admin_employee_id: adminEmployeeId,
-          is_admin: response.is_admin !== undefined ? response.is_admin : true // Default to true if not set
+          is_admin: isAdmin
         };
       }) || [];
 
@@ -79,7 +82,7 @@ export const useTicketDetails = (ticketId: string | undefined) => {
       if (ticketData && !ticketData.assigned_to && formattedResponses.length > 0) {
         // Find the first admin response
         const firstAdminResponse = formattedResponses.find(resp => 
-          (resp.is_admin !== undefined ? resp.is_admin : true) && resp.admin_name);
+          Boolean(resp.is_admin) && resp.admin_name);
         
         if (firstAdminResponse) {
           // Update the ticket's assigned_to field
