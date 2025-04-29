@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { getAllAdmins, createAdmin, deleteAdmin, Admin } from '@/utils/ticketUtils';
 import { Button } from '@/components/ui/button';
@@ -59,26 +60,37 @@ const AdminManager = () => {
 
   const fetchAdmins = async () => {
     setLoading(true);
-    const data = await getAllAdmins();
-    setAdmins(data);
-    setLoading(false);
+    try {
+      const data = await getAllAdmins();
+      setAdmins(data || []);
+    } catch (error) {
+      console.error('Error fetching admins:', error);
+      toast.error('حدث خطأ أثناء جلب بيانات المديرين');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreateAdmin = async (values: FormValues) => {
-    const result = await createAdmin({
-      username: values.username,
-      password: values.password,
-      employee_id: values.employee_id || undefined,
-      role: values.role,
-    });
+    try {
+      const result = await createAdmin({
+        username: values.username,
+        password: values.password,
+        employee_id: values.employee_id || undefined,
+        role: values.role,
+      });
 
-    if (result.success) {
-      toast.success('تم إنشاء المدير بنجاح');
-      form.reset();
-      setDialogOpen(false);
-      fetchAdmins();
-    } else {
-      toast.error('فشل في إنشاء المدير');
+      if (result.success) {
+        toast.success('تم إنشاء المدير بنجاح');
+        form.reset();
+        setDialogOpen(false);
+        fetchAdmins();
+      } else {
+        toast.error('فشل في إنشاء المدير');
+      }
+    } catch (error) {
+      console.error('Error creating admin:', error);
+      toast.error('حدث خطأ أثناء إنشاء المدير');
     }
   };
 
@@ -89,12 +101,17 @@ const AdminManager = () => {
         return;
       }
       
-      const success = await deleteAdmin(adminId);
-      if (success) {
-        toast.success('تم حذف المدير بنجاح');
-        fetchAdmins();
-      } else {
-        toast.error('فشل في حذف المدير');
+      try {
+        const success = await deleteAdmin(adminId);
+        if (success) {
+          toast.success('تم حذف المدير بنجاح');
+          fetchAdmins();
+        } else {
+          toast.error('فشل في حذف المدير');
+        }
+      } catch (error) {
+        console.error('Error deleting admin:', error);
+        toast.error('حدث خطأ أثناء حذف المدير');
       }
     }
   };
