@@ -115,7 +115,7 @@ const AdminSettings = () => {
                   <Mail size={16} />
                   <span>البريد</span>
                 </TabsTrigger>
-                <TabsTrigger value="customization" className="flex items-center gap-2" disabled={!hasPermission('manage_admins')}>
+                <TabsTrigger value="customization" className="flex items-center gap-2">
                   <PaintBucket size={16} />
                   <span>تخصيص الواجهة</span>
                 </TabsTrigger>
