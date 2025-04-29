@@ -1,30 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Home, Settings, FileText, Moon, Sun } from 'lucide-react';
+import { LogOut, Home, Settings, FileText, Moon, Sun, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import { useTheme } from '@/contexts/ThemeContext';
+
 const DEFAULT_SETTINGS = {
   primary_color: '#15437f',
   text_color: '#ffffff'
 };
+
 const AdminHeader = () => {
-  const {
-    logout,
-    hasPermission,
-    currentAdmin
-  } = useAdminAuth();
+  const { logout, hasPermission, currentAdmin } = useAdminAuth();
   const navigate = useNavigate();
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
-  const {
-    theme,
-    toggleTheme
-  } = useTheme();
+  const { theme, toggleTheme } = useTheme();
+
   useEffect(() => {
     fetchSiteSettings();
   }, []);
+
   const fetchSiteSettings = async () => {
     try {
       const {
@@ -51,6 +48,7 @@ const AdminHeader = () => {
       setSettingsInitialized(true);
     }
   };
+
   const handleLogout = () => {
     logout();
     navigate('/admin');
@@ -60,17 +58,13 @@ const AdminHeader = () => {
   if (!settingsInitialized) {
     return null;
   }
-  return <header style={{
-    backgroundColor: settings.primary_color
-  }} className="shadow-md">
+
+  return (
+    <header style={{ backgroundColor: settings.primary_color }} className="shadow-md">
       <div className="container mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
         <div className="flex items-center space-x-2 mb-2 md:mb-0">
-          <h1 className="text-2xl font-bold" style={{
-          color: settings.text_color
-        }}>لوحة تحكم FixDesk</h1>
-          {currentAdmin && <span className="text-sm opacity-75 mr-2" style={{
-          color: settings.text_color
-        }}>
+          <h1 className="text-2xl font-bold" style={{ color: settings.text_color }}>لوحة تحكم FixDesk</h1>
+          {currentAdmin && <span className="text-sm opacity-75 mr-2" style={{ color: settings.text_color }}>
               ({currentAdmin.username})
             </span>}
         </div>
@@ -82,6 +76,12 @@ const AdminHeader = () => {
             <Home className="h-4 w-4 ml-1" />
             <span>الرئيسية</span>
           </Button>
+          {hasPermission('manage_admins') && (
+            <Button variant="secondary" className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" onClick={() => navigate('/admin/manage-admins')}>
+              <Users className="h-4 w-4 ml-1" />
+              <span>المديرين</span>
+            </Button>
+          )}
           <Button variant="secondary" className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" onClick={() => navigate('/admin/settings')}>
             <Settings className="h-4 w-4 ml-1" />
             <span>الإعدادات</span>
@@ -92,6 +92,8 @@ const AdminHeader = () => {
           </Button>
         </div>
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default AdminHeader;
