@@ -5,43 +5,20 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { supabase } from '@/integrations/supabase/client';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { saveAdminNotificationEmail } from '@/utils/notificationUtils';
 
 const NotificationSettings = () => {
   const [notificationEmail, setNotificationEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [initialEmail, setInitialEmail] = useState('');
-  const { currentAdmin } = useAdminAuth();
+  const { currentAdmin, updateAdminNotificationEmail } = useAdminAuth();
 
   useEffect(() => {
-    if (currentAdmin?.id) {
-      fetchNotificationEmail();
+    if (currentAdmin?.notification_email) {
+      setNotificationEmail(currentAdmin.notification_email);
+      setInitialEmail(currentAdmin.notification_email);
     }
   }, [currentAdmin]);
-
-  const fetchNotificationEmail = async () => {
-    if (!currentAdmin?.id) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('admins')
-        .select('notification_email')
-        .eq('id', currentAdmin.id)
-        .single();
-
-      if (error) throw error;
-
-      if (data?.notification_email) {
-        setNotificationEmail(data.notification_email);
-        setInitialEmail(data.notification_email);
-      }
-    } catch (error) {
-      console.error('Error fetching notification email:', error);
-      // Don't show error toast
-    }
-  };
 
   const handleSaveEmail = async () => {
     if (!currentAdmin?.id) {
@@ -53,7 +30,7 @@ const NotificationSettings = () => {
 
     setLoading(true);
     try {
-      const success = await saveAdminNotificationEmail(currentAdmin.id, notificationEmail);
+      const success = await updateAdminNotificationEmail(notificationEmail);
 
       if (success) {
         toast.success('تم حفظ البريد الإلكتروني للإشعارات بنجاح', {
@@ -67,8 +44,7 @@ const NotificationSettings = () => {
       }
     } catch (error) {
       console.error('Error saving notification email:', error);
-      // Don't show error toast for saving
-      toast.success('تم حفظ البريد الإلكتروني للإشعارات', {
+      toast.error('حدث خطأ أثناء حفظ البريد الإلكتروني', {
         duration: 30000
       });
     } finally {

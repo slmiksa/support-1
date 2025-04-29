@@ -124,13 +124,22 @@ const SupportForm = () => {
       
       try {
         console.log('Sending notifications for new ticket:', newTicketId);
-        // Always pass null for companySenderEmail to use default Resend sender
+        // Send notifications to all admins with notification emails
         const notificationResult = await sendTicketNotificationsToAllAdmins(
           newTicket, 
           null, 
           companySenderName
         );
+        
         console.log('Notification result:', notificationResult);
+        
+        if (notificationResult) {
+          toast.success('تم إرسال إشعار بالتذكرة الجديدة بنجاح', {
+            closeButton: true,
+            position: 'top-center',
+            duration: 5000
+          });
+        }
       } catch (error) {
         console.error('Error sending notifications:', error);
         // Notify user about notification failure, but don't block ticket creation

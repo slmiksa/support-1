@@ -18,6 +18,7 @@ interface AdminAuthContextProps {
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   hasPermission: (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets' | 'delete_tickets') => boolean;
+  updateAdminNotificationEmail: (email: string) => Promise<boolean>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextProps>({
@@ -26,6 +27,7 @@ const AdminAuthContext = createContext<AdminAuthContextProps>({
   login: async () => false,
   logout: () => {},
   hasPermission: () => false,
+  updateAdminNotificationEmail: async () => false,
 });
 
 export const useAdminAuth = () => useContext(AdminAuthContext);
@@ -126,6 +128,40 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateAdminNotificationEmail = async (email: string): Promise<boolean> => {
+    if (!currentAdmin?.id) return false;
+    
+    try {
+      // Update in Supabase
+      const { error } = await supabase
+        .from('admins')
+        .update({ notification_email: email })
+        .eq('id', currentAdmin.id);
+      
+      if (error) {
+        console.error('Error updating notification email:', error);
+        return false;
+      }
+
+      // Update in local state
+      const updatedAdmin = {
+        ...currentAdmin,
+        notification_email: email
+      };
+      
+      setCurrentAdmin(updatedAdmin);
+      
+      // Update in local storage
+      localStorage.setItem('admin_data', JSON.stringify(updatedAdmin));
+      
+      console.log("Admin notification email updated:", email);
+      return true;
+    } catch (error) {
+      console.error('Error updating notification email:', error);
+      return false;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('admin_auth');
     localStorage.removeItem('admin_data');
@@ -168,7 +204,8 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       currentAdmin, 
       login, 
       logout, 
-      hasPermission
+      hasPermission,
+      updateAdminNotificationEmail
     }}>
       {children}
     </AdminAuthContext.Provider>
