@@ -4,9 +4,6 @@ import { Resend } from "npm:resend@2.0.0";
 
 // استخدم مفتاح API المخزن في متغيرات البيئة
 const resendApiKey = Deno.env.get("RESEND_API_KEY");
-if (!resendApiKey) {
-  console.error("RESEND_API_KEY environment variable is not set");
-}
 
 console.log("Initializing Resend with API key:", resendApiKey ? "API key found" : "API key missing");
 const resend = new Resend(resendApiKey);
@@ -19,7 +16,7 @@ const corsHeaders = {
 
 interface TicketNotificationRequest {
   ticket_id: string;
-  employee_id: string;
+  employee_id?: string;
   branch: string;
   description: string;
   priority?: string;
@@ -39,25 +36,36 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     console.log("Received request to send notification at:", new Date().toISOString());
+    console.log("Request received:", req.method);
     
+    // Log request body for debugging
+    const requestBody = await req.text();
+    console.log("Request body:", requestBody);
+    
+    // Re-parse the body since we already consumed the stream
     const { 
       ticket_id, 
-      employee_id, 
+      employee_id = "", 
       branch, 
       description, 
-      priority, 
+      priority = "normal", 
       admin_email, 
       support_email = 'help@alwaslsaudi.com',
       customer_email,
       status = 'pending',
       company_sender_email = null,
       company_sender_name = 'دعم الوصل'
-    }: TicketNotificationRequest = await req.json();
+    }: TicketNotificationRequest = JSON.parse(requestBody);
 
+    console.log("Parsed data:");
     console.log(`Sending notification for ticket ${ticket_id}`);
+    console.log(`Employee ID: ${employee_id || 'not provided'}`);
+    console.log(`Branch: ${branch}`);
+    console.log(`Description length: ${description?.length || 0}`);
     console.log(`Customer email: ${customer_email || 'not provided'}`);
     console.log(`Admin email: ${admin_email}`);
     console.log(`Support email: ${support_email}`);
+    console.log(`Priority: ${priority}`);
     console.log(`Company sender name: ${company_sender_name}`);
 
     // Verify resendApiKey is available
@@ -66,9 +74,16 @@ const handler = async (req: Request): Promise<Response> => {
       throw new Error("RESEND_API_KEY environment variable is not set");
     }
 
-    // Validate required fields
-    if (!ticket_id || !employee_id || !branch) {
-      throw new Error("Missing required fields");
+    // Validate required fields with more detailed logging
+    const missingFields = [];
+    if (!ticket_id) missingFields.push("ticket_id");
+    if (!branch) missingFields.push("branch");
+    if (!description) missingFields.push("description");
+    if (!admin_email) missingFields.push("admin_email");
+    
+    if (missingFields.length > 0) {
+      console.error(`Missing required fields: ${missingFields.join(", ")}`);
+      throw new Error(`Missing required fields: ${missingFields.join(", ")}`);
     }
 
     // Priority and status mapping for Arabic labels
@@ -112,10 +127,12 @@ const handler = async (req: Request): Promise<Response> => {
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الأولوية:</td>
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${formattedPriority}</td>
             </tr>
+            ${employee_id ? `
             <tr>
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">الرقم الوظيفي:</td>
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${employee_id}</td>
             </tr>
+            ` : ''}
             <tr>
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee; font-weight: bold;">وصف المشكلة:</td>
               <td style="padding: 12px 15px; border-bottom: 1px solid #eee;">${description}</td>
@@ -140,6 +157,30 @@ const handler = async (req: Request): Promise<Response> => {
 
     let allEmails = [];
     
+    // Send email to admin - trying this one first since it's the most critical
+    console.log(`[${new Date().toISOString()}] Attempting to send admin notification email to:`, admin_email);
+    try {
+      const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
+
+      // Try to send email and log detailed response
+      console.log("Sending email with config:", JSON.stringify(emailConfig));
+      
+      const adminEmailResponse = await resend.emails.send({
+        ...emailConfig,
+        to: [admin_email],
+        subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
+        html: emailHtml,
+      });
+
+      console.log(`[${new Date().toISOString()}] Admin notification sent:`, JSON.stringify(adminEmailResponse));
+      allEmails.push({ type: 'admin', success: true, response: adminEmailResponse });
+    } catch (adminError) {
+      console.error(`[${new Date().toISOString()}] Error sending admin notification:`, adminError);
+      console.error("Error details:", adminError instanceof Error ? adminError.message : String(adminError));
+      console.error("Stack trace:", adminError instanceof Error ? adminError.stack : "No stack trace");
+      allEmails.push({ type: 'admin', success: false, error: String(adminError) });
+    }
+    
     // Send email to support team
     console.log(`[${new Date().toISOString()}] Attempting to send support notification email to:`, support_email);
     try {
@@ -156,26 +197,8 @@ const handler = async (req: Request): Promise<Response> => {
       allEmails.push({ type: 'support', success: true, response: supportEmailResponse });
     } catch (supportError) {
       console.error(`[${new Date().toISOString()}] Error sending support notification:`, supportError);
-      allEmails.push({ type: 'support', success: false, error: supportError });
-    }
-
-    // Send email to admin
-    console.log(`[${new Date().toISOString()}] Attempting to send admin notification email to:`, admin_email);
-    try {
-      const emailConfig = { from: `${company_sender_name} <onboarding@resend.dev>` };
-
-      const adminEmailResponse = await resend.emails.send({
-        ...emailConfig,
-        to: [admin_email],
-        subject: `تذكرة دعم فني جديدة رقم ${ticket_id}`,
-        html: emailHtml,
-      });
-
-      console.log(`[${new Date().toISOString()}] Admin notification sent:`, JSON.stringify(adminEmailResponse));
-      allEmails.push({ type: 'admin', success: true, response: adminEmailResponse });
-    } catch (adminError) {
-      console.error(`[${new Date().toISOString()}] Error sending admin notification:`, adminError);
-      allEmails.push({ type: 'admin', success: false, error: adminError });
+      console.error("Error details:", supportError instanceof Error ? supportError.message : String(supportError));
+      allEmails.push({ type: 'support', success: false, error: String(supportError) });
     }
 
     // If customer email is provided, send confirmation to customer
@@ -236,8 +259,8 @@ const handler = async (req: Request): Promise<Response> => {
         allEmails.push({ type: 'customer', success: true, response: customerEmailResponse });
       } catch (customerError) {
         console.error(`[${new Date().toISOString()}] Error sending customer notification:`, customerError);
-        customerEmailResult = { success: false, error: customerError };
-        allEmails.push({ type: 'customer', success: false, error: customerError });
+        console.error("Error details:", customerError instanceof Error ? customerError.message : String(customerError));
+        allEmails.push({ type: 'customer', success: false, error: String(customerError) });
       }
     }
 
@@ -267,12 +290,14 @@ const handler = async (req: Request): Promise<Response> => {
 
   } catch (error: any) {
     console.error("Error in send-ticket-notification function:", error);
+    console.error("Error details:", error instanceof Error ? error.message : String(error));
+    console.error("Stack trace:", error instanceof Error ? error.stack : "No stack trace");
     
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error.message,
-        details: error.stack 
+        error: error instanceof Error ? error.message : String(error),
+        details: error instanceof Error ? error.stack : "No stack trace available" 
       }),
       {
         status: 500,

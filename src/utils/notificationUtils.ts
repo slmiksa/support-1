@@ -14,7 +14,7 @@ export const sendTicketNotification = async (
     // Prepare the notification data
     const notificationData = {
       ticket_id: ticket.ticket_id,
-      employee_id: ticket.employee_id,
+      employee_id: ticket.employee_id || '',
       branch: ticket.branch,
       priority: ticket.priority,
       description: ticket.description,
@@ -29,10 +29,7 @@ export const sendTicketNotification = async (
     };
 
     console.log('Sending notification for ticket', ticket.ticket_id, 'to', adminEmail);
-    console.log('Using support email:', notificationData.support_email);
-    console.log('Customer email:', notificationData.customer_email);
-    console.log('Company sender email: null (using default Resend sender)');
-    console.log('Company sender name:', notificationData.company_sender_name);
+    console.log('Notification data:', JSON.stringify(notificationData));
 
     // Call the Supabase edge function to send the email
     const { data, error } = await supabase.functions.invoke(
@@ -44,16 +41,20 @@ export const sendTicketNotification = async (
 
     if (error) {
       console.error('Error sending ticket notification:', error);
-      // Silently log error but don't show toast
+      console.error('Error details:', error.message);
       return false;
     }
 
-    console.log('Notification sent successfully:', data);
-    // Success toast is still shown only to admins
+    console.log('Notification response:', data);
+    
+    if (!data.success) {
+      console.error('Notification function returned false success:', data);
+      return false;
+    }
+    
     return true;
   } catch (error) {
     console.error('Error sending ticket notification:', error);
-    // Silently log error but don't show toast
     return false;
   }
 };
@@ -74,8 +75,6 @@ export const sendTicketNotificationsToAllAdmins = async (
     }
     
     console.log('Sending notifications to admins:', adminEmails);
-    console.log('Using company sender email: null (using default Resend sender)');
-    console.log('Using company sender name:', companySenderName || 'دعم الوصل');
     
     // Send notifications to all admins
     const results = await Promise.allSettled(
@@ -86,6 +85,15 @@ export const sendTicketNotificationsToAllAdmins = async (
     const atLeastOneSuccess = results.some(
       result => result.status === 'fulfilled' && result.value === true
     );
+    
+    // Log results for debugging
+    console.log('Notification results:', results.map(r => {
+      if (r.status === 'fulfilled') {
+        return { status: r.status, value: r.value };
+      } else {
+        return { status: r.status, reason: r.reason };
+      }
+    }));
     
     return atLeastOneSuccess;
   } catch (error) {
