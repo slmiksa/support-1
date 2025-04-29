@@ -78,7 +78,11 @@ const AdminHeader = () => {
             <span>الرئيسية</span>
           </Button>
           {hasPermission('manage_admins') && (
-            <Button variant="secondary" className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" onClick={() => navigate('/admin/manage-admins')}>
+            <Button 
+              variant="secondary" 
+              className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" 
+              onClick={() => navigate('/admin/manage-admins')}
+            >
               <Users className="h-4 w-4 ml-1" />
               <span>المديرين</span>
             </Button>
