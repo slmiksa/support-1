@@ -21,6 +21,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
 const Header = () => {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
+  const [logoError, setLogoError] = useState(false);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const location = useLocation();
   
@@ -30,10 +31,7 @@ const Header = () => {
   
   const fetchSiteSettings = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('site_settings').select('*').single();
+      const { data, error } = await supabase.from('site_settings').select('*').single();
       
       if (error) {
         if (error.code !== 'PGRST116') {
@@ -72,7 +70,13 @@ const Header = () => {
     link.href = faviconUrl;
   };
   
-  const logoUrl = settings.logo_url || logoSvg;
+  // Fallback to default logo if custom logo fails to load
+  const handleLogoError = () => {
+    console.log('Logo failed to load, using default logo');
+    setLogoError(true);
+  };
+  
+  const logoUrl = logoError ? logoSvg : (settings.logo_url || logoSvg);
   const isTicketStatusActive = location.pathname.startsWith('/ticket-status');
   const isHomeActive = location.pathname === '/';
   
@@ -88,9 +92,14 @@ const Header = () => {
           <div className="flex flex-col items-center justify-center text-center">
             {/* Logo and company name - centered and larger */}
             <div className="flex flex-col items-center gap-4">
-              <div className="relative w-24 h-24 md:w-32 md:h-32 overflow-hidden rounded-lg shadow-lg bg-white p-2 logo-pulse">
+              <div className="relative w-28 h-28 md:w-36 md:h-36 overflow-hidden rounded-lg shadow-lg bg-white p-2 logo-pulse">
                 <AspectRatio ratio={1 / 1} className="overflow-hidden">
-                  <img src={logoUrl} alt={settings.site_name} className="object-contain h-full w-full" />
+                  <img 
+                    src={logoUrl} 
+                    alt={settings.site_name} 
+                    className="object-contain h-full w-full" 
+                    onError={handleLogoError}
+                  />
                 </AspectRatio>
               </div>
               
