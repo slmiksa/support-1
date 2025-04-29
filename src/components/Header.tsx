@@ -81,9 +81,7 @@ const Header = () => {
               
               <div className="text-center md:text-right">
                 <h1 className="text-white text-xl md:text-2xl font-bold">{settings.site_name}</h1>
-                <p className="text-white/80 text-sm mt-1">
-                  نظام الدعم الفني المتكامل
-                </p>
+                <p className="text-white/80 text-sm mt-1"></p>
               </div>
             </div>
             
