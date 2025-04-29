@@ -55,6 +55,8 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
               role: 'viewer' as AdminRole
             });
           }
+          
+          console.log("Auth initialized with admin:", parsedData);
         } catch (error) {
           console.error('Error parsing admin data:', error);
           setIsAuthenticated(false);
@@ -105,6 +107,8 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
           notification_email: adminData.notification_email
         };
 
+        console.log("Admin logged in:", validatedAdminData);
+        
         localStorage.setItem('admin_auth', 'true');
         localStorage.setItem('admin_data', JSON.stringify(validatedAdminData));
         setIsAuthenticated(true);
@@ -124,6 +128,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.removeItem('admin_data');
     setIsAuthenticated(false);
     setCurrentAdmin(null);
+    console.log("Admin logged out");
   };
 
   const hasPermission = (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets' | 'delete_tickets'): boolean => {

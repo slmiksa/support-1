@@ -55,6 +55,11 @@ const AdminHeader = () => {
     navigate('/admin');
   };
 
+  const handleNavigate = (path: string) => {
+    console.log('Navigating to:', path);
+    navigate(path);
+  };
+
   // Don't render until settings are initialized
   if (!settingsInitialized) {
     return null;
@@ -73,7 +78,7 @@ const AdminHeader = () => {
           <Button variant="outline" size="icon" className={`ml-2 mb-2 md:mb-0 ${theme === 'dark' ? 'bg-gray-700 text-white border-gray-600' : 'bg-white/90 text-gray-700 border-gray-200'}`} onClick={toggleTheme} title={theme === 'light' ? 'تفعيل الوضع المظلم' : 'تفعيل الوضع العادي'}>
             {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           </Button>
-          <Button variant="secondary" className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" onClick={() => navigate('/admin/dashboard')}>
+          <Button variant="secondary" className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" onClick={() => handleNavigate('/admin/dashboard')}>
             <Home className="h-4 w-4 ml-1" />
             <span>الرئيسية</span>
           </Button>
@@ -81,13 +86,13 @@ const AdminHeader = () => {
             <Button 
               variant="secondary" 
               className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" 
-              onClick={() => navigate('/admin/manage-admins')}
+              onClick={() => handleNavigate('/admin/manage-admins')}
             >
               <Users className="h-4 w-4 ml-1" />
               <span>المديرين</span>
             </Button>
           )}
-          <Button variant="secondary" className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" onClick={() => navigate('/admin/settings')}>
+          <Button variant="secondary" className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" onClick={() => handleNavigate('/admin/settings')}>
             <Settings className="h-4 w-4 ml-1" />
             <span>الإعدادات</span>
           </Button>
