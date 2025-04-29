@@ -5,7 +5,7 @@
 
 @layer base {
   :root {
-    /* Light mode variables */
+    /* Light mode variables - New color scheme blue */
     --background: 210 50% 98%;
     --foreground: 222 47% 11%;
     
@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
     
-    --primary: 43 65% 53%;
+    --primary: 207 100% 24%;
     --primary-foreground: 210 40% 98%;
     
     --secondary: 210 40% 96.1%;
@@ -32,36 +32,36 @@
     
     --border: 214 32% 91%;
     --input: 214 32% 91%;
-    --ring: 43 65% 53%;
+    --ring: 207 100% 24%;
     
-    --radius: 0.5rem;
+    --radius: 0.75rem;
     
     --font-sans: 'Tajawal', system-ui, sans-serif;
 
-    /* Company colors */
-    --company: 43 65% 53%;
-    --company-dark: 43 74% 40%;
-    --accent-gold: 43 65% 53%;
+    /* Company colors - New blue theme */
+    --company-primary: #034078;
+    --company-secondary: #001F3F;
+    --accent-blue: #034078;
     
     /* Global text color */
     --global-text: 0 0% 13%;
 
     /* Background pattern for light mode */
-    --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --bg-pattern: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23034078' fill-opacity='0.05'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0l28-28v2L54 40h-2zm4 0l24-24v2L58 40h-2zm4 0l20-20v2L62 40h-2zm4 0l16-16v2L66 40h-2zm4 0l12-12v2L70 40h-2zm4 0l8-8v2l-6 6h-2zm4 0l4-4v2l-2 2h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
-  /* Dark mode variables */
+  /* Dark mode variables - New dark blue theme */
   .dark {
     --background: 222 47% 11%;
     --foreground: 210 40% 98%;
     
-    --card: 222 47% 11%;
+    --card: 215 28% 17%;
     --card-foreground: 210 40% 98%;
     
-    --popover: 222 47% 11%;
+    --popover: 215 28% 17%;
     --popover-foreground: 210 40% 98%;
     
-    --primary: 43 65% 53%;
+    --primary: 207 100% 24%;
     --primary-foreground: 210 40% 98%;
     
     --secondary: 217.2 32.6% 17.5%;
@@ -78,10 +78,10 @@
     
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 43 65% 53%;
+    --ring: 207 100% 24%;
 
     /* Background pattern for dark mode */
-    --bg-pattern: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23D4AF37' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    --bg-pattern: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23034078' fill-opacity='0.03'%3E%3Cpath d='M0 0h40v40H0V0zm40 40h40v40H40V40zm0-40h2l-2 2V0zm0 4l4-4h2l-6 6V4zm0 4l8-8h2L40 10V8zm0 4L52 0h2L40 14v-2zm0 4L56 0h2L40 18v-2zm0 4L60 0h2L40 22v-2zm0 4L64 0h2L40 26v-2zm0 4L68 0h2L40 30v-2zm0 4L72 0h2L40 34v-2zm0 4L76 0h2L40 38v-2zm0 4L80 0v2L42 40h-2zm4 0L80 4v2L46 40h-2zm4 0L80 8v2L50 40h-2zm4 0l28-28v2L54 40h-2zm4 0l24-24v2L58 40h-2zm4 0l20-20v2L62 40h-2zm4 0l16-16v2L66 40h-2zm4 0l12-12v2L70 40h-2zm4 0l8-8v2l-6 6h-2zm4 0l4-4v2l-2 2h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 }
 
@@ -112,11 +112,16 @@
 
   /* Form elements */
   input, select, textarea {
-    @apply transition-all duration-200;
+    @apply transition-all duration-200 rounded-lg;
   }
 
   input:focus, select:focus, textarea:focus {
     @apply ring-2 ring-company outline-none;
+  }
+
+  /* Links */
+  a {
+    @apply transition-colors duration-200 hover:text-company;
   }
 }
 
@@ -130,35 +135,108 @@
 /* Custom components */
 @layer components {
   /* Buttons */
-  .button-gold {
-    @apply bg-accent-gold text-white hover:bg-accent-gold/90 transition-all;
+  .button-primary {
+    @apply bg-company text-white hover:bg-company-dark transition-all rounded-lg px-4 py-2 shadow-md hover:shadow-lg;
   }
   
   /* Cards */
   .card-enhanced {
-    @apply bg-white rounded-lg shadow-lg border border-border/50 hover:shadow-xl transition-all duration-300;
+    @apply bg-white rounded-xl shadow-soft border border-border/50 hover:shadow-card transition-all duration-300;
     @apply dark:bg-card dark:border-border/10;
   }
 
+  /* Glass effects */
+  .glass {
+    @apply bg-white/90 backdrop-blur-md border border-white/30 shadow-lg rounded-xl;
+  }
+  .glass-dark {
+    @apply bg-black/30 backdrop-blur-md border border-white/10 rounded-xl;
+  }
+  
+  /* Dark mode overrides for glass */
+  .dark .glass {
+    @apply bg-black/30 backdrop-blur-md border border-white/10;
+  }
+  
+  /* Loader */
+  .loader { 
+    @apply w-6 h-6 rounded-full border-2 border-company border-t-transparent animate-spin; 
+  }
+
+  /* Header components */
+  .app-header {
+    @apply bg-gradient-to-r from-company to-company-dark text-white shadow-lg;
+  }
+
+  .navigation-link {
+    @apply px-4 py-2 rounded-lg bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors flex items-center gap-2 font-medium;
+  }
+
   /* Company colors - Fixed circular dependency issue */
-  .bg-company { background-color: #D4AF37; }
-  .bg-company-dark { background-color: #B08C1A; }
-  .text-company { color: #D4AF37; }
-  .text-company-dark { color: #B08C1A; }
-  .bg-accent-gold { background-color: #D4AF37; }
+  .bg-company { background-color: #034078; }
+  .bg-company-dark { background-color: #001F3F; }
+  .text-company { color: #034078; }
+  .text-company-dark { color: #001F3F; }
+  .bg-accent-blue { background-color: #034078; }
   
   /* Layout */
   .section-container { @apply py-8 px-4 md:py-12 md:px-6; }
 
-  /* Glass effects */
-  .glass { @apply bg-white/90 backdrop-blur-md border border-white/30 shadow-lg; }
-  .glass-dark { @apply bg-black/30 backdrop-blur-md border border-white/10; }
+  /* Cards styling */
+  .feature-card {
+    @apply rounded-xl p-6 transition-all duration-300 border border-border;
+    @apply hover:shadow-card bg-gradient-to-br from-white to-gray-50;
+  }
+
+  .form-card {
+    @apply rounded-xl shadow-card bg-white dark:bg-card p-6 border border-border/10;
+  }
+
+  /* Status badges */
+  .status-badge {
+    @apply px-3 py-1 rounded-full text-xs font-medium;
+  }
+
+  .status-pending {
+    @apply bg-amber-100 text-amber-800;
+  }
   
-  /* Dark mode overrides for glass */
-  .dark .glass { @apply bg-black/30 backdrop-blur-md border border-white/10; }
+  .status-open {
+    @apply bg-blue-100 text-blue-800;
+  }
   
-  /* Loader */
-  .loader { @apply w-6 h-6 rounded-full border-2 border-company border-t-transparent animate-spin; }
+  .status-inprogress {
+    @apply bg-purple-100 text-purple-800;
+  }
+  
+  .status-resolved {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .status-closed {
+    @apply bg-gray-100 text-gray-800;
+  }
+
+  /* Dark mode overrides */
+  .dark .status-pending {
+    @apply bg-amber-900/50 text-amber-100;
+  }
+  
+  .dark .status-open {
+    @apply bg-blue-900/50 text-blue-100;
+  }
+  
+  .dark .status-inprogress {
+    @apply bg-purple-900/50 text-purple-100;
+  }
+  
+  .dark .status-resolved {
+    @apply bg-green-900/50 text-green-100;
+  }
+  
+  .dark .status-closed {
+    @apply bg-gray-800/70 text-gray-100;
+  }
 
   /* Dark mode specific styles for tickets */
   .dark .ticket-details-text {
@@ -166,11 +244,11 @@
   }
   
   .dark .ticket-details-card {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-card border-border;
   }
   
   .dark .ticket-details-section {
-    @apply bg-gray-900/70 border-gray-700;
+    @apply bg-card/70 border-border;
   }
   
   .dark .ticket-info-label {
@@ -182,7 +260,7 @@
   }
   
   .dark .ticket-description {
-    @apply bg-gray-800 border-gray-700 text-white;
+    @apply bg-card border-border text-white;
   }
   
   /* Table styles for dark mode */
@@ -200,7 +278,7 @@
 
   /* Fix for table header in dark mode */
   .dark .bg-gray-50 {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-card border-border;
   }
   
   .dark .border-gray-200 {
@@ -215,18 +293,29 @@
   
   /* Ensure table headers remain visible in dark mode */
   .dark .text-company {
-    color: #D4AF37; /* Using direct CSS property to avoid circular dependency */
+    color: #034078; /* Using direct CSS property to avoid circular dependency */
   }
 }
 
 /* Animations */
 @keyframes pulse-light {
-  0% { opacity: 0.4; transform: scale(0.97); }
-  50% { opacity: 0.8; transform: scale(1.03); }
-  100% { opacity: 0.4; transform: scale(0.97); }
+  0% { opacity: 0.7; transform: scale(0.98); }
+  50% { opacity: 1; transform: scale(1.03); }
+  100% { opacity: 0.7; transform: scale(0.98); }
 }
 
 .animate-pulse-light { animation: pulse-light 3s ease-in-out infinite; }
+
+/* Header logo animation */
+.logo-pulse {
+  animation: logo-pulse 4s ease-in-out infinite;
+}
+
+@keyframes logo-pulse {
+  0% { filter: drop-shadow(0 0 8px rgba(3, 64, 120, 0.2)); transform: scale(1); }
+  50% { filter: drop-shadow(0 0 15px rgba(3, 64, 120, 0.5)); transform: scale(1.03); }
+  100% { filter: drop-shadow(0 0 8px rgba(3, 64, 120, 0.2)); transform: scale(1); }
+}
 
 /* Page transitions */
 .page-transition-enter {
@@ -253,7 +342,7 @@
 
 /* Dark mode overrides for ticket details page */
 .dark .bg-gray-50 {
-  @apply bg-gray-800 text-white border-gray-700;
+  @apply bg-card text-white border-border;
 }
 
 .dark p.text-right,
@@ -262,5 +351,5 @@
 }
 
 .dark .bg-white {
-  @apply bg-gray-700 text-white border-gray-600;
+  @apply bg-card text-white border-border;
 }

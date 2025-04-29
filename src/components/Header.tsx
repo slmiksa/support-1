@@ -1,31 +1,36 @@
+
 import { Link } from 'react-router-dom';
-import { Home, Search } from 'lucide-react';
+import { Home, Search, PhoneOutgoing, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { Container } from '@/components/ui/container';
 import logoSvg from '../assets/logo.svg';
+
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
   page_title: 'شركة الوصل الوطنية',
   logo_url: '',
   favicon_url: '',
-  primary_color: '#D4AF37',
-  secondary_color: '#B08C1A',
+  primary_color: '#034078',
+  secondary_color: '#001F3F',
   text_color: '#ffffff',
   footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.'
 };
+
 const Header = () => {
   const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
   const [loading, setLoading] = useState(true);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
+  
   useEffect(() => {
     fetchSiteSettings();
   }, []);
+  
   const fetchSiteSettings = async () => {
     try {
-      const {
-        data,
-        error
-      } = await supabase.from('site_settings').select('*').single();
+      const { data, error } = await supabase.from('site_settings').select('*').single();
+      
       if (error) {
         if (error.code !== 'PGRST116') {
           // Not found error
@@ -36,6 +41,7 @@ const Header = () => {
         setLoading(false);
         return;
       }
+      
       if (data) {
         // Cast to unknown first to avoid type errors
         setSettings(data as unknown as SiteSettings);
@@ -77,59 +83,71 @@ const Header = () => {
   if (!settingsInitialized) {
     return null;
   }
-  return <div className="flex flex-col w-full">
-      {/* Top header with logo and company name */}
-      <div className="w-full py-4 px-6" style={{
-      backgroundColor: settings.primary_color
-    }}>
-        <div className="container mx-auto flex flex-col items-center space-y-3">
-          {/* Logo with glowing effect */}
-          <div className="relative">
-            <div className="absolute inset-0 rounded-full animate-pulse-light" style={{
-            boxShadow: '0 0 15px 5px #D4AF37',
-            filter: 'blur(8px)',
-            opacity: 0.6
-          }}>
+  
+  return (
+    <header className="w-full">
+      {/* Top header with company name and logo */}
+      <div className="bg-gradient-to-r from-company to-company-dark py-6">
+        <Container>
+          <div className="flex flex-col items-center justify-center space-y-4">
+            {/* Logo with animation */}
+            <div className="relative w-32 h-32 logo-pulse">
+              <AspectRatio ratio={1/1} className="overflow-hidden">
+                <img 
+                  src={logoUrl} 
+                  alt={settings.site_name} 
+                  className="object-contain h-full w-full"
+                />
+              </AspectRatio>
+              <div className="absolute inset-0 rounded-full animate-pulse-light" style={{
+                boxShadow: '0 0 20px 8px rgba(3, 64, 120, 0.4)',
+                filter: 'blur(10px)',
+                opacity: 0.6
+              }}></div>
             </div>
-            <img src={logoUrl} alt={settings.site_name} className="h-32 w-auto relative z-10 object-fill" />
+            
+            <div className="text-center space-y-2">
+              <h1 className="text-white text-2xl md:text-3xl font-bold">{settings.site_name}</h1>
+              <p className="text-white/80 text-sm md:text-base max-w-xl">
+                نظام الدعم الفني المتكامل لتقديم الخدمات وحل المشكلات
+              </p>
+            </div>
           </div>
-          <div className="flex flex-col items-center">
-            <h1 className="text-xl md:text-2xl font-bold text-center text-white">
-              {settings.site_name}
-            </h1>
-          </div>
-        </div>
+        </Container>
       </div>
       
-      {/* Navigation bar with dynamic background color from settings */}
-      <nav className="w-full py-3 px-6 shadow-md mb-6" style={{
-      backgroundColor: settings.secondary_color
-    }}>
-        <div className="container mx-auto flex justify-center space-x-6 rtl:space-x-reverse">
-          <Link to="/" className="flex items-center">
-            <div className="px-4 py-2 rounded-lg flex items-center gap-2 bg-white shadow-md">
-              <div className="h-5 w-5 rounded-full flex items-center justify-center">
-                <Home className="h-3 w-3 text-[#222222]" />
-              </div>
-              <span className="font-medium text-lg text-[#222222]">الرئيسية</span>
-            </div>
-          </Link>
-          <div className="border-r border-white/20 h-8 self-center"></div>
-          <Link to="/ticket-status" className="flex items-center">
-            <div className="px-4 py-2 rounded-lg flex items-center gap-2 bg-white shadow-md">
-              <div className="h-5 w-5 rounded-full flex items-center justify-center">
-                <Search className="h-3 w-3 text-[#222222]" />
-              </div>
-              <span className="font-medium text-lg text-[#222222]">متابعة التذاكر</span>
-            </div>
-          </Link>
-        </div>
+      {/* Navigation Bar */}
+      <nav className="bg-company-dark py-3 shadow-md">
+        <Container>
+          <div className="flex justify-center flex-wrap gap-4">
+            <Link to="/" className="navigation-link">
+              <Home size={18} />
+              <span>الرئيسية</span>
+            </Link>
+            
+            <Link to="/ticket-status" className="navigation-link">
+              <Search size={18} />
+              <span>متابعة التذاكر</span>
+            </Link>
+            
+            <Link to="/admin/login" className="navigation-link">
+              <PhoneOutgoing size={18} />
+              <span>لوحة التحكم</span>
+            </Link>
+          </div>
+        </Container>
       </nav>
       
       {/* Developer footer */}
-      <div className="fixed bottom-0 left-0 right-0 py-1 px-4 bg-gray-100 text-[#222222] text-xs text-center z-10 border-t">
-        © 2025 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة. | Developed by Trndsky ( FixDesk Version 2.0 )
+      <div className="fixed bottom-0 left-0 right-0 py-2 px-4 bg-white/80 backdrop-blur-md text-gray-700 text-xs text-center z-10 border-t shadow-md">
+        <Container className="flex justify-center items-center gap-1">
+          <Sparkles size={12} className="text-company" />
+          <span>© 2025 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة. | تطوير Trndsky ( FixDesk 2.0 )</span>
+          <Sparkles size={12} className="text-company" />
+        </Container>
       </div>
-    </div>;
+    </header>
+  );
 };
+
 export default Header;

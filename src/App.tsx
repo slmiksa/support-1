@@ -49,7 +49,7 @@ const RouteChangeObserver = () => {
 
 function App() {
   return (
-    <div className="App">
+    <div className="App min-h-screen bg-background">
       <BrowserRouter>
         <ThemeProvider>
           <RouteChangeObserver />
@@ -67,7 +67,17 @@ function App() {
                 {/* Ensure there's a catch-all route for the admin section */}
                 <Route path="/admin/*" element={<AdminDashboard />} />
               </Routes>
-              <Toaster closeButton richColors position="top-left" />
+              <Toaster 
+                closeButton 
+                richColors 
+                position="top-left"
+                toastOptions={{
+                  className: "rounded-xl shadow-lg border border-border/30",
+                  style: {
+                    fontFamily: 'Tajawal, sans-serif',
+                  }
+                }}
+              />
             </QueryClientProvider>
           </AdminAuthProvider>
         </ThemeProvider>
