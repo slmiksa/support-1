@@ -33,16 +33,28 @@ const AdminSettings = () => {
       navigate('/admin/dashboard');
     }
     
-    // استخدام select عادي بدلاً من single لتفادي الخطأ
+    // تحسين وظيفة جلب وتحديث الأيقونة
     const fetchAndUpdateFavicon = async () => {
       try {
-        const { data, error } = await supabase.from('site_settings').select('favicon_url');
+        console.log("Fetching favicon from database...");
+        const { data, error } = await supabase
+          .from('site_settings')
+          .select('favicon_url')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+          
         if (error) {
           console.error('Error fetching favicon:', error);
           return;
         }
-        if (data && data.length > 0 && data[0].favicon_url) {
-          updateFavicon(data[0].favicon_url);
+        
+        if (data && data.favicon_url) {
+          console.log("Favicon found in database, updating browser favicon...");
+          console.log("Favicon URL length:", data.favicon_url.length);
+          updateFavicon(data.favicon_url);
+        } else {
+          console.log("No favicon found in database");
         }
       } catch (error) {
         console.error('Error in fetchAndUpdateFavicon:', error);
@@ -67,16 +79,38 @@ const AdminSettings = () => {
     window.history.pushState({}, '', url);
   };
 
+  // تحسين وظيفة تحديث الأيقونة لضمان عملها بشكل صحيح
   const updateFavicon = (faviconUrl: string) => {
-    if (!faviconUrl) return;
-    
-    let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
+    if (!faviconUrl) {
+      console.log("No favicon URL provided");
+      return;
     }
-    link.href = faviconUrl;
+    
+    try {
+      console.log("Updating favicon in browser");
+      
+      // إزالة أي روابط أيقونة موجودة أولاً
+      const existingIcons = document.querySelectorAll("link[rel*='icon']");
+      existingIcons.forEach(icon => icon.remove());
+      
+      // إنشاء رابط أيقونة جديد
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.type = 'image/png';
+      link.href = faviconUrl;
+      document.getElementsByTagName('head')[0].appendChild(link);
+      
+      // إنشاء رابط أيقونة مصغرة جديد
+      const shortcutLink = document.createElement('link');
+      shortcutLink.rel = 'shortcut icon';
+      shortcutLink.type = 'image/png';
+      shortcutLink.href = faviconUrl;
+      document.getElementsByTagName('head')[0].appendChild(shortcutLink);
+      
+      console.log("Favicon updated successfully");
+    } catch (error) {
+      console.error('Error updating favicon:', error);
+    }
   };
 
   // Debug access permissions
