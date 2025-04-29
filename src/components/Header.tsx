@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Search, Info, Headphones } from 'lucide-react';
@@ -21,27 +20,36 @@ const DEFAULT_SETTINGS: SiteSettings = {
 
 // مكون الخلفية المتحركة ثلاثية الأبعاد
 const AnimatedBackground = () => {
-  return (
-    <div className="animated-bg">
-      <div className="support-cube" style={{ top: '10%', left: '10%' }}></div>
-      <div className="support-sphere" style={{ top: '30%', right: '15%' }}></div>
-      <div className="support-ring" style={{ bottom: '20%', left: '20%' }}></div>
-      <div className="support-cube" style={{ bottom: '10%', right: '10%', width: '40px', height: '40px' }}></div>
-    </div>
-  );
+  return <div className="animated-bg">
+      <div className="support-cube" style={{
+      top: '10%',
+      left: '10%'
+    }}></div>
+      <div className="support-sphere" style={{
+      top: '30%',
+      right: '15%'
+    }}></div>
+      <div className="support-ring" style={{
+      bottom: '20%',
+      left: '20%'
+    }}></div>
+      <div className="support-cube" style={{
+      bottom: '10%',
+      right: '10%',
+      width: '40px',
+      height: '40px'
+    }}></div>
+    </div>;
 };
-
 const Header = () => {
   const [settings, setSettings] = useState<SiteSettings>({});
   const [loading, setLoading] = useState(true);
   const [logoError, setLogoError] = useState(false);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const location = useLocation();
-
   useEffect(() => {
     fetchSiteSettings();
   }, []);
-
   const fetchSiteSettings = async () => {
     try {
       // استخدام استعلام يجلب جميع الصفوف
@@ -81,7 +89,6 @@ const Header = () => {
       setLoading(false);
     }
   };
-
   const updateFavicon = (faviconUrl: string) => {
     if (!faviconUrl) return;
     try {
@@ -107,27 +114,20 @@ const Header = () => {
   const isBase64Image = (str: string) => {
     return str && str.startsWith('data:image');
   };
-  
   const logoUrl = logoError ? logoSvg : settings.logo_url && isBase64Image(settings.logo_url) ? settings.logo_url : settings.logo_url || logoSvg;
   const isTicketStatusActive = location.pathname.startsWith('/ticket-status');
   const isHomeActive = location.pathname === '/';
-  
   if (!settingsInitialized) {
     return null;
   }
-
-  return (
-    <header className="w-full relative">
+  return <header className="w-full relative">
       <AnimatedBackground />
       
       {/* Header العلوي مع اسم الشركة والشعار */}
-      <div 
-        style={{
-          background: `linear-gradient(135deg, ${settings.primary_color || '#0f72c1'}, ${settings.secondary_color || '#0a4f88'})`
-        }} 
-        className="py-8 shadow-lg relative overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gNDAgMCBMIDAgMCAwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')]" opacity-20></div>
+      <div style={{
+      background: `linear-gradient(135deg, ${settings.primary_color || '#0f72c1'}, ${settings.secondary_color || '#0a4f88'})`
+    }} className="py-8 shadow-lg relative overflow-hidden">
+        <div opacity-20 className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxkZWZzPjxwYXR0ZXJuIGlkPSJncmlkIiB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiPjxwYXRoIGQ9Ik0gNDAgMCBMIDAgMCAwIDQwIiBmaWxsPSJub25lIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4xKSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] bg-[#333b60]"></div>
         
         <Container>
           <div className="flex flex-col items-center justify-center text-center relative z-10">
@@ -182,8 +182,6 @@ const Header = () => {
           <span>{settings.footer_text || ''}</span>
         </Container>
       </div>
-    </header>
-  );
+    </header>;
 };
-
 export default Header;
