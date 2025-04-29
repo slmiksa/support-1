@@ -240,7 +240,7 @@ const BranchesManager = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead className="text-right">اسم الفرع</TableHead>
-                  {canManageAdmins && <TableHead className="text-right w-40">إجراءات</TableHead>}
+                  <TableHead className="text-right w-40">إجراءات</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -248,31 +248,29 @@ const BranchesManager = () => {
                   branches.map((branch) => (
                     <TableRow key={branch.id}>
                       <TableCell className="font-medium text-right">{branch.name}</TableCell>
-                      {canManageAdmins && (
-                        <TableCell className="flex justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleEditBranch(branch)}
-                            title="تعديل"
-                          >
-                            <Pencil className="h-4 w-4 text-blue-500" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDeleteBranch(branch.id)}
-                            title="حذف"
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                        </TableCell>
-                      )}
+                      <TableCell className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditBranch(branch)}
+                          title="تعديل"
+                        >
+                          <Pencil className="h-4 w-4 text-blue-500" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteBranch(branch.id)}
+                          title="حذف"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={canManageAdmins ? 2 : 1} className="text-center h-24">
+                    <TableCell colSpan={2} className="text-center h-24">
                       <p>لا توجد فروع مسجلة</p>
                     </TableCell>
                   </TableRow>

@@ -1,9 +1,10 @@
 
 import React from 'react';
 import AdminHeader from '@/components/admin/AdminHeader';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Navigate } from 'react-router-dom';
+import AdminManager from '@/components/admin/AdminManager';
+import { Container } from '@/components/ui/container';
 
 const ManageAdmins = () => {
   const { isAuthenticated, hasPermission } = useAdminAuth();
@@ -20,14 +21,7 @@ const ManageAdmins = () => {
     <div className="min-h-screen bg-background">
       <AdminHeader />
       <main className="container mx-auto px-4 py-8">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-right">إدارة المشرفين</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-right">صفحة إدارة المشرفين قيد التطوير.</p>
-          </CardContent>
-        </Card>
+        <AdminManager />
       </main>
     </div>
   );
