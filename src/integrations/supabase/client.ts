@@ -9,6 +9,18 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Create the supabase client
 const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+// We define our own type that correctly includes both the original client methods AND our typed RPC function
+type SupabaseClientWithTypedRPC = typeof supabaseClient & {
+  rpc: (function_name: 
+    "delete_ticket_by_id" | 
+    "update_ticket_status" | 
+    "add_ticket_response_with_admin" | 
+    "check_admin_credentials" |
+    "check_column_exists" |
+    "add_company_email_columns", 
+    params: any) => ReturnType<typeof supabaseClient.rpc>
+};
+
 // Export the supabase client with additional type definitions for RPC functions
 // We need to maintain all original client methods while adding typed RPC functionality
 export const supabase = {
@@ -21,7 +33,7 @@ export const supabase = {
     "check_column_exists" |
     "add_company_email_columns", 
     params: any) => supabaseClient.rpc(function_name, params)
-};
+} as SupabaseClientWithTypedRPC;
 
 // ดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดด
 // Export types for use in application
