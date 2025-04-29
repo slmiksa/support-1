@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
@@ -60,19 +59,18 @@ export const deleteTicket = async (ticketId: string): Promise<boolean> => {
     
     console.log(`Successfully deleted responses for ticket: ${ticketId}`);
 
-    const { data, error } = await supabase
-      .rpc('delete_ticket_by_id', { p_ticket_id: ticketId });
+    // Direct delete instead of using stored procedure that's causing issues
+    const { error } = await supabase
+      .from('tickets')
+      .delete()
+      .eq('ticket_id', ticketId);
 
     if (error) {
-      console.error('Error calling delete_ticket_by_id function:', error);
-      return false;
-    }
-
-    if (!data) {
-      console.error('Ticket deletion failed');
+      console.error('Error deleting ticket:', error);
       return false;
     }
     
+    // Verify the deletion
     const { data: checkData, error: checkError } = await supabase
       .from('tickets')
       .select('ticket_id')
@@ -83,13 +81,10 @@ export const deleteTicket = async (ticketId: string): Promise<boolean> => {
       return false;
     }
     
-    if (checkData && checkData.length > 0) {
-      console.error('Ticket still exists after deletion attempt');
-      return false;
-    }
+    const deleted = !checkData || checkData.length === 0;
+    console.log(`Ticket ${ticketId} deletion verification: ${deleted ? 'Success' : 'Failed'}`);
     
-    console.log(`Confirmed ticket ${ticketId} was successfully deleted`);
-    return true;
+    return deleted;
   } catch (error) {
     console.error('Error in deleteTicket:', error);
     return false;

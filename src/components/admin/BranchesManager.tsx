@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Branch } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -20,13 +19,13 @@ const BranchesManager = () => {
   const [editingBranch, setEditingBranch] = useState<{ id: string, name: string } | null>(null);
   const { hasPermission } = useAdminAuth();
   const canManageAdmins = hasPermission('manage_admins');
+  const defaultBranches = ["ALWASL DAMMAM", "ALWASL JEDDAH", "ALWASL RIYADH", "MADA"];
 
   useEffect(() => {
-    fetchBranches();
-    // Check if there are no branches and add default ones if needed
-    setTimeout(() => {
+    fetchBranches().then(() => {
+      // Check if default branches need to be added only if no branches exist
       checkAndAddDefaultBranches();
-    }, 1000);
+    });
   }, []);
 
   const fetchBranches = async () => {
@@ -40,47 +39,121 @@ const BranchesManager = () => {
       if (error) throw error;
 
       console.log("Fetched branches:", data);
-      setBranches(data || []);
+      
+      // Remove duplicate branches (keep one of each name)
+      const uniqueBranches = removeDuplicateBranches(data || []);
+      
+      setBranches(uniqueBranches);
+      return uniqueBranches;
     } catch (error) {
       console.error("Error fetching branches:", error);
       toast.error('فشل في تحميل الفروع');
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
+  // Function to remove duplicate branches by name
+  const removeDuplicateBranches = (branchList: Branch[]): Branch[] => {
+    const seen = new Set();
+    const uniqueBranches: Branch[] = [];
+    
+    // First pass: collect one branch per name (keeping the earliest created one)
+    const nameToEarliestBranch = new Map<string, Branch>();
+    
+    branchList.forEach(branch => {
+      if (!nameToEarliestBranch.has(branch.name)) {
+        nameToEarliestBranch.set(branch.name, branch);
+      } else {
+        const existing = nameToEarliestBranch.get(branch.name)!;
+        // Keep the one with the earlier created_at date
+        if (new Date(branch.created_at!) < new Date(existing.created_at!)) {
+          nameToEarliestBranch.set(branch.name, branch);
+        }
+      }
+    });
+    
+    // Convert map back to array
+    return Array.from(nameToEarliestBranch.values());
+  };
+
   const checkAndAddDefaultBranches = async () => {
     try {
-      const { data } = await supabase
-        .from('branches')
-        .select('count()', { count: 'exact', head: true });
+      const existingBranches = branches;
       
-      const count = data || 0;
-      
-      console.log("Checking branches for default setup:", count);
-      
-      if (count === 0) {
-        const defaultBranches = [
-          "ALWASL DAMMAM",
-          "ALWASL JEDDAH",
-          "ALWASL RIYADH",
-          "MADA"
-        ];
-        
-        console.log("Adding default branches:", defaultBranches);
+      if (existingBranches.length === 0) {
+        console.log("No branches found. Adding default branches.");
         
         for (const branchName of defaultBranches) {
           await createBranch(branchName);
-          console.log(`Added default branch: ${branchName}`);
         }
         
         toast.success('تم إضافة الفروع الافتراضية بنجاح');
         fetchBranches();
+      } else {
+        // Check if we need to add any missing default branches
+        const existingNames = new Set(existingBranches.map(b => b.name));
+        let addedAny = false;
+        
+        for (const branchName of defaultBranches) {
+          if (!existingNames.has(branchName)) {
+            await createBranch(branchName);
+            addedAny = true;
+          }
+        }
+        
+        if (addedAny) {
+          fetchBranches();
+        }
       }
     } catch (error) {
       console.error("Error in checkAndAddDefaultBranches:", error);
     }
   };
+
+  // Delete duplicate branches
+  const cleanupDuplicateBranches = async () => {
+    try {
+      const { data: allBranches, error } = await supabase
+        .from('branches')
+        .select('*')
+        .order('created_at');
+
+      if (error) throw error;
+
+      // Group branches by name
+      const branchesByName = new Map<string, Branch[]>();
+      allBranches?.forEach(branch => {
+        if (!branchesByName.has(branch.name)) {
+          branchesByName.set(branch.name, []);
+        }
+        branchesByName.get(branch.name)!.push(branch);
+      });
+
+      // Keep only the first branch of each name and delete the rest
+      for (const [_, branches] of branchesByName) {
+        if (branches.length > 1) {
+          // Keep the first one (oldest), delete the rest
+          for (let i = 1; i < branches.length; i++) {
+            await supabase
+              .from('branches')
+              .delete()
+              .eq('id', branches[i].id);
+          }
+        }
+      }
+
+      await fetchBranches();
+    } catch (error) {
+      console.error("Error cleaning up duplicate branches:", error);
+    }
+  };
+
+  useEffect(() => {
+    // Clean up duplicate branches when component mounts
+    cleanupDuplicateBranches();
+  }, []);
 
   const createBranch = async (name: string) => {
     try {
@@ -101,6 +174,12 @@ const BranchesManager = () => {
   const handleCreateBranch = async () => {
     if (!newBranchName.trim()) {
       toast.error('يرجى إدخال اسم الفرع');
+      return;
+    }
+
+    // Check if branch with same name already exists
+    if (branches.some(branch => branch.name.toLowerCase() === newBranchName.trim().toLowerCase())) {
+      toast.error('الفرع موجود بالفعل');
       return;
     }
 
@@ -125,6 +204,15 @@ const BranchesManager = () => {
     
     if (!editingBranch.name.trim()) {
       toast.error('يرجى إدخال اسم الفرع');
+      return;
+    }
+
+    // Check if branch with same name already exists (excluding the current branch)
+    if (branches.some(branch => 
+      branch.id !== editingBranch.id && 
+      branch.name.toLowerCase() === editingBranch.name.trim().toLowerCase()
+    )) {
+      toast.error('يوجد فرع آخر بنفس الاسم');
       return;
     }
 
