@@ -128,6 +128,10 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const hasPermission = (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets' | 'delete_tickets'): boolean => {
     if (!currentAdmin) return false;
+    
+    // Debug permissions
+    console.log("Current admin role:", currentAdmin.role);
+    console.log("Requested permission:", permission);
 
     switch (permission) {
       case 'manage_tickets':

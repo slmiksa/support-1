@@ -22,6 +22,9 @@ const RouteChangeObserver = () => {
   const location = useLocation();
   
   useEffect(() => {
+    // Debug current route
+    console.log("Current route:", location.pathname);
+    
     const adminPaths = ['/admin', '/admin/'];
     const pathname = location.pathname;
     const isAdminPage = pathname.startsWith('/admin/') || adminPaths.includes(pathname);

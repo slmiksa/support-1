@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Home, Settings, FileText, Moon, Sun, Users } from 'lucide-react';
+import { LogOut, Home, Settings, Moon, Sun, Users } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import { useTheme } from '@/contexts/ThemeContext';
