@@ -205,6 +205,7 @@ export type Database = {
           page_title: string | null
           primary_color: string | null
           secondary_color: string | null
+          site_name: string | null
           support_available: boolean | null
           support_help_fields: Json | null
           support_info: string | null
@@ -224,6 +225,7 @@ export type Database = {
           page_title?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          site_name?: string | null
           support_available?: boolean | null
           support_help_fields?: Json | null
           support_info?: string | null
@@ -243,6 +245,7 @@ export type Database = {
           page_title?: string | null
           primary_color?: string | null
           secondary_color?: string | null
+          site_name?: string | null
           support_available?: boolean | null
           support_help_fields?: Json | null
           support_info?: string | null
