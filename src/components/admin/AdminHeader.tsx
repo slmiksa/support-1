@@ -2,7 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
-import { LogOut, Home, Settings, Moon, Sun, Users } from 'lucide-react';
+import { LogOut, Home, Settings, Moon, Sun } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase, SiteSettings } from '@/integrations/supabase/client';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -82,16 +82,7 @@ const AdminHeader = () => {
             <Home className="h-4 w-4 ml-1" />
             <span>الرئيسية</span>
           </Button>
-          {hasPermission('manage_admins') && (
-            <Button 
-              variant="secondary" 
-              className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" 
-              onClick={() => handleNavigate('/admin/manage-admins')}
-            >
-              <Users className="h-4 w-4 ml-1" />
-              <span>المديرين</span>
-            </Button>
-          )}
+          {/* تم إخفاء زر المديرين من هنا */}
           <Button variant="secondary" className="flex items-center space-x-2 ml-2 mb-2 md:mb-0" onClick={() => handleNavigate('/admin/settings')}>
             <Settings className="h-4 w-4 ml-1" />
             <span>الإعدادات</span>

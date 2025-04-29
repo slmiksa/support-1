@@ -161,10 +161,7 @@ const SiteCustomizationManager = () => {
       const fileName = `logo_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `logos/${fileName}`;
       
-      const { data } = supabase.storage
-        .from('public')
-        .getPublicUrl(filePath);
-      
+      // إنشاء الملف في تخزين سوبابيس
       const { error: uploadError } = await supabase.storage
         .from('public')
         .upload(filePath, file, { 
@@ -177,6 +174,12 @@ const SiteCustomizationManager = () => {
         throw uploadError;
       }
       
+      // الحصول على عنوان URL العام للملف المرفوع
+      const { data } = await supabase.storage
+        .from('public')
+        .getPublicUrl(filePath);
+      
+      // تحديث الإعدادات بعنوان URL للشعار الجديد
       setSettings({
         ...settings,
         logo_url: data.publicUrl
@@ -221,10 +224,7 @@ const SiteCustomizationManager = () => {
       const fileName = `favicon_${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `favicons/${fileName}`;
       
-      const { data } = supabase.storage
-        .from('public')
-        .getPublicUrl(filePath);
-      
+      // إنشاء الملف في تخزين سوبابيس
       const { error: uploadError } = await supabase.storage
         .from('public')
         .upload(filePath, file, { 
@@ -237,6 +237,12 @@ const SiteCustomizationManager = () => {
         throw uploadError;
       }
       
+      // الحصول على عنوان URL العام للملف المرفوع
+      const { data } = await supabase.storage
+        .from('public')
+        .getPublicUrl(filePath);
+      
+      // تحديث الإعدادات بعنوان URL للفافيكون الجديد
       setSettings({
         ...settings,
         favicon_url: data.publicUrl
