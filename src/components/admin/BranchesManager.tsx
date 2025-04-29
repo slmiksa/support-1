@@ -9,7 +9,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { toast } from 'sonner';
 import { Trash2, Plus, Pencil } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 const BranchesManager = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -31,28 +30,43 @@ const BranchesManager = () => {
 
   const fetchBranches = async () => {
     setLoading(true);
-    const data = await getAllBranches();
-    setBranches(data);
-    setLoading(false);
+    try {
+      const data = await getAllBranches();
+      console.log("Fetched branches:", data);
+      setBranches(data);
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+      toast.error('فشل في تحميل الفروع');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const checkAndAddDefaultBranches = async () => {
-    const data = await getAllBranches();
-    
-    if (data.length === 0) {
-      const defaultBranches = [
-        "ALWASL DAMMAM",
-        "ALWASL JEDDAH",
-        "ALWASL RIYADH",
-        "MADA"
-      ];
+    try {
+      const data = await getAllBranches();
+      console.log("Checking branches for default setup:", data);
       
-      for (const branchName of defaultBranches) {
-        await createBranch(branchName);
+      if (data.length === 0) {
+        const defaultBranches = [
+          "ALWASL DAMMAM",
+          "ALWASL JEDDAH",
+          "ALWASL RIYADH",
+          "MADA"
+        ];
+        
+        console.log("Adding default branches:", defaultBranches);
+        
+        for (const branchName of defaultBranches) {
+          await createBranch(branchName);
+          console.log(`Added default branch: ${branchName}`);
+        }
+        
+        toast.success('تم إضافة الفروع الافتراضية بنجاح');
+        fetchBranches();
       }
-      
-      toast.success('تم إضافة الفروع الافتراضية بنجاح');
-      fetchBranches();
+    } catch (error) {
+      console.error("Error in checkAndAddDefaultBranches:", error);
     }
   };
 

@@ -9,31 +9,8 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Create the supabase client
 const supabaseClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
-// We define our type to include all original client methods plus our typed RPC functions
-type SupabaseClientWithTypedRPC = typeof supabaseClient & {
-  rpc: (function_name: 
-    "delete_ticket_by_id" | 
-    "update_ticket_status" | 
-    "add_ticket_response_with_admin" | 
-    "check_admin_credentials" |
-    "check_column_exists" |
-    "add_company_email_columns", 
-    params: any) => ReturnType<typeof supabaseClient.rpc>
-};
-
-// Export the supabase client with additional type definitions for RPC functions
-// We need to maintain all original client methods while adding typed RPC functionality
-export const supabase = {
-  ...supabaseClient, // This preserves ALL original methods (from, auth, storage, etc.)
-  rpc: (function_name: 
-    "delete_ticket_by_id" | 
-    "update_ticket_status" | 
-    "add_ticket_response_with_admin" | 
-    "check_admin_credentials" |
-    "check_column_exists" |
-    "add_company_email_columns", 
-    params: any) => supabaseClient.rpc(function_name, params)
-} as SupabaseClientWithTypedRPC;
+// Export the supabase client including all its original methods, to ensure methods like 'from', 'storage', etc. are accessible
+export const supabase = supabaseClient;
 
 // ดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดดด
 // Export types for use in application
@@ -155,7 +132,7 @@ export interface TicketResponse {
   ticket_id: string;
   admin_id?: string;
   response: string;
-  is_admin?: boolean;
+  is_admin?: boolean | null;
   private?: boolean;
   created_at?: string;
   admin_name?: string;
