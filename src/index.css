@@ -81,6 +81,11 @@
     position: relative;
     overflow-x: hidden;
   }
+
+  /* Shadow text for better visibility on backgrounds */
+  .shadow-text {
+    text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
 }
 
 /* RTL direction for the whole website */
@@ -94,17 +99,17 @@ body {
   text-align: left;
 }
 
-/* Navigation links styling - Updated modern style */
+/* Navigation links styling - Modern improved style */
 .nav-link-primary {
-  @apply flex items-center gap-2 px-4 py-2 text-gray-700 rounded-lg hover:bg-gray-100/80 transition-all hover:shadow-sm;
+  @apply flex items-center gap-2 px-4 py-2.5 text-gray-700 rounded-lg hover:bg-gray-100/80 transition-all hover:shadow-md;
 }
 
 .nav-link-secondary {
-  @apply flex items-center gap-2 px-4 py-2 text-gray-600 rounded-lg hover:bg-gray-100/80 transition-all hover:shadow-sm;
+  @apply flex items-center gap-2 px-4 py-2.5 text-gray-600 rounded-lg hover:bg-gray-100/80 transition-all hover:shadow-md;
 }
 
 .nav-link-active {
-  @apply flex items-center gap-2 px-4 py-2 text-white bg-gradient-support rounded-lg font-medium relative shadow-sm;
+  @apply flex items-center gap-2 px-4 py-2.5 text-white bg-gradient-support rounded-lg font-medium relative shadow-md;
 }
 
 .nav-link-active::before {
@@ -112,13 +117,13 @@ body {
   @apply absolute top-1/2 -right-1 transform -translate-y-1/2 h-2 w-2 rounded-full bg-white;
 }
 
-/* Updated logo pulsing animation with modern tech support theme */
+/* Enhanced logo pulsing animation with modern tech support theme */
 @keyframes logoPulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.8);
   }
   40% {
-    box-shadow: 0 0 0 12px rgba(59, 130, 246, 0);
+    box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
   }
   80% {
     box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
@@ -129,55 +134,61 @@ body {
 }
 
 .logo-pulse {
-  animation: logoPulse 1.5s infinite;
+  animation: logoPulse 2s infinite;
   position: relative;
 }
 
-/* Support emphasis animation for emphasizing quick support */
+/* Support emphasis animation for emphasizing quick support with larger effect */
 .logo-pulse::after {
   content: '';
   position: absolute;
-  top: -5px;
-  left: -5px;
-  right: -5px;
-  bottom: -5px;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
   border-radius: 50%;
   background: transparent;
-  border: 2px solid rgba(59, 130, 246, 0.6);
-  animation: secondaryPulse 2s infinite 0.5s;
+  border: 4px solid rgba(59, 130, 246, 0.6);
+  animation: secondaryPulse 3s infinite;
   z-index: -1;
 }
 
 @keyframes secondaryPulse {
   0% {
-    transform: scale(0.95);
+    transform: scale(0.9);
     opacity: 0.7;
   }
   50% {
-    transform: scale(1.05);
+    transform: scale(1.1);
     opacity: 0.3;
   }
   100% {
-    transform: scale(0.95);
+    transform: scale(0.9);
     opacity: 0.7;
   }
 }
 
-/* Floating animation for 3D elements */
+/* Enhanced floating animation for 3D elements */
 .floating {
-  animation: float 3s ease-in-out infinite;
+  animation: float 5s ease-in-out infinite;
 }
 
 @keyframes float {
   0%, 100% {
-    transform: translateY(0);
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-12px) rotate(2deg);
   }
   50% {
-    transform: translateY(-10px);
+    transform: translateY(0) rotate(0deg);
+  }
+  75% {
+    transform: translateY(-8px) rotate(-2deg);
   }
 }
 
-/* Background animation */
+/* Enhanced background animation */
 .animated-bg {
   position: absolute;
   top: 0;
@@ -195,9 +206,9 @@ body {
   left: -50%;
   right: -50%;
   bottom: -50%;
-  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.05) 0%, rgba(30, 64, 175, 0.1) 100%);
+  background: linear-gradient(to bottom right, rgba(59, 130, 246, 0.08) 0%, rgba(30, 64, 175, 0.15) 100%);
   transform-origin: center;
-  animation: spin-slow 12s linear infinite;
+  animation: spin-slow 20s linear infinite;
   z-index: -1;
 }
 
@@ -212,40 +223,67 @@ body {
   z-index: -1;
 }
 
-/* 3D Objects */
+/* Enhanced 3D Objects with more depth and details */
 .support-cube {
   position: absolute;
-  width: 60px;
-  height: 60px;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.2);
-  border-radius: 8px;
+  width: 80px;
+  height: 80px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
   transform-style: preserve-3d;
-  animation: spin-slow 12s linear infinite, float 4s ease-in-out infinite;
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
+  animation: spin-slow 18s linear infinite, float 6s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.3);
   z-index: -1;
+  backdrop-filter: blur(3px);
 }
 
 .support-sphere {
   position: absolute;
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  background: radial-gradient(circle at 30% 30%, rgba(219, 234, 254, 0.8), rgba(59, 130, 246, 0.2));
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
-  animation: float 5s ease-in-out infinite;
+  background: radial-gradient(circle at 30% 30%, rgba(219, 234, 254, 0.9), rgba(59, 130, 246, 0.3));
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.25), inset 0 0 20px rgba(255, 255, 255, 0.5);
+  animation: float 7s ease-in-out infinite;
   z-index: -1;
+  backdrop-filter: blur(2px);
 }
 
 .support-ring {
   position: absolute;
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
-  border: 2px solid rgba(59, 130, 246, 0.2);
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.15);
-  animation: spin-slow 15s linear infinite;
+  border: 3px solid rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.2), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  animation: spin-slow 25s linear infinite reverse, float 8s ease-in-out infinite;
   z-index: -1;
+  backdrop-filter: blur(1px);
+}
+
+/* Enhanced spin animation */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* New bounce-gentle animation for elements */
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s infinite ease-in-out;
 }
 
 /* File upload button styling */
@@ -272,21 +310,62 @@ input[type="file"]::file-selector-button {
 
 input[type="file"]::before {
   content: "اختر ملف";
-  @apply bg-secondary text-secondary-foreground py-1 px-3 mr-2 rounded-md cursor-pointer;
+  @apply bg-secondary text-secondary-foreground py-1.5 px-3 mr-2 rounded-md cursor-pointer;
 }
 
-/* Modern card styling */
+/* Modern card styling with improved hover effects */
 .support-card {
-  @apply bg-white rounded-xl shadow-sm border border-gray-100 transition-all duration-300;
+  @apply bg-white rounded-xl shadow-md border border-gray-100 transition-all duration-300;
   backdrop-filter: blur(10px);
 }
 
 .support-card:hover {
-  @apply shadow-md border-gray-200;
-  transform: translateY(-2px);
+  @apply shadow-xl border-gray-200;
+  transform: translateY(-4px);
 }
 
-/* Modern gradient text */
+/* Modern gradient text with enhanced contrast */
 .gradient-text {
   @apply bg-gradient-support bg-clip-text text-transparent;
+  text-shadow: 0 1px 1px rgba(255,255,255,0.1);
+}
+
+/* New animations for page elements */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.8s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slide-in 0.8s ease-out forwards;
+}
+
+/* Enhanced button styling */
+.btn-support {
+  @apply bg-support text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all hover:bg-support-dark;
+}
+
+.btn-support-outline {
+  @apply border border-support text-support px-4 py-2 rounded-lg shadow-sm hover:shadow-md transition-all hover:bg-support/10;
 }
