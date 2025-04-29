@@ -66,6 +66,8 @@ const AdminSettings = () => {
   };
 
   const updateFavicon = (faviconUrl: string) => {
+    if (!faviconUrl) return;
+    
     let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
     if (!link) {
       link = document.createElement('link');

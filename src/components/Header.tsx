@@ -7,15 +7,16 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Container } from '@/components/ui/container';
 import logoSvg from '../assets/logo.svg';
 
+// إزالة الإعدادات الافتراضية
 const DEFAULT_SETTINGS: SiteSettings = {
-  site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
-  page_title: 'شركة الوصل الوطنية',
+  site_name: '',
+  page_title: '',
   logo_url: '',
   favicon_url: '',
-  primary_color: '#0f4c81',
-  secondary_color: '#0a2f4f',
-  text_color: '#ffffff',
-  footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.'
+  primary_color: '',
+  secondary_color: '',
+  text_color: '',
+  footer_text: ''
 };
 
 const Header = () => {
@@ -137,7 +138,7 @@ const Header = () => {
               </div>
               
               <div className="text-center">
-                <h1 className="text-white text-xl md:text-3xl font-bold">{settings.site_name || DEFAULT_SETTINGS.site_name}</h1>
+                <h1 className="text-white text-xl md:text-3xl font-bold">{settings.site_name || ''}</h1>
                 <p className="text-white/80 text-sm mt-1"></p>
               </div>
             </div>
@@ -168,7 +169,7 @@ const Header = () => {
       <div className="fixed bottom-0 left-0 right-0 py-2 px-4 bg-white/90 backdrop-blur-md text-gray-700 text-xs text-center z-10 border-t">
         <Container className="flex justify-center items-center gap-1">
           <Info size={12} className="text-company" />
-          <span>{settings.footer_text || '© 2025 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.'}</span>
+          <span>{settings.footer_text || ''}</span>
         </Container>
       </div>
     </header>

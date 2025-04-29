@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -31,18 +32,19 @@ const fileToBase64 = (file: File): Promise<string> => {
   });
 };
 
+// إزالة الإعدادات الافتراضية
 const DEFAULT_SETTINGS: SiteSettings = {
-  site_name: 'شركة الوصل الوطنية لتحصيل ديون جهات التمويل',
-  page_title: 'شركة الوصل الوطنية',
+  site_name: '',
+  page_title: '',
   logo_url: '',
   favicon_url: '',
-  primary_color: '#D4AF37', 
-  secondary_color: '#B08C1A', 
-  text_color: '#ffffff', 
-  footer_text: '© 2024 شركة الوصل الوطنية لتحصيل ديون جهات التمويل. جميع الحقوق محفوظة.',
+  primary_color: '', 
+  secondary_color: '', 
+  text_color: '', 
+  footer_text: '',
   support_available: true,
   support_message: 'الدعم الفني متواجد',
-  support_info: '<p>رقم تحويلة الدعم الفني: 2014</p><p>موقع الإجازات: <a href="https://test.com" target="_blank">www.test.com</a></p>',
+  support_info: '',
   support_help_fields: [],
 };
 
@@ -112,21 +114,25 @@ const SiteCustomizationManager = () => {
   
   const createDefaultSettings = async () => {
     try {
-      // Make a copy of DEFAULT_SETTINGS to avoid reference issues
-      const defaultSettings = { ...DEFAULT_SETTINGS };
+      // إنشاء بيانات فارغة
+      const defaultSettings = { 
+        ...DEFAULT_SETTINGS,
+        support_available: true,
+        support_message: 'الدعم الفني متواجد'
+      };
       
       const dbSettings = {
-        site_name: defaultSettings.site_name || '',
-        page_title: defaultSettings.page_title || '',
-        logo_url: defaultSettings.logo_url || '',
-        favicon_url: defaultSettings.favicon_url || '',
-        primary_color: defaultSettings.primary_color || '#D4AF37',
-        secondary_color: defaultSettings.secondary_color || '#B08C1A', 
-        text_color: defaultSettings.text_color || '#ffffff',
-        footer_text: defaultSettings.footer_text || '',
+        site_name: '',
+        page_title: '',
+        logo_url: '',
+        favicon_url: '',
+        primary_color: '',
+        secondary_color: '', 
+        text_color: '',
+        footer_text: '',
         support_available: defaultSettings.support_available || true,
-        support_message: defaultSettings.support_message || '',
-        support_info: defaultSettings.support_info || '',
+        support_message: defaultSettings.support_message || 'الدعم الفني متواجد',
+        support_info: '',
         support_help_fields: [] as unknown as Json
       };
       
@@ -389,7 +395,7 @@ const SiteCustomizationManager = () => {
                   id="site_name"
                   value={settings.site_name || ''}
                   onChange={(e) => setSettings({ ...settings, site_name: e.target.value })}
-                  placeholder="اسم الشركة"
+                  placeholder="أدخل اسم الشركة"
                   className="text-right"
                 />
               </div>
@@ -400,7 +406,7 @@ const SiteCustomizationManager = () => {
                   id="page_title"
                   value={settings.page_title || ''}
                   onChange={(e) => setSettings({ ...settings, page_title: e.target.value })}
-                  placeholder="عنوان الصفحة"
+                  placeholder="أدخل عنوان الصفحة"
                   className="text-right"
                 />
                 <p className="text-xs text-gray-500 text-right">
