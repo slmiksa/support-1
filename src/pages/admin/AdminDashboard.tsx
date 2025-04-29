@@ -12,7 +12,6 @@ import { Search, X, Flag, AlertTriangle, CircleCheck, Bell, Trash2 } from 'lucid
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { deleteTicket } from '@/utils/ticketUtils';
-
 const statusColorMap = {
   pending: 'bg-amber-100 text-amber-800 border border-amber-200 hover:bg-amber-200',
   open: 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200',
@@ -42,7 +41,6 @@ const priorityLabels = {
   medium: 'متوسطة',
   normal: 'عادية'
 };
-
 const AdminDashboard = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -52,24 +50,20 @@ const AdminDashboard = () => {
   const {
     isAuthenticated
   } = useAdminAuth();
-
   useEffect(() => {
     if (isAuthenticated) {
       fetchTickets();
     }
   }, [isAuthenticated]);
-
   useEffect(() => {
     if (!isAuthenticated) return;
-    
+
     // Poll for new tickets every 30 seconds
     const interval = setInterval(() => {
       fetchTickets();
     }, 30000);
-    
     return () => clearInterval(interval);
   }, [isAuthenticated]);
-
   const fetchTickets = async () => {
     try {
       setLoading(true);
@@ -90,7 +84,6 @@ const AdminDashboard = () => {
       setLoading(false);
     }
   };
-
   const filterTickets = () => {
     let filtered = [...tickets];
     if (activeFilter !== 'all') {
@@ -102,11 +95,9 @@ const AdminDashboard = () => {
     }
     return filtered;
   };
-
   const handleViewTicket = ticketId => {
     navigate(`/admin/tickets/${ticketId}`);
   };
-
   const getPriorityDisplay = priority => {
     const actualPriority = priority || 'normal';
     return <Badge className={`font-medium px-3 py-1 rounded-md text-sm flex items-center ${priorityColorMap[actualPriority] || 'bg-green-100'}`}>
@@ -114,7 +105,6 @@ const AdminDashboard = () => {
         {priorityLabels[actualPriority] || 'عادية'}
       </Badge>;
   };
-
   const handleDeleteTicket = async (ticketId: string) => {
     if (confirm(`هل أنت متأكد من حذف التذكرة ${ticketId}؟`)) {
       try {
@@ -132,14 +122,11 @@ const AdminDashboard = () => {
       }
     }
   };
-
   const {
     hasPermission
   } = useAdminAuth();
   const canDeleteTickets = hasPermission('delete_tickets');
-
-  return (
-    <div className="min-h-screen bg-white">
+  return <div className="min-h-screen bg-white">
       <AdminHeader />
       <main className="container mx-auto px-4 py-6">
         <Card className="shadow-md border-company-light">
@@ -221,7 +208,7 @@ const AdminDashboard = () => {
                     })}
                           </TableCell>
                           <TableCell className="py-4 flex items-center gap-2">
-                            <Button size="sm" onClick={() => handleViewTicket(ticket.ticket_id)} className="bg-company hover:bg-company-dark">
+                            <Button size="sm" onClick={() => handleViewTicket(ticket.ticket_id)} className="bg-company hover:bg-company-dark rounded-sm">
                               عرض التفاصيل
                             </Button>
                             
@@ -246,8 +233,6 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </main>
-    </div>
-  );
+    </div>;
 };
-
 export default AdminDashboard;
