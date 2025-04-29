@@ -140,7 +140,7 @@ interface SubmitButtonProps {
 export const SubmitButton = ({
   isSubmitting
 }: SubmitButtonProps) => {
-  return <Button type="submit" disabled={isSubmitting} className="w-full text-white text-base font-thin bg-[#333b60]">
+  return <Button type="submit" disabled={isSubmitting} className="w-full text-base font-thin text-slate-50 bg-[#356ddb]">
       {isSubmitting ? <div className="flex items-center">
           <div className="loader mr-2"></div>
           <span>جاري الإرسال...</span>
