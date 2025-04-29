@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -190,32 +191,33 @@ const SiteCustomizationManager = () => {
       }
 
       console.log('Cleaned settings for submission:', cleanSettings);
-      
-      // التحقق من وجود صف بالفعل
-      const { data: existingData, error: existingError } = await supabase
+
+      // تحقق مما إذا كانت هناك بيانات موجودة بالفعل
+      const { data, error: countError } = await supabase
         .from('site_settings')
-        .select('id')
-        .limit(1);
-      
+        .select('id');
+
+      if (countError) {
+        console.error('Error checking existing settings:', countError);
+        throw countError;
+      }
+
       let error;
       
-      if (existingError) {
-        console.error('Error checking existing settings:', existingError);
-        throw existingError;
-      }
-      
-      if (existingData && existingData.length > 0) {
+      if (data && data.length > 0) {
         // تحديث الصف الموجود
         const { error: updateError } = await supabase
           .from('site_settings')
           .update(cleanSettings)
-          .eq('id', existingData[0].id);
+          .eq('id', data[0].id);
+        
         error = updateError;
       } else {
         // إدراج صف جديد
         const { error: insertError } = await supabase
           .from('site_settings')
           .insert([cleanSettings]);
+        
         error = insertError;
       }
       

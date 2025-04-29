@@ -7,7 +7,7 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Container } from '@/components/ui/container';
 import logoSvg from '../assets/logo.svg';
 
-// إزالة الإعدادات الافتراضية
+// إزالة الإعدادات الافتراضية تماماً
 const DEFAULT_SETTINGS: SiteSettings = {
   site_name: '',
   page_title: '',
@@ -20,7 +20,7 @@ const DEFAULT_SETTINGS: SiteSettings = {
 };
 
 const Header = () => {
-  const [settings, setSettings] = useState<SiteSettings>(DEFAULT_SETTINGS);
+  const [settings, setSettings] = useState<SiteSettings>({});
   const [loading, setLoading] = useState(true);
   const [logoError, setLogoError] = useState(false);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
