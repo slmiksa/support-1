@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -57,6 +58,9 @@ const SiteCustomizationManager = () => {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
+  // إضافة متغيرات جديدة للتتبع
+  const [savedSuccessfully, setSavedSuccessfully] = useState(false);
+  const [savingInProgress, setSavingInProgress] = useState(false);
   const { hasPermission } = useAdminAuth();
   
   useEffect(() => {
@@ -87,9 +91,11 @@ const SiteCustomizationManager = () => {
         // تعيين معاينات الشعار والأيقونة إذا كانت موجودة
         if (settingsData.logo_url) {
           setLogoPreview(settingsData.logo_url);
+          console.log("Logo URL set:", settingsData.logo_url);
         }
         if (settingsData.favicon_url) {
           setFaviconPreview(settingsData.favicon_url);
+          console.log("Favicon URL set:", settingsData.favicon_url);
         }
         
         // تحليل حقول المساعدة إذا كانت موجودة
@@ -163,9 +169,21 @@ const SiteCustomizationManager = () => {
     }
 
     setLoading(true);
+    setSavingInProgress(true);
     try {
+      // تحقق من صحة بيانات الشعار والأيقونة
+      if (!settings.logo_url && logoPreview) {
+        settings.logo_url = logoPreview;
+      }
+      
+      if (!settings.favicon_url && faviconPreview) {
+        settings.favicon_url = faviconPreview;
+      }
+      
       // عرض البيانات التي سيتم إرسالها للتأكد
       console.log('Saving settings:', settings);
+      console.log('Logo URL before save:', settings.logo_url);
+      console.log('Favicon URL before save:', settings.favicon_url);
       console.log('Help fields:', helpFields);
 
       // تجهيز بيانات الإعدادات بأنواع مناسبة
@@ -228,6 +246,7 @@ const SiteCustomizationManager = () => {
       }
       
       toast.success('تم حفظ إعدادات الموقع بنجاح');
+      setSavedSuccessfully(true);
       
       if (settings.page_title) {
         document.title = settings.page_title;
@@ -238,12 +257,14 @@ const SiteCustomizationManager = () => {
       }
       
       // إعادة جلب البيانات للتأكيد
-      fetchSettings();
+      await fetchSettings();
     } catch (error) {
       console.error('Error saving site settings:', error);
       toast.error('حدث خطأ أثناء حفظ إعدادات الموقع');
+      setSavedSuccessfully(false);
     } finally {
       setLoading(false);
+      setSavingInProgress(false);
     }
   };
   
@@ -272,12 +293,13 @@ const SiteCustomizationManager = () => {
       
       // معاينة الصورة
       setLogoPreview(base64Data);
+      console.log("Logo preview set:", base64Data.substring(0, 100) + "...");
       
       // تحديث الإعدادات ببيانات base64
-      setSettings({
-        ...settings,
+      setSettings(prevSettings => ({
+        ...prevSettings,
         logo_url: base64Data
-      });
+      }));
       
       toast.success('تم تحميل الشعار بنجاح');
     } catch (error) {
@@ -293,6 +315,7 @@ const SiteCustomizationManager = () => {
     if (!faviconUrl) return;
     
     try {
+      console.log("Updating favicon to:", faviconUrl.substring(0, 100) + "...");
       let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
       if (!link) {
         link = document.createElement('link');
@@ -330,12 +353,13 @@ const SiteCustomizationManager = () => {
       
       // معاينة الصورة
       setFaviconPreview(base64Data);
+      console.log("Favicon preview set:", base64Data.substring(0, 100) + "...");
       
       // تحديث الإعدادات ببيانات base64
-      setSettings({
-        ...settings,
+      setSettings(prevSettings => ({
+        ...prevSettings,
         favicon_url: base64Data
-      });
+      }));
       
       // تحديث أيقونة المتصفح
       updateFavicon(base64Data);
@@ -369,6 +393,16 @@ const SiteCustomizationManager = () => {
     ));
   };
 
+  // تتبع التغييرات في الإعدادات
+  useEffect(() => {
+    if (savedSuccessfully) {
+      const timer = setTimeout(() => {
+        setSavedSuccessfully(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [savedSuccessfully]);
+
   return (
     <Card className="relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 to-white/80 -z-10"></div>
@@ -378,9 +412,13 @@ const SiteCustomizationManager = () => {
           <Button
             onClick={saveSettings}
             disabled={loading}
-            className="bg-support hover:bg-support-dark transition-all"
+            className={`transition-all ${savedSuccessfully 
+              ? 'bg-green-500 hover:bg-green-600' 
+              : savingInProgress 
+                ? 'bg-yellow-500 hover:bg-yellow-600' 
+                : 'bg-support hover:bg-support-dark'}`}
           >
-            {loading ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
+            {loading ? 'جاري الحفظ...' : savedSuccessfully ? 'تم الحفظ بنجاح ✓' : 'حفظ الإعدادات'}
           </Button>
           <h2 className="text-xl font-bold text-right gradient-text">تخصيص واجهة الموقع</h2>
         </div>
@@ -407,7 +445,7 @@ const SiteCustomizationManager = () => {
             </TabsTrigger>
             <TabsTrigger value="logo" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Image size={16} />
-              <span>الشع��ر</span>
+              <span>الشعار</span>
             </TabsTrigger>
             <TabsTrigger value="colors" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">
               <Palette size={16} />
@@ -824,3 +862,4 @@ const SiteCustomizationManager = () => {
 };
 
 export default SiteCustomizationManager;
+

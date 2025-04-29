@@ -25,6 +25,8 @@ const Header = () => {
   const [logoError, setLogoError] = useState(false);
   const [settingsInitialized, setSettingsInitialized] = useState(false);
   const location = useLocation();
+  // إضافة متغير جديد لتتبع محاولات تحميل الشعار
+  const [logoLoadAttempts, setLogoLoadAttempts] = useState(0);
 
   useEffect(() => {
     fetchSiteSettings();
@@ -46,7 +48,23 @@ const Header = () => {
       if (data && data.length > 0) {
         // استخدم النوع المطلوب
         const settingsData = data[0] as unknown as SiteSettings;
-        console.log("Fetched settings:", settingsData);
+        console.log("Header - Fetched settings:", settingsData);
+        
+        // التحقق من وجود رابط الشعار
+        if (settingsData.logo_url) {
+          console.log("Header - Logo URL found:", settingsData.logo_url.substring(0, 100) + "...");
+        } else {
+          console.log("Header - No logo URL found");
+        }
+        
+        // التحقق من وجود رابط الأيقونة
+        if (settingsData.favicon_url) {
+          console.log("Header - Favicon URL found:", settingsData.favicon_url.substring(0, 100) + "...");
+          updateFavicon(settingsData.favicon_url);
+        } else {
+          console.log("Header - No favicon URL found");
+        }
+        
         setSettings(settingsData);
 
         // تعيين عنوان الصفحة إذا كان متاحًا
@@ -55,11 +73,6 @@ const Header = () => {
         } else {
           // Default title if not set
           document.title = "نظام الدعم الفني";
-        }
-
-        // تحديث أيقونة المتصفح إذا كانت متاحة
-        if (settingsData.favicon_url) {
-          updateFavicon(settingsData.favicon_url);
         }
       } else {
         // Default title if no settings
@@ -76,10 +89,24 @@ const Header = () => {
     }
   };
 
+  // محاولة تحميل الشعار مرة أخرى كل 3 ثوانٍ إذا فشلت المحاولة الأولى (حتى 3 محاولات)
+  useEffect(() => {
+    if (logoError && logoLoadAttempts < 3 && settings.logo_url) {
+      const timer = setTimeout(() => {
+        console.log(`Retry loading logo attempt ${logoLoadAttempts + 1}`);
+        setLogoError(false);
+        setLogoLoadAttempts(prev => prev + 1);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [logoError, logoLoadAttempts, settings.logo_url]);
+
   const updateFavicon = (faviconUrl: string) => {
     if (!faviconUrl) return;
     
     try {
+      console.log("Updating favicon to:", faviconUrl.substring(0, 100) + "...");
       let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
       if (!link) {
         link = document.createElement('link');
@@ -87,6 +114,15 @@ const Header = () => {
         document.getElementsByTagName('head')[0].appendChild(link);
       }
       link.href = faviconUrl;
+      
+      // تحديث الأيقونة المصغرة أيضًا
+      let shortcutLink = document.querySelector("link[rel~='shortcut icon']") as HTMLLinkElement;
+      if (!shortcutLink) {
+        shortcutLink = document.createElement('link');
+        shortcutLink.rel = 'shortcut icon';
+        document.getElementsByTagName('head')[0].appendChild(shortcutLink);
+      }
+      shortcutLink.href = faviconUrl;
     } catch (error) {
       console.error('Error updating favicon:', error);
     }
@@ -103,11 +139,14 @@ const Header = () => {
     return str && str.startsWith('data:image');
   };
   
+  // تحسين استخراج الشعار لضمان عدم فقدان البيانات
   const logoUrl = logoError 
     ? logoSvg 
-    : settings.logo_url && isBase64Image(settings.logo_url) 
-      ? settings.logo_url 
-      : settings.logo_url || logoSvg;
+    : settings.logo_url && settings.logo_url.length > 0
+      ? isBase64Image(settings.logo_url) 
+        ? settings.logo_url 
+        : settings.logo_url
+      : logoSvg;
   
   const isTicketStatusActive = location.pathname.startsWith('/ticket-status');
   const isHomeActive = location.pathname === '/';
@@ -142,6 +181,7 @@ const Header = () => {
                   <div className="absolute -inset-1 bg-white animate-glowing rounded-full opacity-80"></div>
                   <AspectRatio ratio={1 / 1} className="overflow-hidden relative z-10">
                     <img 
+                      key={`logo-${logoLoadAttempts}`}
                       src={logoUrl} 
                       alt="شعار نظام الدعم" 
                       className="object-contain h-full w-full transform hover:scale-110 transition-transform duration-500" 
@@ -204,3 +244,4 @@ const Header = () => {
 };
 
 export default Header;
+
