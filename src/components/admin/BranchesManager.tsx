@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Branch } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -220,11 +221,9 @@ const BranchesManager = () => {
   return (
     <Card>
       <CardHeader className="pb-3">
-        <CardTitle className="text-right text-xl font-bold text-company">إدارة الفروع</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {canManageAdmins && (
-          <div className="flex justify-end mb-4">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-right text-xl font-bold text-company">إدارة الفروع</CardTitle>
+          {canManageAdmins && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button className="flex items-center gap-2">
@@ -253,9 +252,10 @@ const BranchesManager = () => {
                 </DialogFooter>
               </DialogContent>
             </Dialog>
-          </div>
-        )}
-
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
         {loading ? (
           <div className="text-center py-10">
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
