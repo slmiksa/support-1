@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { toast } from 'sonner';
 import { Trash2, Plus, Pencil } from 'lucide-react';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const BranchesManager = () => {
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -22,6 +23,10 @@ const BranchesManager = () => {
 
   useEffect(() => {
     fetchBranches();
+    // إذا لم تكن هناك فروع، قم بإضافة الفروع الافتراضية
+    setTimeout(() => {
+      checkAndAddDefaultBranches();
+    }, 1000);
   }, []);
 
   const fetchBranches = async () => {
@@ -29,6 +34,26 @@ const BranchesManager = () => {
     const data = await getAllBranches();
     setBranches(data);
     setLoading(false);
+  };
+
+  const checkAndAddDefaultBranches = async () => {
+    const data = await getAllBranches();
+    
+    if (data.length === 0) {
+      const defaultBranches = [
+        "ALWASL DAMMAM",
+        "ALWASL JEDDAH",
+        "ALWASL RIYADH",
+        "MADA"
+      ];
+      
+      for (const branchName of defaultBranches) {
+        await createBranch(branchName);
+      }
+      
+      toast.success('تم إضافة الفروع الافتراضية بنجاح');
+      fetchBranches();
+    }
   };
 
   const handleCreateBranch = async () => {
