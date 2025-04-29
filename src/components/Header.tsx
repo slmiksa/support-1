@@ -127,7 +127,7 @@ const Header = () => {
                   <AspectRatio ratio={1 / 1} className="overflow-hidden">
                     <img 
                       src={logoUrl} 
-                      alt={settings.site_name} 
+                      alt={settings.site_name || ''} 
                       className="object-contain h-full w-full" 
                       onError={handleLogoError}
                     />
@@ -136,7 +136,7 @@ const Header = () => {
               </div>
               
               <div className="text-center">
-                <h1 className="text-white text-xl md:text-3xl font-bold">{settings.site_name}</h1>
+                <h1 className="text-white text-xl md:text-3xl font-bold">{settings.site_name || DEFAULT_SETTINGS.site_name}</h1>
                 <p className="text-white/80 text-sm mt-1"></p>
               </div>
             </div>

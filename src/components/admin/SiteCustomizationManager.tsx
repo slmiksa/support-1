@@ -117,20 +117,20 @@ const SiteCustomizationManager = () => {
       
       // Convert support_help_fields and email_settings to JSON compatible format
       const dbSettings = {
-        site_name: defaultSettings.site_name,
-        page_title: defaultSettings.page_title,
-        logo_url: defaultSettings.logo_url,
-        favicon_url: defaultSettings.favicon_url,
-        primary_color: defaultSettings.primary_color,
-        secondary_color: defaultSettings.secondary_color, 
-        text_color: defaultSettings.text_color,
-        footer_text: defaultSettings.footer_text,
-        support_available: defaultSettings.support_available,
-        support_message: defaultSettings.support_message,
-        support_info: defaultSettings.support_info,
+        site_name: defaultSettings.site_name || '',
+        page_title: defaultSettings.page_title || '',
+        logo_url: defaultSettings.logo_url || '',
+        favicon_url: defaultSettings.favicon_url || '',
+        primary_color: defaultSettings.primary_color || '#D4AF37',
+        secondary_color: defaultSettings.secondary_color || '#B08C1A', 
+        text_color: defaultSettings.text_color || '#ffffff',
+        footer_text: defaultSettings.footer_text || '',
+        support_available: defaultSettings.support_available || true,
+        support_message: defaultSettings.support_message || '',
+        support_info: defaultSettings.support_info || '',
         support_help_fields: (defaultSettings.support_help_fields || []) as unknown as Json,
-        company_sender_email: defaultSettings.company_sender_email,
-        company_sender_name: defaultSettings.company_sender_name
+        company_sender_email: defaultSettings.company_sender_email || '',
+        company_sender_name: defaultSettings.company_sender_name || ''
       };
       
       const { error } = await supabase
@@ -157,29 +157,29 @@ const SiteCustomizationManager = () => {
     try {
       // Prepare settings data - make sure to strip any unnecessary fields
       const cleanSettings = {
-        site_name: settings.site_name,
-        page_title: settings.page_title,
-        logo_url: settings.logo_url,
-        favicon_url: settings.favicon_url,
-        primary_color: settings.primary_color,
-        secondary_color: settings.secondary_color,
-        text_color: settings.text_color,
-        footer_text: settings.footer_text,
-        support_available: settings.support_available,
-        support_message: settings.support_message,
-        support_info: settings.support_info,
+        site_name: settings.site_name || '',
+        page_title: settings.page_title || '',
+        logo_url: settings.logo_url || '',
+        favicon_url: settings.favicon_url || '',
+        primary_color: settings.primary_color || '#D4AF37',
+        secondary_color: settings.secondary_color || '#B08C1A',
+        text_color: settings.text_color || '#ffffff',
+        footer_text: settings.footer_text || '',
+        support_available: settings.support_available || false,
+        support_message: settings.support_message || '',
+        support_info: settings.support_info || '',
         // Convert helpFields array to JSON that Supabase can handle
         support_help_fields: helpFields as unknown as Json,
         // Add the email settings if they exist
         ...(settings.email_settings ? { email_settings: settings.email_settings as unknown as Json } : {}),
         // Add company sender info if they exist
-        company_sender_email: settings.company_sender_email,
-        company_sender_name: settings.company_sender_name
+        company_sender_email: settings.company_sender_email || '',
+        company_sender_name: settings.company_sender_name || ''
       };
       
       const { error } = await supabase
         .from('site_settings')
-        .upsert([cleanSettings]);
+        .upsert(cleanSettings);
         
       if (error) {
         console.error('Supabase error:', error);
