@@ -100,7 +100,7 @@ const Header = () => {
       {/* Header العلوي مع اسم الشركة والشعار */}
       <div style={{
       background: `linear-gradient(to right, ${settings.primary_color || '#D4AF37'}, ${settings.secondary_color || '#B08C1A'})`
-    }} className="py-8 shadow-lg bg-[#133b73]">
+    }} className="py-8 shadow-lg bg-[#12366a]">
         <Container>
           <div className="flex flex-col items-center justify-center text-center">
             {/* الشعار واسم الشركة - مركزة وأكبر */}
