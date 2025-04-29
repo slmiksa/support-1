@@ -5,7 +5,7 @@ import { useAdminAuth } from '@/contexts/AdminAuthContext';
 interface TicketResponse {
   id: string;
   response: string;
-  is_admin?: boolean;
+  is_admin: boolean | null; // Changed from optional to allow null
   created_at: string;
   admin_name?: string | null;
   admin_employee_id?: string | null;
