@@ -92,7 +92,7 @@
   }
 
   input[type="file"]::file-selector-button {
-    @apply bg-blue-600 text-white py-1.5 px-3 mr-2 rounded-md cursor-pointer border-0 hover:bg-blue-700 transition-colors;
+    @apply bg-slate-200 text-gray-800 py-1.5 px-3 mr-2 rounded-md cursor-pointer border-0 hover:bg-slate-300 transition-colors;
   }
 }
 
@@ -367,7 +367,7 @@ input[type="file"]::file-selector-button {
 
 input[type="file"]::before {
   content: "اختر ملف";
-  @apply bg-secondary text-secondary-foreground py-1.5 px-3 mr-2 rounded-md cursor-pointer;
+  @apply bg-slate-200 text-gray-800 py-1.5 px-3 mr-2 rounded-md cursor-pointer hover:bg-slate-300 transition-colors;
 }
 
 /* Modern card styling with improved hover effects */
