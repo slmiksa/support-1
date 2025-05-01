@@ -59,7 +59,7 @@ const AdminLogin = () => {
               <Label htmlFor="password" className="text-right block">كلمة المرور</Label>
               <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="أدخل كلمة المرور" className="text-right" dir="rtl" />
             </div>
-            <Button type="submit" disabled={isLoading} className="w-full bg-company hover:bg-company/90 text-slate-50 rounded-sm">
+            <Button type="submit" disabled={isLoading} className="w-full rounded-sm bg-[#6c8ed1] text-base text-slate-50">
               {isLoading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
             </Button>
           </form>
