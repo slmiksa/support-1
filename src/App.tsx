@@ -11,6 +11,7 @@ import AdminSettings from './pages/admin/AdminSettings';
 import ManageAdmins from './pages/admin/ManageAdmins';
 import TicketStatus from './pages/TicketStatus';
 import { ThemeProvider } from './contexts/ThemeContext';
+import ProtectedRoute from './components/admin/ProtectedRoute';
 
 // Import Toaster from sonner
 import { Toaster } from 'sonner';
@@ -58,14 +59,35 @@ function App() {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/admin/login" element={<AdminLogin />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="/admin/tickets/:ticketId" element={<AdminTicketDetails />} />
-                <Route path="/admin/settings" element={<AdminSettings />} />
-                <Route path="/admin/manage-admins" element={<ManageAdmins />} />
+                <Route path="/admin/dashboard" element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/tickets/:ticketId" element={
+                  <ProtectedRoute>
+                    <AdminTicketDetails />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/settings" element={
+                  <ProtectedRoute>
+                    <AdminSettings />
+                  </ProtectedRoute>
+                } />
+                <Route path="/admin/manage-admins" element={
+                  <ProtectedRoute>
+                    <ManageAdmins />
+                  </ProtectedRoute>
+                } />
                 <Route path="/ticket-status" element={<TicketStatus />} />
                 <Route path="/ticket-status/:ticketId" element={<TicketStatus />} />
-                {/* Ensure there's a catch-all route for the admin section */}
-                <Route path="/admin/*" element={<AdminDashboard />} />
+                {/* Redirect any unknown admin routes to the dashboard but still protected */}
+                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="/admin/*" element={
+                  <ProtectedRoute>
+                    <AdminDashboard />
+                  </ProtectedRoute>
+                } />
               </Routes>
               <Toaster 
                 closeButton 
