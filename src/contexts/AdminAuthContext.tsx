@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -73,6 +72,48 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     checkAuth();
   }, []);
 
+  const updateAdminNotificationEmail = async (email: string): Promise<boolean> => {
+    if (!currentAdmin?.id) return false;
+    
+    try {
+      // Update in Supabase
+      const { error } = await supabase
+        .from('admins')
+        .update({ notification_email: email })
+        .eq('id', currentAdmin.id);
+      
+      if (error) {
+        console.error('Error updating notification email:', error);
+        return false;
+      }
+
+      // Update in local state
+      const updatedAdmin = {
+        ...currentAdmin,
+        notification_email: email
+      };
+      
+      setCurrentAdmin(updatedAdmin);
+      
+      // Update in local storage
+      localStorage.setItem('admin_data', JSON.stringify(updatedAdmin));
+      
+      console.log("Admin notification email updated:", email);
+      return true;
+    } catch (error) {
+      console.error('Error updating notification email:', error);
+      return false;
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('admin_auth');
+    localStorage.removeItem('admin_data');
+    setIsAuthenticated(false);
+    setCurrentAdmin(null);
+    console.log("Admin logged out");
+  };
+
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
       const { data, error } = await supabase.rpc('check_admin_credentials', {
@@ -126,48 +167,6 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Login error:', error);
       return false;
     }
-  };
-
-  const updateAdminNotificationEmail = async (email: string): Promise<boolean> => {
-    if (!currentAdmin?.id) return false;
-    
-    try {
-      // Update in Supabase
-      const { error } = await supabase
-        .from('admins')
-        .update({ notification_email: email })
-        .eq('id', currentAdmin.id);
-      
-      if (error) {
-        console.error('Error updating notification email:', error);
-        return false;
-      }
-
-      // Update in local state
-      const updatedAdmin = {
-        ...currentAdmin,
-        notification_email: email
-      };
-      
-      setCurrentAdmin(updatedAdmin);
-      
-      // Update in local storage
-      localStorage.setItem('admin_data', JSON.stringify(updatedAdmin));
-      
-      console.log("Admin notification email updated:", email);
-      return true;
-    } catch (error) {
-      console.error('Error updating notification email:', error);
-      return false;
-    }
-  };
-
-  const logout = () => {
-    localStorage.removeItem('admin_auth');
-    localStorage.removeItem('admin_data');
-    setIsAuthenticated(false);
-    setCurrentAdmin(null);
-    console.log("Admin logged out");
   };
 
   const hasPermission = (permission: 'manage_tickets' | 'view_only' | 'manage_admins' | 'respond_to_tickets' | 'delete_tickets'): boolean => {

@@ -52,7 +52,7 @@ const AdminHeader = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/admin');
+    navigate('/admin/login');
   };
 
   const handleNavigate = (path: string) => {
